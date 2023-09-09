@@ -165,6 +165,19 @@ void ReactiveLuaFunction::prepareLua()
     return names;
   };
   _lua_engine.set_function("GetSeriesNames", GetSeriesNames);
+
+  auto GetStringSeriesValueAtIndex = [this] (std::string input_name, int index) {
+    auto it = plotData()->strings.find(input_name);
+    if (it == plotData()->strings.end())
+    {
+      //return sol::make_object(_lua_engine, sol::lua_nil);
+      return std::string("NOT_FOUND");
+    }
+    auto xy_val = plotData()->strings.at(input_name).at(0);
+    std::string str_val = xy_val.y.data();
+    return str_val;
+  };
+  _lua_engine.set_function("GetStringSeriesValueAtIndex", GetStringSeriesValueAtIndex);
 }
 
 TimeseriesRef::TimeseriesRef(PlotData* data) : _plot_data(data)
