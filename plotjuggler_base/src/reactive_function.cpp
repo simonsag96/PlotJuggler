@@ -178,6 +178,25 @@ void ReactiveLuaFunction::prepareLua()
     return str_val;
   };
   _lua_engine.set_function("GetStringSeriesValueAtIndex", GetStringSeriesValueAtIndex);
+  // FIXME Currently the gui is not updated with the new signal name
+  auto RenameTimeSeries = [this] (std::string old_name, std::string new_name) {
+    auto it = plotData()->numeric.find(old_name);
+    if (it == plotData()->numeric.end())
+    {
+      //return sol::make_object(_lua_engine, sol::lua_nil);
+      return std::string("NOT_FOUND");
+    }
+    auto nodeHandler = plotData()->numeric.extract(old_name);
+    nodeHandler.key() =  new_name;
+    plotData()->numeric.insert(std::move(nodeHandler));
+    auto signal_names = plotData()->getAllNames();
+    for (const auto& elem : signal_names)
+        std::cout << elem << "\n";
+    // plotData()-> = plotData()->numeric.at(input_name);
+    // std::string str_val = xy_val.y.data();
+    return std::string("RAN WITHOUT ERRORS");
+  };
+  _lua_engine.set_function("RenameTimeSeries", RenameTimeSeries);
 }
 
 TimeseriesRef::TimeseriesRef(PlotData* data) : _plot_data(data)
