@@ -189,6 +189,9 @@ void ReactiveLuaFunction::prepareLua()
     auto nodeHandler = plotData()->numeric.extract(old_name);
     nodeHandler.key() =  new_name;
     plotData()->numeric.insert(std::move(nodeHandler));
+    auto series = CreatedSeriesTime(plotData(), new_name);
+    _created_curves.push_back(new_name);
+    plotData()->erase(old_name);
     auto signal_names = plotData()->getAllNames();
     for (const auto& elem : signal_names)
         std::cout << elem << "\n";
