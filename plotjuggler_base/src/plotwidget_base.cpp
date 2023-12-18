@@ -720,6 +720,10 @@ void PlotWidgetBase::setStyle(QwtPlotCurve* curve, CurveStyle style)
       break;
     case STICKS:
       curve->setStyle(QwtPlotCurve::Sticks);
+      break;
+    case STEPS:
+      curve->setStyle(QwtPlotCurve::Steps);
+      break;
   }
 }
 

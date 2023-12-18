@@ -66,6 +66,13 @@
     </layout>
    </item>
    <item>
+    <widget class="QCheckBox" name="checkBoxUseTimestamp">
+     <property name="text">
+      <string>Use the timestamp in the message (if present)</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="Line" name="line">
      <property name="frameShadow">
       <enum>QFrame::Plain</enum>

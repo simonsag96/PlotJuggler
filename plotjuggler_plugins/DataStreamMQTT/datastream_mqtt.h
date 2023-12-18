@@ -46,12 +46,11 @@ public:
 
 private slots:
 
-  void onComboProtocolChanged(const QString &);
+  void onComboProtocolChanged(const QString&);
 
   void onMessageReceived(const mosquitto_message* message);
 
 private:
-
   bool _running;
 
   std::unordered_map<std::string, PJ::MessageParserPtr> _parsers;
@@ -70,5 +69,4 @@ private:
   ParserFactoryPlugin::Ptr _current_parser_creator;
 };
 
-
-#endif // DATASTREAM_MQTT_H
+#endif  // DATASTREAM_MQTT_H

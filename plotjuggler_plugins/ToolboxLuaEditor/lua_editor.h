@@ -31,8 +31,7 @@ public:
 
   const char* name() const override;
 
-  void init(PJ::PlotDataMapRef& src_data,
-            PJ::TransformsMap& transform_map) override;
+  void init(PJ::PlotDataMapRef& src_data, PJ::TransformsMap& transform_map) override;
 
   std::pair<QWidget*, WidgetType> providedWidget() const override;
 
@@ -48,9 +47,9 @@ public slots:
 
   void onDelete();
 
-  void restoreRecent(const QModelIndex &index);
+  void restoreRecent(const QModelIndex& index);
 
-  void restoreFunction(const QModelIndex &index);
+  void restoreFunction(const QModelIndex& index);
 
   void onLibraryUpdated();
 
@@ -63,8 +62,7 @@ private:
   PJ::PlotDataMapRef* _plot_data = nullptr;
   PJ::TransformsMap* _transforms = nullptr;
 
-
-  bool eventFilter(QObject *obj, QEvent *event) override;
+  bool eventFilter(QObject* obj, QEvent* event) override;
   QStringList _dragging_curves;
 
   QLuaCompleter* _completer;
@@ -83,7 +81,8 @@ private:
 
   SavedData getItemData(const QListWidgetItem* item) const;
 
-  void setItemData(QListWidgetItem* item, QString name, QString global_code, QString function_code);
+  void setItemData(QListWidgetItem* item, QString name, QString global_code,
+                   QString function_code);
 };
 
-#endif // LUA_EDITOR_H
+#endif  // LUA_EDITOR_H

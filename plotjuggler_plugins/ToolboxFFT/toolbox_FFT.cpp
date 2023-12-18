@@ -87,7 +87,7 @@ void ToolboxFFT::calculateCurveFFT()
     }
     PlotData& curve_data = it->second;
 
-    if( curve_data.size() == 0)
+    if (curve_data.size() == 0)
     {
       return;
     }
@@ -120,7 +120,7 @@ void ToolboxFFT::calculateCurveFFT()
     input.reserve(curve_data.size());
 
     double sum = 0;
-    if(ui->checkAverage->isChecked())
+    if (ui->checkAverage->isChecked())
     {
       for (size_t i = 0; i < N; i++)
       {

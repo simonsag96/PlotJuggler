@@ -5,7 +5,8 @@
 #include <string>
 #include <vector>
 
-struct MosquittoConfig {
+struct MosquittoConfig
+{
   int protocol_version;
   int keepalive;
   std::string host;
@@ -27,28 +28,28 @@ struct MosquittoConfig {
   std::string ciphers;
   bool insecure;
   std::string tls_version;
-#  ifdef WITH_TLS_PSK
+#ifdef WITH_TLS_PSK
   std::string psk;
   std::string psk_identity;
-#  endif
+#endif
 
-  bool clean_session; /* sub */
-  std::vector<std::string> topics; /* sub */
-  bool no_retain; /* sub */
+  bool clean_session;                   /* sub */
+  std::vector<std::string> topics;      /* sub */
+  bool no_retain;                       /* sub */
   std::vector<std::string> filter_outs; /* sub */
-  bool verbose; /* sub */
-  bool eol; /* sub */
-  int msg_count; /* sub */
+  bool verbose;                         /* sub */
+  bool eol;                             /* sub */
+  int msg_count;                        /* sub */
 #ifdef WITH_SOCKS
   std::string socks5_host;
   int socks5_port;
   std::string socks5_username;
   std::string socks5_password;
 #endif
-  mosquitto_property *connect_props;
-  mosquitto_property *subscribe_props;
-  mosquitto_property *unsubscribe_props;
-  mosquitto_property *disconnect_props;
+  mosquitto_property* connect_props;
+  mosquitto_property* subscribe_props;
+  mosquitto_property* unsubscribe_props;
+  mosquitto_property* disconnect_props;
 };
 
-#endif // MOSQUITTO_CONFIG_H
+#endif  // MOSQUITTO_CONFIG_H

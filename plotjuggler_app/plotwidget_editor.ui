@@ -341,6 +341,13 @@
               </property>
              </widget>
             </item>
+             <item>
+             <widget class="QRadioButton" name="radioSteps">
+              <property name="text">
+               <string>Steps</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </widget>
          </item>

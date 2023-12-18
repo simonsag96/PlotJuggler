@@ -42,7 +42,6 @@ public slots:
   virtual void setEnabled(bool enabled) override;
 
 private:
-
   bool _enabled = false;
   bool _xml_loaded = false;
 

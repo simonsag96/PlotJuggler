@@ -17,26 +17,25 @@ class ImageLabel : public QWidget
   Q_OBJECT
 
 public:
-  explicit ImageLabel(QWidget *parent = nullptr);
+  explicit ImageLabel(QWidget* parent = nullptr);
   const QPixmap* pixmap() const;
 
 public slots:
   void setPixmap(const QPixmap&);
 
 protected:
-  void paintEvent(QPaintEvent *);
+  void paintEvent(QPaintEvent*);
 
 private:
   QPixmap pix;
 };
-
 
 class VideoDialog : public QDialog
 {
   Q_OBJECT
 
 public:
-  explicit VideoDialog(QWidget *parent = nullptr);
+  explicit VideoDialog(QWidget* parent = nullptr);
   ~VideoDialog();
 
   QString referenceCurve() const;
@@ -45,7 +44,7 @@ public:
 
   bool isPaused() const;
 
-  Ui::VideoDialog *ui;
+  Ui::VideoDialog* ui;
 
   bool loadFile(QString filename);
 
@@ -54,7 +53,7 @@ private slots:
 
   void on_timeSlider_valueChanged(int value);
 
-  void closeEvent (QCloseEvent *event)
+  void closeEvent(QCloseEvent* event)
   {
     emit closed();
   }
@@ -77,15 +76,17 @@ signals:
   void closed();
 
 private:
-  QtAV::VideoOutput *_video_output;
-  QtAV::AVPlayer *_media_player;
+  QtAV::VideoOutput* _video_output;
+  QtAV::AVPlayer* _media_player;
   std::unique_ptr<QtAV::FrameReader> _frame_reader;
-  //std::vector<QImage> _frames;
+  // std::vector<QImage> _frames;
   struct CompressedFrame
   {
-    CompressedFrame(): length(0), data(nullptr) {}
+    CompressedFrame() : length(0), data(nullptr)
+    {
+    }
     CompressedFrame(const CompressedFrame&) = delete;
-    CompressedFrame(CompressedFrame&& other): length(0), data(nullptr)
+    CompressedFrame(CompressedFrame&& other) : length(0), data(nullptr)
     {
       std::swap(other.data, data);
       std::swap(other.length, length);
@@ -93,7 +94,8 @@ private:
 
     ~CompressedFrame()
     {
-      if(data) free(data);
+      if (data)
+        free(data);
     }
 
     int length;
@@ -105,9 +107,9 @@ private:
   bool eventFilter(QObject* obj, QEvent* ev);
   QString _dragging_curve;
 
-  ImageLabel *_label;
+  ImageLabel* _label;
 
   bool _decoded = false;
 };
 
-#endif // VIDEO_DIALOG_H
+#endif  // VIDEO_DIALOG_H

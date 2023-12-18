@@ -165,10 +165,10 @@ bool ToolboxQuaternion::generateRPY(GenerateType type)
 
   std::vector<const PlotData*> src_data;
   {
-    for(QLineEdit* line: {ui->lineEditX, ui->lineEditY, ui->lineEditZ, ui->lineEditW })
+    for (QLineEdit* line : { ui->lineEditX, ui->lineEditY, ui->lineEditZ, ui->lineEditW })
     {
-      auto it = _plot_data->numeric.find( line->text().toStdString() );
-      if( it == _plot_data->numeric.end() )
+      auto it = _plot_data->numeric.find(line->text().toStdString());
+      if (it == _plot_data->numeric.end())
       {
         return false;
       }
@@ -181,9 +181,9 @@ bool ToolboxQuaternion::generateRPY(GenerateType type)
   // remove previous cruves bvefore creating new one
   _plot_widget->removeAllCurves();
 
-  _preview_data_roll.reset( new PlotData(prefix + "roll", {}) );
-  _preview_data_pitch.reset( new PlotData(prefix + "pitch", {}) );
-  _preview_data_yaw.reset( new PlotData(prefix + "yaw", {}) );
+  _preview_data_roll.reset(new PlotData(prefix + "roll", {}));
+  _preview_data_pitch.reset(new PlotData(prefix + "pitch", {}));
+  _preview_data_yaw.reset(new PlotData(prefix + "yaw", {}));
 
   std::vector<PlotData*> dst_vector = { _preview_data_roll.get(),
                                         _preview_data_pitch.get(),

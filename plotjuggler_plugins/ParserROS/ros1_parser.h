@@ -6,9 +6,7 @@
 #include <QDebug>
 #include <string>
 
-#include "rosx_introspection/ros_parser.hpp"
 #include "ros_parser.h"
-#include "PlotJuggler/fmt/format.h"
 
 using namespace PJ;
 
@@ -31,18 +29,15 @@ public:
   }
 
   MessageParserPtr createParser(const std::string& topic_name,
-                                const std::string& type_name,
-                                const std::string& schema,
+                                const std::string& type_name, const std::string& schema,
                                 PlotDataMapRef& data) override
   {
-    if(schema.empty())
+    if (schema.empty())
     {
-      throw std::runtime_error("ParserFactoryROS1 requires a schema (message definition)");
+      throw std::runtime_error("ParserFactoryROS1 requires a schema (message "
+                               "definition)");
     }
-    return std::make_shared<ParserROS>(topic_name,  type_name, schema,
+    return std::make_shared<ParserROS>(topic_name, type_name, schema,
                                        new RosMsgParser::ROS_Deserializer(), data);
   }
 };
-
-
-

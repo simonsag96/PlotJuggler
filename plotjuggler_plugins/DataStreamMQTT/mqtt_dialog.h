@@ -9,7 +9,7 @@
 #include <QIntValidator>
 #include <QTimer>
 
-class MQTT_Dialog: public QDialog
+class MQTT_Dialog : public QDialog
 {
 public:
   MQTT_Dialog(MQTTClient::Ptr mosq_client);
@@ -29,10 +29,9 @@ public slots:
   void onSelectionChanged();
 
 private:
-
   MQTTClient::Ptr _client;
 
-  QTimer *_topic_list_timer;
+  QTimer* _topic_list_timer;
 
   void changeConnectionState(bool connected);
 
@@ -53,4 +52,4 @@ private slots:
   std::unordered_set<std::string> _topic_list;
 };
 
-#endif // MQTT_DIALOG_H
+#endif  // MQTT_DIALOG_H

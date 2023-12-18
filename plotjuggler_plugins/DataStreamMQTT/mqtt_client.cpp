@@ -8,37 +8,40 @@
 #include <strsafe.h>
 #endif
 
-void connect_callback(struct mosquitto *mosq, void *context, int result,  int, const mosquitto_property *)
+void connect_callback(struct mosquitto* mosq, void* context, int result, int,
+                      const mosquitto_property*)
 {
   MQTTClient* self = static_cast<MQTTClient*>(context);
 
-  if( !result )
+  if (!result)
   {
-    for(const auto& topic: self->config().topics)
+    for (const auto& topic : self->config().topics)
     {
       mosquitto_subscribe(mosq, nullptr, topic.c_str(), self->config().qos);
     }
   }
   else
   {
-    QMessageBox::warning(nullptr, "MQTT Client",
-                         QString("Connection error: %1").arg(mosquitto_reason_string(result)),
-                         QMessageBox::Ok);
+    QMessageBox::warning(
+        nullptr, "MQTT Client",
+        QString("Connection error: %1").arg(mosquitto_reason_string(result)),
+        QMessageBox::Ok);
   }
   self->_connected = true;
 }
 
-void disconnect_callback(struct mosquitto *mosq, void *context, int result)
+void disconnect_callback(struct mosquitto* mosq, void* context, int result)
 {
   MQTTClient* self = static_cast<MQTTClient*>(context);
 
-  if( self->isConnected() && result == MOSQ_ERR_CONN_LOST )
+  if (self->isConnected() && result == MOSQ_ERR_CONN_LOST)
   {
     emit self->disconnected();
   }
 }
 
-void message_callback(struct mosquitto *mosq, void *context, const struct mosquitto_message *message, const mosquitto_property *)
+void message_callback(struct mosquitto* mosq, void* context,
+                      const struct mosquitto_message* message, const mosquitto_property*)
 {
   MQTTClient* self = static_cast<MQTTClient*>(context);
   self->onMessageReceived(message);
@@ -58,53 +61,50 @@ MQTTClient::MQTTClient()
 
 MQTTClient::~MQTTClient()
 {
-  if(_connected)
+  if (_connected)
   {
     disconnect();
   }
   mosquitto_lib_cleanup();
 }
 
-bool MQTTClient::connect(const MosquittoConfig &config)
+bool MQTTClient::connect(const MosquittoConfig& config)
 {
-  if( _connected )
+  if (_connected)
   {
     disconnect();
   }
 
   mosquitto_int_option(_mosq, MOSQ_OPT_PROTOCOL_VERSION, config.protocol_version);
 
-  if(( !config.username.empty() || !config.password.empty()) )
+  if ((!config.username.empty() || !config.password.empty()))
   {
-    if(mosquitto_username_pw_set(_mosq, config.username.c_str(), config.password.c_str()))
+    if (mosquitto_username_pw_set(_mosq, config.username.c_str(),
+                                  config.password.c_str()))
     {
       return false;
     }
   }
 
-  if( config.cafile.empty() == false )
+  if (config.cafile.empty() == false)
   {
-    const char *cafile = config.cafile.c_str();
-    const char *certfile = config.certfile.empty() ? nullptr: config.certfile.c_str();
-    const char *keyfile = config.keyfile.empty() ? nullptr: config.keyfile.c_str();
+    const char* cafile = config.cafile.c_str();
+    const char* certfile = config.certfile.empty() ? nullptr : config.certfile.c_str();
+    const char* keyfile = config.keyfile.empty() ? nullptr : config.keyfile.c_str();
 
     mosquitto_tls_set(_mosq, cafile, nullptr, certfile, keyfile, nullptr);
   }
 
   mosquitto_max_inflight_messages_set(_mosq, config.max_inflight);
 
-  const mosquitto_property *properties = nullptr; // todo
+  const mosquitto_property* properties = nullptr;  // todo
 
-  int rc = mosquitto_connect_bind_v5(_mosq,
-                                     config.host.c_str(),
-                                     config.port,
-                                     config.keepalive,
-                                     nullptr,
-                                     properties);
+  int rc = mosquitto_connect_bind_v5(_mosq, config.host.c_str(), config.port,
+                                     config.keepalive, nullptr, properties);
   // TODO bind
-  if(rc>0)
+  if (rc > 0)
   {
-    if(rc == MOSQ_ERR_ERRNO)
+    if (rc == MOSQ_ERR_ERRNO)
     {
       char err[1024];
 #ifndef WIN32
@@ -112,8 +112,8 @@ bool MQTTClient::connect(const MosquittoConfig &config)
 #else
       FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, errno, 0, (LPTSTR)&err, 1024, NULL);
 #endif
-      QMessageBox::warning(nullptr, "MQTT Client",
-                           QString("Error: %1").arg(err),  QMessageBox::Ok);
+      QMessageBox::warning(nullptr, "MQTT Client", QString("Error: %1").arg(err),
+                           QMessageBox::Ok);
     }
     else
     {
@@ -133,7 +133,7 @@ bool MQTTClient::connect(const MosquittoConfig &config)
 
 void MQTTClient::disconnect()
 {
-  if( _connected )
+  if (_connected)
   {
     mosquitto_disconnect(_mosq);
     mosquitto_loop_stop(_mosq, true);
@@ -148,26 +148,27 @@ bool MQTTClient::isConnected() const
   return _connected;
 }
 
-void MQTTClient::addMessageCallback(const std::string &topic, MQTTClient::TopicCallback callback)
+void MQTTClient::addMessageCallback(const std::string& topic,
+                                    MQTTClient::TopicCallback callback)
 {
   std::unique_lock<std::mutex> lk(_mutex);
   _message_callbacks[topic] = callback;
 }
 
-void MQTTClient::onMessageReceived(const mosquitto_message * message)
+void MQTTClient::onMessageReceived(const mosquitto_message* message)
 {
   std::unique_lock<std::mutex> lk(_mutex);
 
   _topics_set.insert(message->topic);
 
   auto it = _message_callbacks.find(message->topic);
-  if( it != _message_callbacks.end() )
+  if (it != _message_callbacks.end())
   {
     it->second(message);
   }
 }
 
-const MosquittoConfig &MQTTClient::config() const
+const MosquittoConfig& MQTTClient::config() const
 {
   return _config;
 }
@@ -178,12 +179,12 @@ std::unordered_set<std::string> MQTTClient::getTopicList()
   return _topics_set;
 }
 
-void MQTTClient::subscribe(const std::string &topic, int qos)
+void MQTTClient::subscribe(const std::string& topic, int qos)
 {
   mosquitto_subscribe(_mosq, nullptr, topic.c_str(), qos);
 }
 
-void MQTTClient::unsubscribe(const std::string &topic)
+void MQTTClient::unsubscribe(const std::string& topic)
 {
   mosquitto_unsubscribe(_mosq, nullptr, topic.c_str());
 }

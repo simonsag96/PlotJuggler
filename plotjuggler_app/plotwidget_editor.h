@@ -84,6 +84,8 @@ private slots:
 
   void on_radioSticks_toggled(bool checked);
 
+  void on_radioSteps_toggled(bool checked);
+
 private:
   Ui::PlotWidgetEditor* ui;
 

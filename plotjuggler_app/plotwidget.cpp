@@ -670,6 +670,10 @@ QDomElement PlotWidget::xmlSaveState(QDomDocument& doc) const
   {
     plot_el.setAttribute("style", "Sticks");
   }
+  else if (curveStyle() == PlotWidgetBase::STEPS)
+  {
+    plot_el.setAttribute("style", "Steps");
+  }
 
   for (auto& it : curveList())
   {
@@ -868,6 +872,10 @@ bool PlotWidget::xmlLoadState(QDomElement& plot_widget, bool autozoom)
     else if (style == "Sticks")
     {
       changeCurvesStyle(PlotWidgetBase::STICKS);
+    }
+    else if (style == "Steps")
+    {
+      changeCurvesStyle(PlotWidgetBase::STEPS);
     }
   }
 

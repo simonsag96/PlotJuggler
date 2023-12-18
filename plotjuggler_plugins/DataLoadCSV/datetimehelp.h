@@ -3,24 +3,25 @@
 
 #include <QDialog>
 
-namespace Ui {
+namespace Ui
+{
 class DateTimeHelp;
 }
 
 class DateTimeHelp : public QDialog
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    explicit DateTimeHelp(QDialog *parent = nullptr);
-    ~DateTimeHelp();
+  explicit DateTimeHelp(QDialog* parent = nullptr);
+  ~DateTimeHelp();
 
-    void refreshExample();
+  void refreshExample();
 
 private:
-    Ui::DateTimeHelp *ui;
+  Ui::DateTimeHelp* ui;
 
-    QDialog* _parent;
+  QDialog* _parent;
 };
 
-#endif // DATETIMEHELP_H
+#endif  // DATETIMEHELP_H

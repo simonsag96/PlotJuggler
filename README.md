@@ -9,7 +9,7 @@
 
 **Gold Sponsor**: [Greenzie](https://www.greenzie.com/)
 
-# PlotJuggler 3.7
+# PlotJuggler 3.8
 
 PlotJuggler is a tool to visualize time series that is **fast**, **powerful** and  **intuitive**.
 
@@ -122,8 +122,8 @@ sudo snap install plotjuggler
 
 When launching you have two options available:
 
-- `plotjuggler.ros` to load the ROS1 plugins
-- `plotjuggler.ros2` to load the ROS2 plugins
+- `plotjuggler.ros` to load the ROS1 plugins.
+- `plotjuggler.ros2` to load the ROS2 plugins.
 
 In addition, the command `plotjuggler` is an alias to `plotjuggler.ros`.
 If you'd prefer to alias `plotjuggler.ros2` instead,
@@ -155,9 +155,9 @@ which allows user to develop closed-source plugins.
 Please note that some third party dependencies (including Qt) use the
 **GNU Lesser General Public License**.
 
-# Stargazers
+# Star History
 
-[![Stargazers over time](https://starchart.cc/facontidavide/PlotJuggler.svg)](https://starchart.cc/facontidavide/PlotJuggler)
+[![Star History Chart](https://api.star-history.com/svg?repos=facontidavide/PlotJuggler&type=Date)](https://star-history.com/#facontidavide/PlotJuggler&Date)
 
 # Contributors
 

@@ -18,53 +18,45 @@ using namespace eprosima::fastcdr::exception;
 
 const char* const BadParamException::BAD_PARAM_MESSAGE_DEFAULT = "Bad parameter";
 
-BadParamException::BadParamException(
-        const char* const& message) noexcept
-    : Exception(message)
+BadParamException::BadParamException(const char* const& message) noexcept
+  : Exception(message)
 {
 }
 
-BadParamException::BadParamException(
-        const BadParamException& ex) noexcept
-    : Exception(ex)
+BadParamException::BadParamException(const BadParamException& ex) noexcept : Exception(ex)
 {
 }
 
 #if HAVE_CXX0X
-BadParamException::BadParamException(
-        BadParamException&& ex) noexcept
-    : Exception(std::move(ex))
+BadParamException::BadParamException(BadParamException&& ex) noexcept
+  : Exception(std::move(ex))
 {
 }
 
-#endif // if HAVE_CXX0X
+#endif  // if HAVE_CXX0X
 
-BadParamException& BadParamException::operator =(
-        const BadParamException& ex) noexcept
+BadParamException& BadParamException::operator=(const BadParamException& ex) noexcept
 {
-    if (this != &ex)
-    {
-        Exception::operator =(
-                ex);
-    }
+  if (this != &ex)
+  {
+    Exception::operator=(ex);
+  }
 
-    return *this;
+  return *this;
 }
 
 #if HAVE_CXX0X
-BadParamException& BadParamException::operator =(
-        BadParamException&& ex) noexcept
+BadParamException& BadParamException::operator=(BadParamException&& ex) noexcept
 {
-    if (this != &ex)
-    {
-        Exception::operator =(
-                std::move(ex));
-    }
+  if (this != &ex)
+  {
+    Exception::operator=(std::move(ex));
+  }
 
-    return *this;
+  return *this;
 }
 
-#endif // if HAVE_CXX0X
+#endif  // if HAVE_CXX0X
 
 BadParamException::~BadParamException() noexcept
 {
@@ -72,5 +64,5 @@ BadParamException::~BadParamException() noexcept
 
 void BadParamException::raise() const
 {
-    throw *this;
+  throw *this;
 }

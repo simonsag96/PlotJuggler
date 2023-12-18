@@ -7,10 +7,9 @@
 #include <QIntValidator>
 #include <QMessageBox>
 
-DataStreamMQTT::DataStreamMQTT():
-  _running(false)
+DataStreamMQTT::DataStreamMQTT() : _running(false)
 {
-   _notification_action = new QAction(this);
+  _notification_action = new QAction(this);
 
   connect(_notification_action, &QAction::triggered, this, [this]() {
     QMessageBox::warning(nullptr, "MQTT error",
@@ -34,43 +33,44 @@ DataStreamMQTT::~DataStreamMQTT()
   delete _dialog;
 }
 
-bool DataStreamMQTT::start(QStringList *)
+bool DataStreamMQTT::start(QStringList*)
 {
   if (_running)
   {
     return _running;
   }
 
-  //cleanup notifications
+  // cleanup notifications
   _failed_parsing = 0;
   emit notificationsChanged(0);
 
-  if( parserFactories() == nullptr || parserFactories()->empty() )
+  if (parserFactories() == nullptr || parserFactories()->empty())
   {
-    QMessageBox::warning(nullptr,tr("MQTT Client"), tr("No available MessageParsers"),  QMessageBox::Ok);
+    QMessageBox::warning(nullptr, tr("MQTT Client"), tr("No available MessageParsers"),
+                         QMessageBox::Ok);
     _running = false;
     return false;
   }
 
   bool first_start = _dialog->ui->comboBoxProtocol->count() == 0;
 
-  if( first_start )
+  if (first_start)
   {
     // change the section of the dialog related to protocols
-    for( const auto& it: *parserFactories())
+    for (const auto& it : *parserFactories())
     {
-      _dialog->ui->comboBoxProtocol->addItem( it.first );
+      _dialog->ui->comboBoxProtocol->addItem(it.first);
 
-      if(auto widget = it.second->optionsWidget() )
+      if (auto widget = it.second->optionsWidget())
       {
         widget->setVisible(false);
-        _dialog->ui->layoutOptions->addWidget( widget );
+        _dialog->ui->layoutOptions->addWidget(widget);
       }
     }
 
     connect(_dialog->ui->comboBoxProtocol,
-            qOverload<const QString &>(&QComboBox::currentIndexChanged),
-            this, &DataStreamMQTT::onComboProtocolChanged);
+            qOverload<const QString&>(&QComboBox::currentIndexChanged), this,
+            &DataStreamMQTT::onComboProtocolChanged);
   }
 
   _running = false;
@@ -79,22 +79,21 @@ bool DataStreamMQTT::start(QStringList *)
   _protocol = settings.value("MosquittoMQTT::serialization_protocol", "JSON").toString();
   _dialog->ui->comboBoxProtocol->setCurrentText(_protocol);
 
-  if( _dialog->exec() == QDialog::Rejected )
+  if (_dialog->exec() == QDialog::Rejected)
   {
     return false;
   }
   _protocol = _dialog->ui->comboBoxProtocol->currentText();
 
   // remove all previous subscriptions and create new ones
-  for( const auto& topic: _mosq->config().topics )
+  for (const auto& topic : _mosq->config().topics)
   {
     _mosq->unsubscribe(topic);
   }
 
-  for (const auto& item: _dialog->ui->listWidget->selectedItems())
+  for (const auto& item : _dialog->ui->listWidget->selectedItems())
   {
-    MQTTClient::TopicCallback callback = [this](const mosquitto_message* message)
-    {
+    MQTTClient::TopicCallback callback = [this](const mosquitto_message* message) {
       onMessageReceived(message);
     };
 
@@ -109,7 +108,7 @@ bool DataStreamMQTT::start(QStringList *)
 
 void DataStreamMQTT::shutdown()
 {
-  if( _running )
+  if (_running)
   {
     _running = false;
     _parsers.clear();
@@ -123,12 +122,11 @@ bool DataStreamMQTT::isRunning() const
   return _running;
 }
 
-
 void DataStreamMQTT::onComboProtocolChanged(const QString& selected_protocol)
 {
   if (_current_parser_creator)
   {
-    if( auto prev_widget = _current_parser_creator->optionsWidget())
+    if (auto prev_widget = _current_parser_creator->optionsWidget())
     {
       prev_widget->setVisible(false);
     }
@@ -141,37 +139,39 @@ void DataStreamMQTT::onComboProtocolChanged(const QString& selected_protocol)
   }
 }
 
-void DataStreamMQTT::onMessageReceived(const mosquitto_message *message)
+void DataStreamMQTT::onMessageReceived(const mosquitto_message* message)
 {
   std::unique_lock<std::mutex> lk(mutex());
 
   auto it = _parsers.find(message->topic);
-  if( it == _parsers.end() )
+  if (it == _parsers.end())
   {
-    auto& parser_factory = parserFactories()->at( _protocol );
-    auto parser = parser_factory->createParser({message->topic}, {}, {}, dataMap());
-    it = _parsers.insert( {message->topic, parser} ).first;
+    auto& parser_factory = parserFactories()->at(_protocol);
+    auto parser = parser_factory->createParser({ message->topic }, {}, {}, dataMap());
+    it = _parsers.insert({ message->topic, parser }).first;
   }
   auto& parser = it->second;
 
   bool result = false;
-  try {
-    MessageRef msg( static_cast<uint8_t*>(message->payload), message->payloadlen);
+  try
+  {
+    MessageRef msg(static_cast<uint8_t*>(message->payload), message->payloadlen);
 
     using namespace std::chrono;
     auto ts = high_resolution_clock::now().time_since_epoch();
-    double timestamp = 1e-6* double( duration_cast<microseconds>(ts).count() );
+    double timestamp = 1e-6 * double(duration_cast<microseconds>(ts).count());
 
     result = parser->parseMessage(msg, timestamp);
   }
-  catch (std::exception& ) {}
+  catch (std::exception&)
+  {
+  }
 
   emit dataReceived();
 
-  if( !result )
+  if (!result)
   {
     _failed_parsing++;
     emit notificationsChanged(_failed_parsing);
   }
 }
-

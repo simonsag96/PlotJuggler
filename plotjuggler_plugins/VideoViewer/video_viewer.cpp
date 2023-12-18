@@ -7,11 +7,10 @@
 PublisherVideo::PublisherVideo()
 {
   _dialog = new VideoDialog(nullptr);
-  connect(_dialog, &VideoDialog::closed, this, [this]()
-          {
-            setEnabled(false);
-            emit closed();
-          });
+  connect(_dialog, &VideoDialog::closed, this, [this]() {
+    setEnabled(false);
+    emit closed();
+  });
 }
 
 PublisherVideo::~PublisherVideo()
@@ -21,25 +20,25 @@ PublisherVideo::~PublisherVideo()
 
 void PublisherVideo::updateState(double current_time)
 {
-  if(_dialog->isHidden())
+  if (_dialog->isHidden())
   {
     return;
   }
   QString ref_curve = _dialog->referenceCurve();
-  if(ref_curve.isEmpty())
+  if (ref_curve.isEmpty())
   {
     return;
   }
   auto it = _datamap->numeric.find(ref_curve.toStdString());
-  if( it == _datamap->numeric.end() )
+  if (it == _datamap->numeric.end())
   {
     return;
   }
   const auto& data = it->second;
   auto position = data.getYfromX(current_time);
-  if( position )
+  if (position)
   {
-    if( !_dialog->isPaused() )
+    if (!_dialog->isPaused())
     {
       _dialog->pause(true);
     }
@@ -52,31 +51,33 @@ void PublisherVideo::play(double current_time)
   updateState(current_time);
 }
 
-bool PublisherVideo::xmlSaveState(QDomDocument &doc, QDomElement &parent_element) const
+bool PublisherVideo::xmlSaveState(QDomDocument& doc, QDomElement& parent_element) const
 {
   QDomElement config = doc.createElement("config");
   config.setAttribute("video_file", _dialog->ui->lineFilename->text());
   config.setAttribute("curve_name", _dialog->ui->lineEditReference->text());
-  config.setAttribute("use_frame", _dialog->ui->radioButtonFrame->isChecked() ? "true" : "false");
+  config.setAttribute("use_frame",
+                      _dialog->ui->radioButtonFrame->isChecked() ? "true" : "false");
 
   parent_element.appendChild(config);
   return true;
 }
 
-bool PublisherVideo::xmlLoadState(const QDomElement &parent_element)
+bool PublisherVideo::xmlLoadState(const QDomElement& parent_element)
 {
   QDomElement config = parent_element.firstChildElement("config");
-  if( config.isNull() )
+  if (config.isNull())
   {
     return false;
   }
-  _dialog->loadFile( config.attribute("video_file") );
-  _dialog->ui->lineEditReference->setText( config.attribute("curve_name") );
-  if( config.attribute("use_frame") == "true" )
+  _dialog->loadFile(config.attribute("video_file"));
+  _dialog->ui->lineEditReference->setText(config.attribute("curve_name"));
+  if (config.attribute("use_frame") == "true")
   {
     _dialog->ui->radioButtonFrame->setChecked(true);
   }
-  else{
+  else
+  {
     _dialog->ui->radioButtonTime->setChecked(true);
   }
   _xml_loaded = true;
@@ -87,12 +88,12 @@ void PublisherVideo::setEnabled(bool enabled)
 {
   QSettings settings;
   auto ui = _dialog->ui;
-  if(enabled)
+  if (enabled)
   {
-    if( !_xml_loaded )
+    if (!_xml_loaded)
     {
       QString filename = settings.value("VideoDialog::video_file", "").toString();
-      if(filename != ui->lineFilename->text())
+      if (filename != ui->lineFilename->text())
       {
         _dialog->loadFile(filename);
       }

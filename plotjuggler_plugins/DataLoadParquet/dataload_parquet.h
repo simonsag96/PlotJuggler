@@ -38,9 +38,7 @@ public:
 
   virtual bool xmlLoadState(const QDomElement& parent_element) override;
 
-
 private:
-
   Ui::DialogParquet* ui = nullptr;
 
   std::vector<const char*> _extensions;

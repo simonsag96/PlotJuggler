@@ -28,5 +28,4 @@ public:
   {
     return "DataLoad MCAP";
   }
-
 };

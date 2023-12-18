@@ -1,4 +1,4 @@
-name: snap
+name: snap_core20
 on:
   push:
     tags:
@@ -14,23 +14,24 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      snap-file: ${{ steps.build-snap.outputs.snap }}
+      snap-file: ${{ steps.build-snap20.outputs.snap }}
     steps:
     - uses: actions/checkout@v2
       with:
         # full history for latest tag name
         fetch-depth: 0
+    - run: mv snap_core20 snap
     - uses: snapcore/action-build@v1
-      id: build-snap
+      id: build-snap20
 
     # Make sure the snap is installable
     - run: |
-        sudo snap install --dangerous ${{ steps.build-snap.outputs.snap }}
+        sudo snap install --dangerous ${{ steps.build-snap20.outputs.snap }}
 
     - uses: actions/upload-artifact@v3
       with:
-        name: plotjuggler-snap
-        path: ${{ steps.build-snap.outputs.snap }}
+        name: plotjuggler-snap20
+        path: ${{ steps.build-snap20.outputs.snap }}
 
   publish:
     if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
@@ -39,7 +40,7 @@ jobs:
     steps:
     - uses: actions/download-artifact@v3
       with:
-        name: plotjuggler-snap
+        name: plotjuggler-snap20
         path: .
     - uses: snapcore/action-publish@v1
       env:

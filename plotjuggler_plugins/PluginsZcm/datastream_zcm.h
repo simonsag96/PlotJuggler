@@ -36,7 +36,7 @@ public:
 
   virtual bool xmlLoadState(const QDomElement& parent_element) override;
 
-  private slots:
+private slots:
   void on_pushButtonUrl_clicked();
 
 private:
@@ -46,8 +46,7 @@ private:
 
   zcm::Subscription* _subs = nullptr;
 
-  static void processData(const std::string& name,
-                          zcm_field_type_t type,
+  static void processData(const std::string& name, zcm_field_type_t type,
                           const void* data, void* usr);
 
   std::vector<std::pair<std::string, double>> _numerics;

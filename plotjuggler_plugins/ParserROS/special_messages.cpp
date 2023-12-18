@@ -1,4 +1,4 @@
-#include "PlotJuggler/special_messages.h"
+#include "special_messages.h"
 #include <cmath>
 
 PJ::Msg::RPY PJ::Msg::QuaternionToRPY(PJ::Msg::Quaternion q)

@@ -17,30 +17,24 @@ DataLoadParquet::DataLoadParquet()
   ui->setupUi(_dialog);
 
   connect(ui->checkBoxDateFormat, &QCheckBox::toggled, this,
-          [=](bool checked){
-            ui->lineEditDateFormat->setEnabled(checked);
-          });
+          [=](bool checked) { ui->lineEditDateFormat->setEnabled(checked); });
 
   connect(ui->listWidgetSeries, &QListWidget::currentTextChanged, this,
-          [=](QString text) {
-            ui->buttonBox->setEnabled( !text.isEmpty() );
-          });
+          [=](QString text) { ui->buttonBox->setEnabled(!text.isEmpty()); });
 
   connect(ui->listWidgetSeries, &QListWidget::doubleClicked, this,
-          [=](const QModelIndex &) {
-            _dialog->accept();
-          });
+          [=](const QModelIndex&) { _dialog->accept(); });
 
-  connect(ui->radioButtonIndex, &QRadioButton::toggled, this,
-          [=](bool checked) {
-            ui->buttonBox->setEnabled(checked  );
-            ui->listWidgetSeries->setEnabled( !checked );
-          });
+  connect(ui->radioButtonIndex, &QRadioButton::toggled, this, [=](bool checked) {
+    ui->buttonBox->setEnabled(checked);
+    ui->listWidgetSeries->setEnabled(!checked);
+  });
 
   QSettings settings;
 
-  bool radio_index_checked = settings.value("DataLoadParquet::radioIndexChecked", false).toBool();
-  ui->radioButtonIndex->setChecked( radio_index_checked );
+  bool radio_index_checked =
+      settings.value("DataLoadParquet::radioIndexChecked", false).toBool();
+  ui->radioButtonIndex->setChecked(radio_index_checked);
 
   bool parse_date_time = settings.value("DataLoadParquet::parseDateTime", false).toBool();
   ui->checkBoxDateFormat->setChecked(parse_date_time);
@@ -59,19 +53,18 @@ DataLoadParquet::~DataLoadParquet()
 
 const std::vector<const char*>& DataLoadParquet::compatibleFileExtensions() const
 {
-  static std::vector<const char*> extensions = {"parquet"};
+  static std::vector<const char*> extensions = { "parquet" };
   return extensions;
 }
 
-
 bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data)
 {
-  using parquet::Type;
   using parquet::ConvertedType;
+  using parquet::Type;
 
   parquet_reader_ = parquet::ParquetFileReader::OpenFile(info->filename.toStdString());
 
-  if( !parquet_reader_ )
+  if (!parquet_reader_)
   {
     return false;
   }
@@ -82,37 +75,36 @@ bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_
 
   std::vector<parquet::Type::type> column_type;
   std::vector<parquet::ConvertedType::type> converted_column_type;
-  std::vector<bool> valid_column( num_columns, true );
+  std::vector<bool> valid_column(num_columns, true);
 
-  for( size_t col=0; col<num_columns; col++ )
+  for (size_t col = 0; col < num_columns; col++)
   {
-    auto column =  schema->Column(col);
+    auto column = schema->Column(col);
     auto type = column->physical_type();
     auto converted_type = column->converted_type();
 
-    column_type.push_back( type );
-    converted_column_type.push_back( converted_type );
+    column_type.push_back(type);
+    converted_column_type.push_back(converted_type);
 
-    valid_column[col] = (type == Type::BOOLEAN ||
-                         type == Type::INT32 ||
-                         type == Type::INT64 ||
-                         type == Type::FLOAT ||
-                         type == Type::DOUBLE);
+    valid_column[col] =
+        (type == Type::BOOLEAN || type == Type::INT32 || type == Type::INT64 ||
+         type == Type::FLOAT || type == Type::DOUBLE);
 
-    ui->listWidgetSeries->addItem( QString::fromStdString(column->name()) );
+    ui->listWidgetSeries->addItem(QString::fromStdString(column->name()));
   }
 
   {
     QSettings settings;
-    if( _default_time_axis.isEmpty() )
+    if (_default_time_axis.isEmpty())
     {
-      _default_time_axis = settings.value("DataLoadParquet::prevTimestamp", {}).toString();
+      _default_time_axis =
+          settings.value("DataLoadParquet::prevTimestamp", {}).toString();
     }
 
     if (_default_time_axis.isEmpty() == false)
     {
       auto items = ui->listWidgetSeries->findItems(_default_time_axis, Qt::MatchExactly);
-      if( items.size() > 0 )
+      if (items.size() > 0)
       {
         ui->listWidgetSeries->setCurrentItem(items.front());
       }
@@ -127,10 +119,10 @@ bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_
 
   QString selected_stamp;
 
-  if( ui->radioButtonSelect->isChecked() )
+  if (ui->radioButtonSelect->isChecked())
   {
     auto selected = ui->listWidgetSeries->selectedItems();
-    if( selected.size() == 1)
+    if (selected.size() == 1)
     {
       selected_stamp = selected.front()->text();
     }
@@ -138,8 +130,10 @@ bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_
 
   QSettings settings;
   settings.setValue("DataLoadParquet::prevTimestamp", selected_stamp);
-  settings.setValue("DataLoadParquet::radioIndexChecked", ui->radioButtonIndex->isChecked());
-  settings.setValue("DataLoadParquet::parseDateTime", ui->checkBoxDateFormat->isChecked());
+  settings.setValue("DataLoadParquet::radioIndexChecked",
+                    ui->radioButtonIndex->isChecked());
+  settings.setValue("DataLoadParquet::parseDateTime",
+                    ui->checkBoxDateFormat->isChecked());
   settings.setValue("DataLoadParquet::dateFromat", ui->lineEditDateFormat->text());
 
   //-----------------------------
@@ -148,38 +142,38 @@ bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_
 
   std::vector<PlotData*> series(num_columns, nullptr);
 
-  for(size_t col=0; col<num_columns; col++)
+  for (size_t col = 0; col < num_columns; col++)
   {
-    auto column =  schema->Column(col);
+    auto column = schema->Column(col);
     const std::string& name = column->name();
-    if( name == selected_stamp.toStdString() )
+    if (name == selected_stamp.toStdString())
     {
       timestamp_column = col;
     }
-    if( valid_column[col] )
+    if (valid_column[col])
     {
       series[col] = &(plot_data.addNumeric(name)->second);
     }
   }
 
-  parquet::StreamReader os{std::move(parquet_reader_)};
+  parquet::StreamReader os{ std::move(parquet_reader_) };
 
-  std::vector<double> row_values( num_columns, 0.0 );
+  std::vector<double> row_values(num_columns, 0.0);
 
   int row = 0;
-  while ( !os.eof() )
+  while (!os.eof())
   {
     // extract an entire row
-    for(size_t col=0; col<num_columns; col++)
+    for (size_t col = 0; col < num_columns; col++)
     {
-      if( !valid_column[col] )
+      if (!valid_column[col])
       {
         continue;
       }
       auto type = column_type[col];
       auto converted_type = converted_column_type[col];
 
-      switch(type)
+      switch (type)
       {
         case Type::BOOLEAN: {
           bool tmp;
@@ -187,79 +181,69 @@ bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_
           row_values[col] = static_cast<double>(tmp);
           break;
         }
-        case Type::INT32: 
+        case Type::INT32:
         case Type::INT64: {
-          switch(converted_type)
+          switch (converted_type)
           {
-            case ConvertedType::INT_8:
-            {
+            case ConvertedType::INT_8: {
               int8_t tmp;
               os >> tmp;
               row_values[col] = static_cast<double>(tmp);
               break;
             }
-            case ConvertedType::INT_16:
-            {
+            case ConvertedType::INT_16: {
               int16_t tmp;
               os >> tmp;
               row_values[col] = static_cast<double>(tmp);
               break;
             }
-            case ConvertedType::INT_32:
-            {
+            case ConvertedType::INT_32: {
               int32_t tmp;
               os >> tmp;
               row_values[col] = static_cast<double>(tmp);
               break;
             }
-            case ConvertedType::INT_64:
-            {
+            case ConvertedType::INT_64: {
               int64_t tmp;
               os >> tmp;
               row_values[col] = static_cast<double>(tmp);
               break;
             }
-            case ConvertedType::UINT_8:
-            {
+            case ConvertedType::UINT_8: {
               uint8_t tmp;
               os >> tmp;
               row_values[col] = static_cast<double>(tmp);
               break;
             }
-            case ConvertedType::UINT_16:
-            {
+            case ConvertedType::UINT_16: {
               uint16_t tmp;
               os >> tmp;
               row_values[col] = static_cast<double>(tmp);
               break;
             }
-            case ConvertedType::UINT_32:
-            {
+            case ConvertedType::UINT_32: {
               uint32_t tmp;
               os >> tmp;
               row_values[col] = static_cast<double>(tmp);
               break;
             }
-            case ConvertedType::UINT_64:
-            {
+            case ConvertedType::UINT_64: {
               uint64_t tmp;
               os >> tmp;
               row_values[col] = static_cast<double>(tmp);
               break;
             }
             default: {
-              //Fallback in case no converted type is provided
-              switch(type)
+              // Fallback in case no converted type is provided
+              switch (type)
               {
-                case Type::INT32: 
-                {
+                case Type::INT32: {
                   int32_t tmp;
                   os >> tmp;
                   row_values[col] = static_cast<double>(tmp);
                   break;
                 }
-                case Type::INT64:
-                {
+                case Type::INT64: {
                   int64_t tmp;
                   os >> tmp;
                   row_values[col] = static_cast<double>(tmp);
@@ -282,24 +266,24 @@ bool DataLoadParquet::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_
         }
         default: {
         }
-        } // end switch
-    } // end for column
+      }  // end switch
+    }    // end for column
 
     os >> parquet::EndRow;
 
     double timestamp = timestamp_column >= 0 ? row_values[timestamp_column] : row;
     row++;
 
-    for(size_t col=0; col<num_columns; col++)
+    for (size_t col = 0; col < num_columns; col++)
     {
-      if( !valid_column[col] )
+      if (!valid_column[col])
       {
         continue;
       }
 
-      if( valid_column[col] )
+      if (valid_column[col])
       {
-        series[col]->pushBack( {timestamp, row_values[col] });
+        series[col]->pushBack({ timestamp, row_values[col] });
       }
     }
   }
@@ -339,7 +323,7 @@ bool DataLoadParquet::xmlLoadState(const QDomElement& parent_element)
     }
     if (elem.hasAttribute("dateFromat"))
     {
-      ui->lineEditDateFormat->setText( elem.attribute("dateFromat") );
+      ui->lineEditDateFormat->setText(elem.attribute("dateFromat"));
     }
   }
 

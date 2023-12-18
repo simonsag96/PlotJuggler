@@ -8,6 +8,7 @@ add_subdirectory(rosx_introspection)
 include_directories( rosx_introspection/include )
 
 add_library(ParserROS1 SHARED
+    special_messages.cpp
     ros_parser.cpp
     ros1_parser.h )
 
@@ -17,6 +18,7 @@ target_link_libraries(ParserROS1
     plotjuggler_base)
 
 add_library(ParserROS2 SHARED
+    special_messages.cpp
     ros_parser.cpp
     ros2_parser.h )
 

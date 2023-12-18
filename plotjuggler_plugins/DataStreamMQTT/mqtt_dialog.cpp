@@ -8,30 +8,28 @@ void MQTT_Dialog::onConnectionClosed()
   changeConnectionState(false);
   ui->listWidget->clear();
   _topic_list.clear();
-  ui->buttonBox->button( QDialogButtonBox::Ok )->setEnabled( false );
+  ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
   _topic_list_timer->stop();
 }
 
-MQTT_Dialog::MQTT_Dialog(MQTTClient::Ptr mosq_client):
-  QDialog(nullptr),
-  ui(new Ui::DataStreamMQTT),
-  _client(mosq_client)
+MQTT_Dialog::MQTT_Dialog(MQTTClient::Ptr mosq_client)
+  : QDialog(nullptr), ui(new Ui::DataStreamMQTT), _client(mosq_client)
 {
   ui->setupUi(this);
-  ui->lineEditPort->setValidator( new QIntValidator );
+  ui->lineEditPort->setValidator(new QIntValidator);
 
-  ui->buttonBox->button( QDialogButtonBox::Ok )->setEnabled( false );
+  ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
 
-  static QString uuid =  QString("Plotjuggler-") + QString::number(rand());
+  static QString uuid = QString("Plotjuggler-") + QString::number(rand());
 
   QSettings settings;
   restoreGeometry(settings.value("MosquittoMQTT::geometry").toByteArray());
 
   QString host = settings.value("MosquittoMQTT::host").toString();
-  ui->lineEditHost->setText( host );
+  ui->lineEditHost->setText(host);
 
   int port = settings.value("MosquittoMQTT::port", 1883).toInt();
-  ui->lineEditPort->setText( QString::number(port) );
+  ui->lineEditPort->setText(QString::number(port));
 
   int qos = settings.value("MosquittoMQTT::qos", 0).toInt();
   ui->comboBoxQoS->setCurrentIndex(qos);
@@ -40,7 +38,7 @@ MQTT_Dialog::MQTT_Dialog(MQTTClient::Ptr mosq_client):
   ui->comboBoxVersion->setCurrentIndex(protocol_mqtt);
 
   QString topic_filter = settings.value("MosquittoMQTT::filter").toString();
-  ui->lineEditTopicFilter->setText(topic_filter );
+  ui->lineEditTopicFilter->setText(topic_filter);
 
   QString username = settings.value("MosquittoMQTT::username", "").toString();
   ui->lineEditUsername->setText(username);
@@ -48,22 +46,24 @@ MQTT_Dialog::MQTT_Dialog(MQTTClient::Ptr mosq_client):
   QString password = settings.value("MosquittoMQTT::password", "").toString();
   ui->lineEditPassword->setText(password);
 
-  _server_certificate_file = settings.value("MosquittoMQTT::server_certificate", "").toString();
-  if( !_server_certificate_file.isEmpty() )
+  _server_certificate_file =
+      settings.value("MosquittoMQTT::server_certificate", "").toString();
+  if (!_server_certificate_file.isEmpty())
   {
     ui->labelServerCertificate->setText(QFileInfo(_server_certificate_file).fileName());
     ui->buttonEraseServerCertificate->setEnabled(true);
   }
 
-  _client_certificate_file = settings.value("MosquittoMQTT::client_certificate", "").toString();
-  if( !_client_certificate_file.isEmpty() )
+  _client_certificate_file =
+      settings.value("MosquittoMQTT::client_certificate", "").toString();
+  if (!_client_certificate_file.isEmpty())
   {
     ui->labelClientCertificate->setText(QFileInfo(_client_certificate_file).fileName());
     ui->buttonEraseClientCertificate->setEnabled(true);
   }
 
   _private_key_file = settings.value("MosquittoMQTT::private_key", "").toString();
-  if( !_private_key_file.isEmpty() )
+  if (!_private_key_file.isEmpty())
   {
     ui->labelPrivateKey->setText(QFileInfo(_private_key_file).fileName());
     ui->buttonErasePrivateKey->setEnabled(true);
@@ -76,56 +76,50 @@ MQTT_Dialog::MQTT_Dialog(MQTTClient::Ptr mosq_client):
 
   QString theme = settings.value("StyleSheet::theme", "light").toString();
 
-  const QPixmap &icon_pixmap = LoadSvg(":/resources/svg/import.svg", theme);
+  const QPixmap& icon_pixmap = LoadSvg(":/resources/svg/import.svg", theme);
   ui->buttonLoadServerCertificate->setIcon(icon_pixmap);
   ui->buttonLoadClientCertificate->setIcon(icon_pixmap);
   ui->buttonLoadPrivateKey->setIcon(icon_pixmap);
 
-  connect(ui->buttonConnect, &QPushButton::clicked,
-          this, &MQTT_Dialog::onButtonConnect);
+  connect(ui->buttonConnect, &QPushButton::clicked, this, &MQTT_Dialog::onButtonConnect);
 
-  connect(_topic_list_timer, &QTimer::timeout,
-          this, &MQTT_Dialog::onUpdateTopicList);
+  connect(_topic_list_timer, &QTimer::timeout, this, &MQTT_Dialog::onUpdateTopicList);
 
-  connect(ui->listWidget, &QListWidget::itemSelectionChanged,
-          this, &MQTT_Dialog::onSelectionChanged);
+  connect(ui->listWidget, &QListWidget::itemSelectionChanged, this,
+          &MQTT_Dialog::onSelectionChanged);
 
-  connect(ui->buttonLoadServerCertificate, &QPushButton::clicked,
-          this, &MQTT_Dialog::onLoadServerCertificate);
+  connect(ui->buttonLoadServerCertificate, &QPushButton::clicked, this,
+          &MQTT_Dialog::onLoadServerCertificate);
 
-  connect(ui->buttonLoadClientCertificate, &QPushButton::clicked,
-          this, &MQTT_Dialog::onLoadClientCertificate);
+  connect(ui->buttonLoadClientCertificate, &QPushButton::clicked, this,
+          &MQTT_Dialog::onLoadClientCertificate);
 
-  connect(ui->buttonLoadPrivateKey, &QPushButton::clicked,
-          this, &MQTT_Dialog::onLoadPrivateKey);
+  connect(ui->buttonLoadPrivateKey, &QPushButton::clicked, this,
+          &MQTT_Dialog::onLoadPrivateKey);
 
-  connect(ui->buttonEraseServerCertificate, &QPushButton::clicked,
-          this, [this](){
-            ui->buttonEraseServerCertificate->setEnabled(false);
-            ui->labelServerCertificate->setText("");
-            _server_certificate_file.clear();
-          });
+  connect(ui->buttonEraseServerCertificate, &QPushButton::clicked, this, [this]() {
+    ui->buttonEraseServerCertificate->setEnabled(false);
+    ui->labelServerCertificate->setText("");
+    _server_certificate_file.clear();
+  });
 
-  connect(ui->buttonEraseClientCertificate, &QPushButton::clicked,
-          this, [this](){
-            ui->buttonEraseClientCertificate->setEnabled(false);
-            ui->labelClientCertificate->setText("");
-            _client_certificate_file.clear();
-          });
+  connect(ui->buttonEraseClientCertificate, &QPushButton::clicked, this, [this]() {
+    ui->buttonEraseClientCertificate->setEnabled(false);
+    ui->labelClientCertificate->setText("");
+    _client_certificate_file.clear();
+  });
 
-  connect(ui->buttonErasePrivateKey, &QPushButton::clicked,
-          this, [this](){
-            ui->buttonErasePrivateKey->setEnabled(false);
-            ui->labelPrivateKey->setText("");
-            _private_key_file.clear();
-          });
+  connect(ui->buttonErasePrivateKey, &QPushButton::clicked, this, [this]() {
+    ui->buttonErasePrivateKey->setEnabled(false);
+    ui->labelPrivateKey->setText("");
+    _private_key_file.clear();
+  });
 
-  connect(_client.get(), &MQTTClient::disconnected, this,
-          [this]() {
-            onConnectionClosed();
-            QMessageBox::warning(this, "Connection Lost",
-                                 "Client disconnected. Maybe a problem with autentication?");
-          });
+  connect(_client.get(), &MQTTClient::disconnected, this, [this]() {
+    onConnectionClosed();
+    QMessageBox::warning(this, "Connection Lost",
+                         "Client disconnected. Maybe a problem with autentication?");
+  });
 }
 
 void MQTT_Dialog::saveSettings()
@@ -139,9 +133,11 @@ void MQTT_Dialog::saveSettings()
   settings.setValue("MosquittoMQTT::filter", ui->lineEditTopicFilter->text());
   settings.setValue("MosquittoMQTT::username", ui->lineEditPassword->text());
   settings.setValue("MosquittoMQTT::password", ui->lineEditUsername->text());
-  settings.setValue("MosquittoMQTT::protocol_version", ui->comboBoxVersion->currentIndex());
+  settings.setValue("MosquittoMQTT::protocol_version",
+                    ui->comboBoxVersion->currentIndex());
   settings.setValue("MosquittoMQTT::qos", ui->comboBoxQoS->currentIndex());
-  settings.setValue("MosquittoMQTT::serialization_protocol", ui->comboBoxProtocol->currentText());
+  settings.setValue("MosquittoMQTT::serialization_protocol",
+                    ui->comboBoxProtocol->currentText());
   settings.setValue("MosquittoMQTT::server_certificate", _server_certificate_file);
   settings.setValue("MosquittoMQTT::client_certificate", _client_certificate_file);
   settings.setValue("MosquittoMQTT::private_key", _private_key_file);
@@ -150,7 +146,7 @@ void MQTT_Dialog::saveSettings()
 
 MQTT_Dialog::~MQTT_Dialog()
 {
-  while( ui->layoutOptions->count() > 0)
+  while (ui->layoutOptions->count() > 0)
   {
     auto item = ui->layoutOptions->takeAt(0);
     item->widget()->setParent(nullptr);
@@ -163,7 +159,7 @@ MQTT_Dialog::~MQTT_Dialog()
 
 void MQTT_Dialog::onButtonConnect()
 {
-  if( _client->isConnected() )
+  if (_client->isConnected())
   {
     onConnectionClosed();
     return;
@@ -178,16 +174,15 @@ void MQTT_Dialog::onButtonConnect()
   config.username = ui->lineEditUsername->text().toStdString();
   config.password = ui->lineEditPassword->text().toStdString();
   config.qos = ui->comboBoxQoS->currentIndex();
-  config.protocol_version =
-      MQTT_PROTOCOL_V31 + ui->comboBoxVersion->currentIndex();
+  config.protocol_version = MQTT_PROTOCOL_V31 + ui->comboBoxVersion->currentIndex();
 
-  config.keepalive = 60; // TODO
-  config.bind_address = ""; //TODO
-  config.max_inflight = 20; //TODO
-  config.clean_session = true;  //TODO
-  config.eol = true;  //TODO
+  config.keepalive = 60;        // TODO
+  config.bind_address = "";     // TODO
+  config.max_inflight = 20;     // TODO
+  config.clean_session = true;  // TODO
+  config.eol = true;            // TODO
 
-  if( ui->checkBoxSecurity->isChecked() )
+  if (ui->checkBoxSecurity->isChecked())
   {
     config.cafile = _server_certificate_file.toStdString();
     config.certfile = _client_certificate_file.toStdString();
@@ -206,11 +201,11 @@ void MQTT_Dialog::onUpdateTopicList()
   auto topic_list = _client->getTopicList();
 
   bool changed = ui->listWidget->count() != topic_list.size();
-  if( !changed )
+  if (!changed)
   {
-    for(const auto& topic: topic_list)
+    for (const auto& topic : topic_list)
     {
-      if( _topic_list.count(topic) == 0 )
+      if (_topic_list.count(topic) == 0)
       {
         changed = true;
         break;
@@ -218,18 +213,18 @@ void MQTT_Dialog::onUpdateTopicList()
     }
   }
 
-  if( changed )
+  if (changed)
   {
     ui->listWidget->clear();
-    for(const auto& topic: topic_list)
+    for (const auto& topic : topic_list)
     {
-      ui->listWidget->addItem( QString::fromStdString(topic) );
+      ui->listWidget->addItem(QString::fromStdString(topic));
       _topic_list.insert(topic);
     }
     ui->listWidget->sortItems();
   }
 
-  if( _client->isConnected() == false )
+  if (_client->isConnected() == false)
   {
     onConnectionClosed();
   }
@@ -238,13 +233,13 @@ void MQTT_Dialog::onUpdateTopicList()
 void MQTT_Dialog::onSelectionChanged()
 {
   bool selected = ui->listWidget->selectedItems().count() > 0;
-  ui->buttonBox->button( QDialogButtonBox::Ok )->setEnabled( selected );
+  ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(selected);
 }
 
 void MQTT_Dialog::changeConnectionState(bool connected)
 {
   ui->connectionFrame->setEnabled(!connected);
-  ui->buttonConnect->setText( connected ? "Disconnect" : "Connect");
+  ui->buttonConnect->setText(connected ? "Disconnect" : "Connect");
   ui->lineEditTopicFilter->setEnabled(!connected);
   ui->listWidget->setEnabled(connected);
 }
@@ -252,13 +247,13 @@ void MQTT_Dialog::changeConnectionState(bool connected)
 void MQTT_Dialog::onLoadServerCertificate()
 {
   QSettings settings;
-  QString directory = settings.value("MQTT_Dialog.loadDirectory",
-                                     QDir::currentPath()).toString();
+  QString directory =
+      settings.value("MQTT_Dialog.loadDirectory", QDir::currentPath()).toString();
 
-  QString filename = QFileDialog::getOpenFileName(
-      this, "Select Server Certificate", directory,tr("CRT (*.crt)") );
+  QString filename = QFileDialog::getOpenFileName(this, "Select Server Certificate",
+                                                  directory, tr("CRT (*.crt)"));
 
-  if( !filename.isEmpty() )
+  if (!filename.isEmpty())
   {
     _server_certificate_file = filename;
     directory = QFileInfo(filename).absolutePath();
@@ -272,13 +267,13 @@ void MQTT_Dialog::onLoadServerCertificate()
 void MQTT_Dialog::onLoadClientCertificate()
 {
   QSettings settings;
-  QString directory = settings.value("MQTT_Dialog.loadDirectory",
-                                     QDir::currentPath()).toString();
+  QString directory =
+      settings.value("MQTT_Dialog.loadDirectory", QDir::currentPath()).toString();
 
-  QString filename = QFileDialog::getOpenFileName(
-      this, "Select Client Certificate", directory,tr("CRT (*.crt)") );
+  QString filename = QFileDialog::getOpenFileName(this, "Select Client Certificate",
+                                                  directory, tr("CRT (*.crt)"));
 
-  if( !filename.isEmpty() )
+  if (!filename.isEmpty())
   {
     _client_certificate_file = filename;
     directory = QFileInfo(filename).absolutePath();
@@ -292,13 +287,13 @@ void MQTT_Dialog::onLoadClientCertificate()
 void MQTT_Dialog::onLoadPrivateKey()
 {
   QSettings settings;
-  QString directory = settings.value("MQTT_Dialog.loadDirectory",
-                                     QDir::currentPath()).toString();
+  QString directory =
+      settings.value("MQTT_Dialog.loadDirectory", QDir::currentPath()).toString();
 
-  QString filename = QFileDialog::getOpenFileName(
-      this, "Select PrivateKey", directory,tr("Key (*.key)") );
+  QString filename = QFileDialog::getOpenFileName(this, "Select PrivateKey", directory,
+                                                  tr("Key (*.key)"));
 
-  if( !filename.isEmpty() )
+  if (!filename.isEmpty())
   {
     _private_key_file = filename;
     directory = QFileInfo(filename).absolutePath();

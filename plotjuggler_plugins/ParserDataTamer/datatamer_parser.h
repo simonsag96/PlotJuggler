@@ -6,14 +6,13 @@
 #include <QDebug>
 #include <string>
 
-
 class ParserDataTamer : public PJ::ParserFactoryPlugin
 {
   Q_OBJECT
   Q_PLUGIN_METADATA(IID "facontidavide.PlotJuggler3.ParserFactoryPlugin")
   Q_INTERFACES(PJ::ParserFactoryPlugin)
 
-  public:
+public:
   ParserDataTamer() = default;
 
   const char* name() const override
@@ -30,6 +29,3 @@ class ParserDataTamer : public PJ::ParserFactoryPlugin
                                     const std::string& schema,
                                     PJ::PlotDataMapRef& data) override;
 };
-
-
-

@@ -27,8 +27,7 @@ public:
   }
 
   MessageParserPtr createParser(const std::string& topic_name,
-                                const std::string& type_name,
-                                const std::string& schema,
+                                const std::string& type_name, const std::string& schema,
                                 PlotDataMapRef& data) override;
 
   QWidget* optionsWidget() override
@@ -37,7 +36,6 @@ public:
   }
 
 protected:
-
   Ui::ProtobufLoader* ui;
   QWidget* _widget;
 
@@ -49,7 +47,7 @@ protected:
     QString file_path;
     QByteArray proto_text;
     const google::protobuf::FileDescriptor* file_descriptor = nullptr;
-    std::map<QString,const google::protobuf::Descriptor*> descriptors;
+    std::map<QString, const google::protobuf::Descriptor*> descriptors;
   };
   FileInfo _loaded_file;
 
@@ -69,8 +67,7 @@ private slots:
 
   void onRemoveInclude();
 
-  void onComboChanged(const QString &text);
+  void onComboChanged(const QString& text);
 };
 
-
-#endif // PROTOBUF_FACTORY_H
+#endif  // PROTOBUF_FACTORY_H

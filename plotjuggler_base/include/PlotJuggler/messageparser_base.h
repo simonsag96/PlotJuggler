@@ -8,19 +8,14 @@
 
 #include <QtPlugin>
 #include <QApplication>
-#include <array>
-#include <unordered_map>
-#include <unordered_set>
-#include <functional>
 #include <map>
-#include <set>
 #include "PlotJuggler/plotdata.h"
 #include "PlotJuggler/pj_plugin.h"
 
 namespace PJ
 {
 /*
- * A messgaeParser is a clas that is able to convert a message received by
+ * A messageParser is a class that is able to convert a message received by
  * a DataStreamer plugin into data in PlotDataMapRef.
  *
  * - Each data Source has its own instance of MessageParser
@@ -109,6 +104,16 @@ public:
     return _clamp_large_arrays;
   }
 
+  virtual bool useEmbeddedTimestamp() const
+  {
+    return _use_embedded_timestamp;
+  }
+
+  virtual void enableEmbeddedTimestamp(bool enable)
+  {
+    _use_embedded_timestamp = enable;
+  }
+
 protected:
   PlotDataMapRef& _plot_data;
   std::string _topic_name;
@@ -125,6 +130,7 @@ protected:
 private:
   bool _clamp_large_arrays = false;
   unsigned _max_array_size = 10000;
+  bool _use_embedded_timestamp = false;
 };
 
 using MessageParserPtr = std::shared_ptr<MessageParser>;

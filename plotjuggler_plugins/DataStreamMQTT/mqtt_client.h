@@ -10,7 +10,7 @@
 #include <memory>
 #include <QObject>
 
-class MQTTClient: public QObject
+class MQTTClient : public QObject
 {
   Q_OBJECT
 
@@ -26,31 +26,31 @@ public:
 
   bool isConnected() const;
 
-  using TopicCallback = std::function<void(const mosquitto_message *)>;
+  using TopicCallback = std::function<void(const mosquitto_message*)>;
   void addMessageCallback(const std::string& topic, TopicCallback callback);
 
   bool _connected = false;
 
-  void onMessageReceived(const mosquitto_message *message);
+  void onMessageReceived(const mosquitto_message* message);
 
   const MosquittoConfig& config() const;
 
   std::unordered_set<std::string> getTopicList();
 
-  void subscribe(const std::string& topic, int qos );
+  void subscribe(const std::string& topic, int qos);
 
-  void unsubscribe(const std::string& topic );
+  void unsubscribe(const std::string& topic);
 
 signals:
 
   void disconnected();
 
 private:
-  mosquitto *_mosq = nullptr;
+  mosquitto* _mosq = nullptr;
   std::unordered_map<std::string, TopicCallback> _message_callbacks;
   std::unordered_set<std::string> _topics_set;
   std::mutex _mutex;
   MosquittoConfig _config;
 };
 
-#endif // MQTT_CLIENT_H
+#endif  // MQTT_CLIENT_H

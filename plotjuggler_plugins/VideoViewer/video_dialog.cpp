@@ -18,20 +18,21 @@
 #define QOI_IMPLEMENTATION
 #include "qoi.h"
 
-ImageLabel::ImageLabel(QWidget *parent) :
-  QWidget(parent)
+ImageLabel::ImageLabel(QWidget* parent) : QWidget(parent)
 {
 }
 
-const QPixmap* ImageLabel::pixmap() const {
+const QPixmap* ImageLabel::pixmap() const
+{
   return &pix;
 }
 
-void ImageLabel::setPixmap (const QPixmap &pixmap){
+void ImageLabel::setPixmap(const QPixmap& pixmap)
+{
   pix = pixmap;
 }
 
-void ImageLabel::paintEvent(QPaintEvent *event)
+void ImageLabel::paintEvent(QPaintEvent* event)
 {
   QWidget::paintEvent(event);
 
@@ -50,15 +51,12 @@ void ImageLabel::paintEvent(QPaintEvent *event)
   QPoint corner((rect_size.width() - pix_size.width()) / 2,
                 (rect_size.height() - pix_size.height()) / 2);
 
-  QPixmap scaled_pix = pix.scaled(pix_size,
-                                 Qt::KeepAspectRatio,
-                                 Qt::SmoothTransformation);
+  QPixmap scaled_pix =
+      pix.scaled(pix_size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
   painter.drawPixmap(corner, scaled_pix);
 }
 
-VideoDialog::VideoDialog(QWidget *parent) :
-  QDialog(parent),
-  ui(new Ui::VideoDialog)
+VideoDialog::VideoDialog(QWidget* parent) : QDialog(parent), ui(new Ui::VideoDialog)
 {
   using namespace QtAV;
 
@@ -76,8 +74,7 @@ VideoDialog::VideoDialog(QWidget *parent) :
   _media_player->setRenderer(_video_output);
   ui->verticalLayoutMain->addWidget(_video_output->widget(), 1.0);
 
-  connect(_media_player, &AVPlayer::started,
-          this, &VideoDialog::updateSlider);
+  connect(_media_player, &AVPlayer::started, this, &VideoDialog::updateSlider);
 
   ui->lineEditReference->installEventFilter(this);
 
@@ -97,7 +94,7 @@ VideoDialog::~VideoDialog()
 
 bool VideoDialog::loadFile(QString filename)
 {
-  if(!filename.isEmpty() && QFileInfo::exists(filename))
+  if (!filename.isEmpty() && QFileInfo::exists(filename))
   {
     _media_player->play(filename);
     _media_player->pause(true);
@@ -116,7 +113,6 @@ bool VideoDialog::loadFile(QString filename)
   }
   return false;
 }
-
 
 QString VideoDialog::referenceCurve() const
 {
@@ -140,8 +136,8 @@ void VideoDialog::on_loadButton_clicked()
   QString directory_path =
       settings.value("VideoDialog.loadDirectory", QDir::currentPath()).toString();
 
-  QString filename = QFileDialog::getOpenFileName(this, tr("Load Video"),
-                                                  directory_path, tr("(*.*)"));
+  QString filename =
+      QFileDialog::getOpenFileName(this, tr("Load Video"), directory_path, tr("(*.*)"));
   if (!loadFile(filename))
   {
     return;
@@ -156,16 +152,17 @@ void VideoDialog::updateSlider()
   qint64 duration_ms = _media_player->duration();
   int num_frames = static_cast<int>(qreal(duration_ms) * fps / 1000.0);
   ui->timeSlider->setRange(0, num_frames);
-  _media_player->setNotifyInterval( static_cast<int>(1000 / fps) );
+  _media_player->setNotifyInterval(static_cast<int>(1000 / fps));
   _media_player->pause(true);
 
   ui->timeSlider->setEnabled(true);
 
-  if(_media_player->isSeekable() == false || duration_ms == 0)
+  if (_media_player->isSeekable() == false || duration_ms == 0)
   {
     QMessageBox msgBox(this);
     msgBox.setWindowTitle("Video is not seekable");
-    msgBox.setText(tr("Video is not seekable. You will need to decode the video into individual frames.\n"));
+    msgBox.setText(tr("Video is not seekable. You will need to decode the video into "
+                      "individual frames.\n"));
     msgBox.addButton(QMessageBox::Cancel);
     QPushButton* button = msgBox.addButton(tr("Decode!"), QMessageBox::YesRole);
     msgBox.setDefaultButton(button);
@@ -176,7 +173,8 @@ void VideoDialog::updateSlider()
     {
       ui->timeSlider->setEnabled(false);
     }
-    else{
+    else
+    {
       on_decodeButton_clicked();
     }
   }
@@ -186,20 +184,22 @@ void VideoDialog::on_timeSlider_valueChanged(int num)
 {
   double fps = _media_player->statistics().video.frame_rate;
   double period = 1000 / fps;
-  qint64 frame_pos = static_cast<qint64>(qreal(num) * period );
+  qint64 frame_pos = static_cast<qint64>(qreal(num) * period);
 
-  if( _decoded )
+  if (_decoded)
   {
     num = std::max(0, num);
-    num = std::min(int(_compressed_frames.size()-1), num);
+    num = std::min(int(_compressed_frames.size() - 1), num);
 
     auto& frame = _compressed_frames[num];
-    void* data = qoi_decode( frame.data, frame.length, &frame.info, 3);
-    QImage image(static_cast<uchar*>(data), frame.info.width, frame.info.height, QImage::Format_RGB888);
+    void* data = qoi_decode(frame.data, frame.length, &frame.info, 3);
+    QImage image(static_cast<uchar*>(data), frame.info.width, frame.info.height,
+                 QImage::Format_RGB888);
 
-    //qDebug() << "ratio: " << double(3*frame.info.width*frame.info.height) / double(frame.length);
+    // qDebug() << "ratio: " << double(3*frame.info.width*frame.info.height) /
+    // double(frame.length);
 
-    _label->setPixmap( QPixmap::fromImage( image ) );
+    _label->setPixmap(QPixmap::fromImage(image));
     _label->repaint();
     free(data);
   }
@@ -212,20 +212,20 @@ void VideoDialog::on_timeSlider_valueChanged(int num)
 
 void VideoDialog::seekByValue(double value)
 {
-  if( ui->radioButtonFrame->isChecked() )
+  if (ui->radioButtonFrame->isChecked())
   {
     ui->timeSlider->setValue(static_cast<int>(value));
   }
-  else if( ui->radioButtonTime->isChecked() )
+  else if (ui->radioButtonTime->isChecked())
   {
     const auto& fps = _media_player->statistics().video.frame_rate;
-    ui->timeSlider->setValue( static_cast<int>( value * 1000 / fps ));
+    ui->timeSlider->setValue(static_cast<int>(value * 1000 / fps));
   }
 }
 
 bool VideoDialog::eventFilter(QObject* obj, QEvent* ev)
 {
-  if( obj != ui->lineEditReference )
+  if (obj != ui->lineEditReference)
   {
     return false;
   }
@@ -287,10 +287,9 @@ void VideoDialog::on_clearButton_clicked()
   _compressed_frames.clear();
 }
 
-
 void VideoDialog::on_decodeButton_clicked()
 {
-  if( _decoded )
+  if (_decoded)
   {
     return;
   }
@@ -323,12 +322,13 @@ void VideoDialog::on_decodeButton_clicked()
       compressed_frame.info.height = frame.height();
       compressed_frame.info.channels = 3;
       compressed_frame.info.colorspace = QOI_LINEAR;
-      compressed_frame.data = qoi_encode(image.bits(), &compressed_frame.info, &compressed_frame.length);
+      compressed_frame.data =
+          qoi_encode(image.bits(), &compressed_frame.info, &compressed_frame.length);
 
-//      _frames.push_back( std::move(image) );
-      _compressed_frames.push_back( std::move(compressed_frame) );
+      //      _frames.push_back( std::move(image) );
+      _compressed_frames.push_back(std::move(compressed_frame));
 
-      if( ++count % 10 == 0 )
+      if (++count % 10 == 0)
       {
         progress_dialog.setValue(count);
         QApplication::processEvents();
@@ -345,6 +345,6 @@ void VideoDialog::on_decodeButton_clicked()
   _label->setHidden(false);
 
   ui->decodeButton->setEnabled(false);
-  ui->timeSlider->setRange(0, _compressed_frames.size()-1);
-  on_timeSlider_valueChanged( ui->timeSlider->value() );
+  ui->timeSlider->setRange(0, _compressed_frames.size() - 1);
+  on_timeSlider_valueChanged(ui->timeSlider->value());
 }
