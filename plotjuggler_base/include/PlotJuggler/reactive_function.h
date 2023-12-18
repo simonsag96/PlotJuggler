@@ -27,6 +27,8 @@ struct TimeseriesRef
 
   double atTime(double t) const;
 
+  double t_atTime(double t) const;
+
   unsigned size() const;
 
   void clear() const;

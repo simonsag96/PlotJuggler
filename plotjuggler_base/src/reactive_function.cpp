@@ -115,6 +115,7 @@ void ReactiveLuaFunction::prepareLua()
   _timeseries_ref["set"] = &TimeseriesRef::set;
   _timeseries_ref["atTime"] = &TimeseriesRef::atTime;
   _timeseries_ref["clear"] = &TimeseriesRef::clear;
+  _timeseries_ref["t_atTime"] = &TimeseriesRef::t_atTime;
 
   //---------------------------------------
   _created_timeseries = _lua_engine.new_usertype<CreatedSeriesTime>("Timeseries");
@@ -188,6 +189,12 @@ double TimeseriesRef::atTime(double t) const
 {
   int i = _plot_data->getIndexFromX(t);
   return _plot_data->at(i).y;
+}
+
+double TimeseriesRef::t_atTime(double t) const
+{
+  int i = _plot_data->getIndexFromX(t);
+  return _plot_data->at(i).x;
 }
 
 unsigned TimeseriesRef::size() const
