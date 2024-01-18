@@ -2,6 +2,15 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* fix new release dialog
+* Merge branch 'main' of github.com:facontidavide/PlotJuggler
+* new update screen
+* Update README.md
+* fix snap in CI
+* Contributors: Davide Faconti
+
 3.8.7 (2024-01-16)
 ------------------
 * add "prefix and merge" checkbox
