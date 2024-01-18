@@ -1,6 +1,8 @@
 #include "ros_parser.h"
 #include "data_tamer_parser/data_tamer_parser.hpp"
 #include "PlotJuggler/fmt/core.h"
+#include <unordered_map>
+#include <vector>
 
 using namespace PJ;
 using namespace RosMsgParser;
@@ -22,7 +24,8 @@ ParserROS::ParserROS(const std::string& topic_name, const std::string& type_name
       clampLargeArray() ? Parser::KEEP_LARGE_ARRAYS : Parser::DISCARD_LARGE_ARRAYS;
 
   _parser.setMaxArrayPolicy(policy, maxArraySize());
-  _has_header = _parser.getSchema()->root_msg->field(0).type().baseName() == "std_msgs/Header";
+  _has_header = _parser.getSchema()->root_msg->field(0).type().baseName() == "std_msgs/"
+                                                                             "Header";
 
   using std::placeholders::_1;
   using std::placeholders::_2;
@@ -70,15 +73,29 @@ ParserROS::ParserROS(const std::string& topic_name, const std::string& type_name
   {
     _customized_parser = std::bind(&ParserROS::parseTransformStamped, this, _1, _2);
   }
-  else if (Msg::PalStatisticsNames::id() == type_name ||
-           type_name == "plotjuggler_msgs/StatisticsNames")
+  else if (Msg::PalStatisticsNames::id() == type_name || type_name == "plotjuggler_msgs/"
+                                                                      "StatisticsNames")
   {
     _customized_parser = std::bind(&ParserROS::parsePalStatisticsNames, this, _1, _2);
   }
-  else if (Msg::PalStatisticsValues::id() == type_name  ||
-           type_name == "plotjuggler_msgs/StatisticsValues")
+  else if (Msg::PalStatisticsValues::id() == type_name || type_name == "plotjuggler_msgs/"
+                                                                       "StatisticsValues")
   {
     _customized_parser = std::bind(&ParserROS::parsePalStatisticsValues, this, _1, _2);
+  }
+  else if ("tum_msgs/TUMDebugValues" == type_name)
+  {
+    _customized_parser = std::bind(&ParserROS::parseTUMDebugValues, this, _1, _2);
+    _debug_channel_name = topic_name;
+    _debug_channel_name.erase(_debug_channel_name.find("/values"));
+    _debug_config_storage.reset_definition(_debug_channel_name);
+  }
+  else if ("tum_msgs/TUMDebugSignalNames" == type_name)
+  {
+    _customized_parser = std::bind(&ParserROS::parseTUMDebugSignalNames, this, _1, _2);
+    _debug_channel_name = topic_name;
+    _debug_channel_name.erase(_debug_channel_name.find("/signal_names"));
+    _debug_config_storage.reset_definition(_debug_channel_name);
   }
 }
 
@@ -94,16 +111,17 @@ bool ParserROS::parseMessage(const PJ::MessageRef serialized_msg, double& timest
 
   _parser.deserialize(serialized_msg, &_flat_msg, _deserializer.get());
 
-  if(_has_header && this->useEmbeddedTimestamp())
+  if (_has_header && this->useEmbeddedTimestamp())
   {
     double ts = 0;
-    if(_deserializer->isROS2())
+    if (_deserializer->isROS2())
     {
       auto sec = _flat_msg.value[0].second.convert<double>();
       auto nsec = _flat_msg.value[1].second.convert<double>();
-      ts = sec + 1e-9*nsec;
+      ts = sec + 1e-9 * nsec;
     }
-    else {
+    else
+    {
       ts = _flat_msg.value[1].second.convert<RosMsgParser::Time>().toSec();
     }
     timestamp = (ts > 0) ? ts : timestamp;
@@ -171,7 +189,6 @@ void ParserROS::parseHeader(const std::string& prefix, double& timestamp)
     getSeries(prefix + "/header/seq").pushBack({ timestamp, double(header.seq) });
   }
 }
-
 
 void ParserROS::parseVector3(const std::string& prefix, double& timestamp)
 {
@@ -497,14 +514,14 @@ void ParserROS::parseDataTamerSnapshot(const std::string& prefix, double& timest
 }
 
 static std::unordered_map<uint32_t, std::vector<std::string>> _pal_statistics_names;
-
-void ParserROS::parsePalStatisticsNames(const std::string &prefix, double &timestamp)
+// TODO this is essentially the blueprint for the tum debug msgs
+void ParserROS::parsePalStatisticsNames(const std::string& prefix, double& timestamp)
 {
   const auto header = readHeader(timestamp);
   std::vector<std::string> names;
   const size_t vector_size = _deserializer->deserializeUInt32();
   names.resize(vector_size);
-  for(auto& name: names)
+  for (auto& name : names)
   {
     _deserializer->deserializeString(name);
   }
@@ -512,27 +529,97 @@ void ParserROS::parsePalStatisticsNames(const std::string &prefix, double &times
   _pal_statistics_names[names_version] = std::move(names);
 }
 
-void ParserROS::parsePalStatisticsValues(const std::string &prefix, double &timestamp)
+void ParserROS::parsePalStatisticsValues(const std::string& prefix, double& timestamp)
 {
   const auto header = readHeader(timestamp);
   std::vector<double> values;
   const size_t vector_size = _deserializer->deserializeUInt32();
   values.resize(vector_size);
 
-  for(auto& value: values)
+  for (auto& value : values)
   {
     value = _deserializer->deserialize(BuiltinType::FLOAT64).convert<double>();
   }
   uint32_t names_version = _deserializer->deserializeUInt32();
   auto it = _pal_statistics_names.find(names_version);
-  if( it != _pal_statistics_names.end() )
+  if (it != _pal_statistics_names.end())
   {
     const auto& names = it->second;
     const size_t N = std::min(names.size(), values.size());
-    for(size_t i=0; i<N; i++)
+    for (size_t i = 0; i < N; i++)
     {
       auto& series = getSeries(fmt::format("{}/{}", prefix, names[i]));
-      series.pushBack({timestamp, values[i]});
+      series.pushBack({ timestamp, values[i] });
     }
   }
+}
+
+void ParserROS::parseTUMDebugSignalNames(const std::string& _, double& timestamp)
+{
+  // const auto header = readHeader(timestamp);
+  std::vector<std::string> names;
+  const size_t vector_size = _deserializer->deserializeUInt32();
+  names.resize(vector_size);
+  for (auto& name : names)
+  {
+    _deserializer->deserializeString(name);
+  }
+  _debug_config_storage.register_definition(_debug_channel_name, std::move(names));
+}
+
+void ParserROS::parseTUMDebugValues(const std::string& _, double& timestamp)
+{
+  // const auto header = readHeader(timestamp);
+  std::vector<double> values;
+  const size_t vector_size = _deserializer->deserializeUInt32();
+  values.resize(vector_size);
+
+  for (auto& value : values)
+  {
+    value = _deserializer->deserialize(BuiltinType::FLOAT32).convert<double>();
+  }
+
+  if (!_debug_config_storage.has_definition(_debug_channel_name))
+  {
+    _values_buffer.push_back({ timestamp, std::move(values) });
+    return;
+  }
+
+  auto update_pj_series = [this](double timestamp, std::vector<std::string> const& names,
+                                 std::vector<double> const& values) {
+    for (std::size_t i = 0; i < names.size(); ++i)
+    {
+      auto& series = getSeries(fmt::format("{}/{}", _debug_channel_name, names[i]));
+      series.pushBack({ timestamp, values[i] });
+    }
+  };
+
+  if (!_initialized)
+  {
+    _initialized = true;
+    std::cout << "Parsing TUM Debug Values: " << _debug_channel_name << std::endl;
+    for (auto& buffered_value : _values_buffer)
+    {
+      update_pj_series(std::get<0>(buffered_value),
+                       _debug_config_storage.get_definition(_debug_channel_name),
+                       std::get<1>(buffered_value));
+    }
+    _values_buffer.clear();
+  }
+
+  update_pj_series(timestamp, _debug_config_storage.get_definition(_debug_channel_name),
+                   values);
+  // uint32_t names_version = _deserializer->deserializeUInt32();
+  // auto it = _pal_statistics_names.find(names_version);
+  // if (it != _pal_statistics_names.end())
+  // {
+  //   const auto& names = it->second;
+  //   const size_t N = std::min(names.size(), values.size());
+  //   for (size_t i = 0; i < N; i++)
+  //   {
+  //     auto& series = getSeries(fmt::format("{}/{}", prefix, names[i]));
+  //     series.pushBack({ timestamp, values[i] });
+  //   }
+  // }
+  // std::cout << "VALUES" << std::endl;
 }

@@ -5,6 +5,48 @@
 #include "PlotJuggler/messageparser_base.h"
 #include "rosx_introspection/ros_parser.hpp"
 #include "special_messages.h"
+#include <unordered_map>
+#include <utility>
+#include <vector>
+#include <string>
+
+class DebugConfigStorage
+{
+public:
+  static DebugConfigStorage& getInstance()
+  {
+    static DebugConfigStorage instance;
+    return instance;
+  }
+  bool has_definition(std::string debug_topic) const
+  {
+    return debug_definitions_.count(debug_topic) > 0;
+  }
+  void register_definition(std::string debug_topic,
+                           std::vector<std::string>&& debug_signal_names)
+  {
+    debug_definitions_[debug_topic] = std::move(debug_signal_names);
+  }
+  void reset_definition(std::string debug_topic)
+  {
+    if (has_definition(debug_topic))
+    {
+      debug_definitions_.erase(debug_topic);
+    }
+  }
+  std::vector<std::string> const get_definition(std::string debug_topic) const
+  {
+    return debug_definitions_.at(debug_topic);
+  }
+
+private:
+  std::unordered_map<std::string, std::vector<std::string>> debug_definitions_;
+  DebugConfigStorage()
+  {
+  }
+  DebugConfigStorage(DebugConfigStorage const&);
+  void operator=(DebugConfigStorage const&);
+};
 
 class ParserROS : public PJ::MessageParser
 {
@@ -56,9 +98,21 @@ protected:
   void parsePalStatisticsNames(const std::string& prefix, double& timestamp);
   void parsePalStatisticsValues(const std::string& prefix, double& timestamp);
 
+  void parseTUMDebugSignalNames(const std::string& _, double& timestamp);
+  void parseTUMDebugValues(const std::string& _, double& timestamp);
+
+  // Prop
+
   std::function<void(const std::string& prefix, double&)> _customized_parser;
 
   bool _has_header = false;
+
+private:
+  // TUM Debug stuff
+  DebugConfigStorage& _debug_config_storage = DebugConfigStorage::getInstance();
+  std::string _debug_channel_name;
+  std::vector<std::pair<double, std::vector<double>>> _values_buffer;
+  bool _initialized;
 };
 
 template <size_t N>
@@ -74,9 +128,9 @@ inline void ParserROS::parseCovariance(const std::string& prefix, double& timest
     for (int j = i; j < N; j++)
     {
       const size_t index = i * N + j;
-      getSeries(fmt::format("{}[{};{}]", prefix, i, j)).pushBack({ timestamp, cov[index] });
+      getSeries(fmt::format("{}[{};{}]", prefix, i, j))
+          .pushBack({ timestamp, cov[index] });
     }
   }
 }
-
 #endif  // ROS_PARSER_H
