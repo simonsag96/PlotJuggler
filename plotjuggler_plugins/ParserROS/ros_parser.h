@@ -18,23 +18,23 @@ public:
     static DebugConfigStorage instance;
     return instance;
   }
-  bool has_definition(std::string debug_topic) const
+  inline bool has_definition(std::string debug_topic) const
   {
     return debug_definitions_.count(debug_topic) > 0;
   }
-  void register_definition(std::string debug_topic,
-                           std::vector<std::string>&& debug_signal_names)
+  inline void register_definition(std::string debug_topic,
+                                  std::vector<std::string>&& debug_signal_names)
   {
     debug_definitions_[debug_topic] = std::move(debug_signal_names);
   }
-  void reset_definition(std::string debug_topic)
+  inline void reset_definition(std::string debug_topic)
   {
     if (has_definition(debug_topic))
     {
       debug_definitions_.erase(debug_topic);
     }
   }
-  std::vector<std::string> const get_definition(std::string debug_topic) const
+  inline std::vector<std::string> const get_definition(std::string debug_topic) const
   {
     return debug_definitions_.at(debug_topic);
   }
@@ -112,7 +112,8 @@ private:
   DebugConfigStorage& _debug_config_storage = DebugConfigStorage::getInstance();
   std::string _debug_channel_name;
   std::vector<std::pair<double, std::vector<double>>> _values_buffer;
-  bool _initialized;
+  std::vector<PJ::PlotData*> _series_cache;
+  bool _initialized = false;
 };
 
 template <size_t N>

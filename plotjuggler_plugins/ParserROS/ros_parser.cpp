@@ -585,41 +585,30 @@ void ParserROS::parseTUMDebugValues(const std::string& _, double& timestamp)
     return;
   }
 
-  auto update_pj_series = [this](double timestamp, std::vector<std::string> const& names,
-                                 std::vector<double> const& values) {
-    for (std::size_t i = 0; i < names.size(); ++i)
+  auto update_pj_series = [this](double timestamp, std::vector<double> const& values) {
+    for (std::size_t i = 0; i < _series_cache.size(); ++i)
     {
-      auto& series = getSeries(fmt::format("{}/{}", _debug_channel_name, names[i]));
-      series.pushBack({ timestamp, values[i] });
+      _series_cache[i]->pushBack({ timestamp, values[i] });
     }
   };
 
   if (!_initialized)
   {
     _initialized = true;
+    std::vector<std::string> names =
+        _debug_config_storage.get_definition(_debug_channel_name);
+    for (std::size_t i = 0; i < names.size(); ++i)
+    {
+      _series_cache.push_back(
+          &getSeries(fmt::format("{}/{}", _debug_channel_name, names[i])));
+    }
     std::cout << "Parsing TUM Debug Values: " << _debug_channel_name << std::endl;
     for (auto& buffered_value : _values_buffer)
     {
-      update_pj_series(std::get<0>(buffered_value),
-                       _debug_config_storage.get_definition(_debug_channel_name),
-                       std::get<1>(buffered_value));
+      update_pj_series(std::get<0>(buffered_value), std::get<1>(buffered_value));
     }
     _values_buffer.clear();
   }
 
-  update_pj_series(timestamp, _debug_config_storage.get_definition(_debug_channel_name),
-                   values);
-  // uint32_t names_version = _deserializer->deserializeUInt32();
-  // auto it = _pal_statistics_names.find(names_version);
-  // if (it != _pal_statistics_names.end())
-  // {
-  //   const auto& names = it->second;
-  //   const size_t N = std::min(names.size(), values.size());
-  //   for (size_t i = 0; i < N; i++)
-  //   {
-  //     auto& series = getSeries(fmt::format("{}/{}", prefix, names[i]));
-  //     series.pushBack({ timestamp, values[i] });
-  //   }
-  // }
-  // std::cout << "VALUES" << std::endl;
+  update_pj_series(timestamp, values);
 }
