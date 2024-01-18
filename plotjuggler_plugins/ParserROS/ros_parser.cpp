@@ -26,7 +26,7 @@ ParserROS::ParserROS(const std::string& topic_name, const std::string& type_name
 
   using std::placeholders::_1;
   using std::placeholders::_2;
-  if (Msg::DiagnosticStatus::id() == type_name)
+  if (Msg::DiagnosticArray::id() == type_name)
   {
     _customized_parser = std::bind(&ParserROS::parseDiagnosticMsg, this, _1, _2);
   }
