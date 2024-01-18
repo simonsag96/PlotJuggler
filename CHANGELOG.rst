@@ -2,8 +2,8 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.8.8 (2024-01-18)
+------------------
 * fix new release dialog
 * Merge branch 'main' of github.com:facontidavide/PlotJuggler
 * new update screen
