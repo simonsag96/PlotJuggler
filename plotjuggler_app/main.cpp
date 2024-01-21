@@ -13,11 +13,14 @@
 #include <QDesktopWidget>
 #include <QFontDatabase>
 #include <QSettings>
+#include <QPushButton>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QJsonDocument>
 #include <QDir>
+#include <QDialog>
 #include <QUuid>
+#include <QDesktopServices>
 
 #include "PlotJuggler/transform_function.h"
 #include "transforms/first_derivative.h"
@@ -30,6 +33,7 @@
 #include "transforms/absolute_transform.h"
 
 #include "new_release_dialog.h"
+#include "ui_changelog_dialog.h"
 
 #ifdef COMPILED_WITH_CATKIN
 #include <ros/ros.h>
@@ -54,6 +58,27 @@ inline int GetVersionNumber(QString str)
   return major * 10000 + minor * 100 + patch;
 }
 
+void ShowChangelogDialog()
+{
+    QDialog* dialog = new QDialog();
+    auto ui = new Ui::ChangelogDialog();
+    ui->setupUi(dialog);
+
+    QObject::connect(ui->buttonChangelog, &QPushButton::clicked, dialog, [](bool) {
+        QDesktopServices::openUrl(QUrl("https://bit.ly/plotjuggler-update"));
+        QSettings settings;
+        settings.setValue("Changelog/first", false);
+    });
+
+
+    QObject::connect(ui->checkBox, &QCheckBox::toggled, dialog, [](bool toggle) {
+        QSettings settings;
+        settings.setValue("Changelog/dont", toggle);
+    });
+
+    dialog->exec();
+}
+
 void OpenNewReleaseDialog(QNetworkReply* reply)
 {
   if (reply->error())
@@ -75,19 +100,10 @@ void OpenNewReleaseDialog(QNetworkReply* reply)
   int dontshow_number = GetVersionNumber(dont_show);
   int current_number = GetVersionNumber(VERSION_STRING);
 
-  bool rr = settings.value("NewRelease/rickrolled", false).toBool();
-  if(!rr) {
-    url = "https://bit.ly/plotjuggler-update";
-  }
-
   if (online_number > current_number && online_number > dontshow_number)
   {
     NewReleaseDialog* dialog = new NewReleaseDialog(nullptr, tag_name, name, url);
     dialog->exec();
-    if(dialog->link_opened)
-    {
-      settings.setValue("NewRelease/rickrolled", true);
-    }
   }
 }
 
@@ -368,7 +384,7 @@ int main(int argc, char* argv[])
 
   manager.get(request);
 
-  MainWindow* w = nullptr;
+  MainWindow* window = nullptr;
 
   /*
    * You, fearless code reviewer, decided to start a journey into my source code.
@@ -383,8 +399,14 @@ int main(int argc, char* argv[])
    * data. Please don't do it.
    */
 
-  if (!parser.isSet(nosplash_option) &&
-      !(parser.isSet(loadfile_option) || parser.isSet(layout_option)))
+  bool first_changelog = settings.value("Changelog/first", true).toBool();
+  bool dont_changelog = settings.value("Changelog/dont", false).toBool();
+
+  if(first_changelog && !dont_changelog) {
+      ShowChangelogDialog();
+  }
+  else if (!parser.isSet(nosplash_option) &&
+           !(parser.isSet(loadfile_option) || parser.isSet(layout_option)))
   // if(false) // if you uncomment this line, a kitten will die somewhere in the world.
   {
     QPixmap main_pixmap;
@@ -403,6 +425,7 @@ int main(int argc, char* argv[])
     {
       main_pixmap = getFunnySplashscreen();
     }
+
     QSplashScreen splash(main_pixmap, Qt::WindowStaysOnTopHint);
     QDesktopWidget* desktop = QApplication::desktop();
     const int scrn = desktop->screenNumber();
@@ -415,10 +438,10 @@ int main(int argc, char* argv[])
     auto deadline = QDateTime::currentDateTime().addMSecs(500);
     while (QDateTime::currentDateTime() < deadline)
     {
-      app.processEvents();
+        app.processEvents();
     }
 
-    w = new MainWindow(parser);
+    window = new MainWindow(parser);
 
     deadline = QDateTime::currentDateTime().addMSecs(3000);
     while (QDateTime::currentDateTime() < deadline && !splash.isHidden())
@@ -426,16 +449,17 @@ int main(int argc, char* argv[])
       app.processEvents();
     }
   }
-  else
+
+  if(!window)
   {
-    w = new MainWindow(parser);
+    window = new MainWindow(parser);
   }
 
-  w->show();
+  window->show();
 
   if (parser.isSet(start_streamer))
   {
-    w->on_buttonStreamingStart_clicked();
+    window->on_buttonStreamingStart_clicked();
   }
 
   return app.exec();

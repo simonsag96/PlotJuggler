@@ -15,6 +15,7 @@ QT5_WRAP_UI ( UI_SRC
     preferences_dialog.ui
     suggest_dialog.ui
     new_release_dialog.ui
+    changelog_dialog.ui
     multifile_prefix.ui
     colormap_editor.ui
     colormap_selector.ui
@@ -101,7 +102,7 @@ add_executable(plotjuggler
     ${PLOtJUGGLER_SRC}
     ${RES_SRC}
     ${UI_SRC}
-    ${BACKWARD_ENABLE} )
+    ${BACKWARD_ENABLE})
 
 if (NOT WIN32)
     add_backward(plotjuggler)

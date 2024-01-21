@@ -4,10 +4,9 @@ Changelog for package plotjuggler
 
 3.8.8 (2024-01-18)
 ------------------
-* fix new release dialog
-* Merge branch 'main' of github.com:facontidavide/PlotJuggler
 * new update screen
 * Update README.md
+* dig diagnostic messages
 * fix snap in CI
 * Contributors: Davide Faconti
 
