@@ -70,7 +70,7 @@ PlotwidgetEditor::PlotwidgetEditor(PlotWidget* plotwidget, QWidget* parent)
   }
   else if (_plotwidget->curveStyle() == PlotWidgetBase::STEPSINV)
   {
-    ui->radioSteps->setChecked(true);
+    ui->radioStepsInv->setChecked(true);
   }
   else
   {
