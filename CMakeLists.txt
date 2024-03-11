@@ -285,6 +285,8 @@ add_subdirectory( plotjuggler_plugins/ParserDataTamer )
 
 add_subdirectory( plotjuggler_plugins/PluginsZcm )
 
+add_subdirectory( plotjuggler_plugins/plotjuggler_can_plugins )
+
 # Install targets
 
 install(
