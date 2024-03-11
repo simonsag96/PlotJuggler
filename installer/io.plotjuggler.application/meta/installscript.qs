@@ -49,8 +49,8 @@ Component.prototype.createOperations = function()
 			component.addOperation("CreateShortcut", "@TargetDir@/PlotJuggler.exe", "@StartMenuDir@/PlotJuggler.lnk",
 				"workingDirectory=@TargetDir@",	"iconId=0", "description=Launch PlotJuggler");
 			component.addOperation("CreateShortcut", "@TargetDir@/PlotJuggler.exe", "@DesktopDir@/PlotJuggler.lnk",
-				"workingDirectory=@TargetDir@",	"iconId=0", "description=Launch PlotJuggler");                
-		}		
+				"workingDirectory=@TargetDir@",	"iconId=0", "description=Launch PlotJuggler");
+		}
     } catch (e) {
         console.log(e);
     }

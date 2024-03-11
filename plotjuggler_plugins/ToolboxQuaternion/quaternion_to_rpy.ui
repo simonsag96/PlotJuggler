@@ -70,7 +70,7 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
-           <widget class="QFrame" name="frame">
+           <widget class="QFrame" name="frame_1">
             <layout class="QFormLayout" name="formLayout">
              <item row="0" column="0">
               <widget class="QLabel" name="label">

@@ -36,7 +36,7 @@ public:
 
   virtual std::pair<QWidget*, WidgetType> providedWidget() const = 0;
 
-  void setParserFactories( ParserFactories* parsers)
+  void setParserFactories(ParserFactories* parsers)
   {
     _parser_factories = parsers;
   }
@@ -57,8 +57,9 @@ signals:
   void importData(PlotDataMapRef& new_data, bool remove_old);
 
   void closed();
+
 private:
-    ParserFactories* _parser_factories = nullptr;
+  ParserFactories* _parser_factories = nullptr;
 };
 
 using ToolboxPluginPtr = std::shared_ptr<ToolboxPlugin>;

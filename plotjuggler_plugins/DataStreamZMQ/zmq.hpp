@@ -1268,7 +1268,7 @@ constexpr auto seq_size(const C& c) noexcept -> decltype(c.size())
   return c.size();
 }
 template <class T, size_t N>
-constexpr size_t seq_size(const T (&/*array*/)[N]) noexcept
+constexpr size_t seq_size(const T (& /*array*/)[N]) noexcept
 {
   return N;
 }

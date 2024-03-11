@@ -9,4 +9,3 @@ export AMENT_PREFIX_PATH=$SNAP/opt/ros/humble
 export FASTRTPS_DEFAULT_PROFILES_FILE=${SNAP}/usr/share/fastdds_no_shared_memory.xml
 
 ${SNAP}/usr/local/bin/plotjuggler --plugin_folders $PLUGIN_FOLDERS $@
-

@@ -3,12 +3,13 @@ import "math.proto";
 
 package flr.robot;
 
-message RobotState {
-
+message RobotState
+{
   string query = 1;
   int32 page_number = 2;
   int32 result_per_page = 3;
-  enum Corpus {
+  enum Corpus
+  {
     UNIVERSAL = 0;
     WEB = 1;
     IMAGES = 2;
@@ -21,6 +22,5 @@ message RobotState {
   math.Vector pos = 5;
   repeated double joint_positions = 6;
 
-  map <string, int32> sensor_reading = 7;
-
+  map<string, int32> sensor_reading = 7;
 }

@@ -9,14 +9,14 @@
 
 **Gold Sponsor**: [Greenzie](https://www.greenzie.com/)
 
-# PlotJuggler 3.8
+# PlotJuggler 3.9
 
 PlotJuggler is a tool to visualize time series that is **fast**, **powerful** and  **intuitive**.
 
 Noteworthy features:
 
 - Simple Drag & Drop user interface.
-- Load __data from file__. 
+- Load __data from file__.
 - Connect to live __streaming__ of data.
 - Save the visualization layout and configurations to re-use them later.
 - Fast **OpenGL** visualization.
@@ -46,7 +46,7 @@ You can manipulate your time series using a simple and extendable Transform Edit
 ![](docs/function_editor.png)
 
 Alternatively, you may use the Custom Function Editor, which allows you to create Multi-input / Single-output functions
-using a scripting language based on [Lua](https://www.tutorialspoint.com/lua/index.htm). 
+using a scripting language based on [Lua](https://www.tutorialspoint.com/lua/index.htm).
 
 If you are not familiar with Lua, don't be afraid, you won't need more than 5 minutes to learn it ;)
 
@@ -79,7 +79,7 @@ If you want a simple example to learn how to write your own plugins, have a look
 
 ## Snap (recommended in Ubuntu, to ROS users too)
 
-The snap contains a version of PlotJuggler that can work with either ROS1 or ROS2. 
+The snap contains a version of PlotJuggler that can work with either ROS1 or ROS2.
 
 ![Get it from the Snap Store](https://snapcraft.io/static/images/badges/en/snap-store-black.svg)
 
@@ -95,19 +95,16 @@ If you are still using ROS1 (Ubuntu 20.04), install instead:
 sudo snap install plotjuggler-ros
 ```
 
-### Binary installers
+### Windows Binary installer
 
-Note that these installers do __not__ include ROS plugins.
+This installer does __not__ include ROS plugins.
 
-**Linux AppImage** (compatible with Ubuntu 20.04 or later): 
-[PlotJuggler-3.6.0-x86_64.AppImage](https://github.com/facontidavide/PlotJuggler/releases/download/3.6.0/PlotJuggler-3.6.0-x86_64.AppImage)
-
-**Windows Installer**: 
-[PlotJuggler-Windows-3.6.0-installer](https://github.com/facontidavide/PlotJuggler/releases/download/3.6.0/PlotJuggler-Windows-3.6.0-installer.exe)
+**Windows Installer**:
+[PlotJuggler-Windows-3.9.0-installer](https://github.com/facontidavide/PlotJuggler/releases/download/3.9.0/PlotJuggler-Windows-3.9.0-installer.exe)
 
 ### Debian packages for ROS User
 
-Install the ROS packages with: 
+Install the ROS packages with:
 
 ```
 sudo apt install ros-$ROS_DISTRO-plotjuggler-ros
@@ -135,13 +132,13 @@ You can find the detailed instructions here: [COMPILE.md](COMPILE.md).
 
 # Sponsorship and commercial support
 
-PlotJuggler required a lot of work to develop and maintain; my goal is to build the most 
+PlotJuggler required a lot of work to develop and maintain; my goal is to build the most
 intuitive and powerful tool to visualize data and timeseries.
 
-If you find PlotJuggler useful, consider donating [PayPal](https://www.paypal.me/facontidavide) or becoming a 
+If you find PlotJuggler useful, consider donating [PayPal](https://www.paypal.me/facontidavide) or becoming a
 [Github Sponsor](https://github.com/sponsors/facontidavide).
 
-If you need to extend any of the functionalities of PlotJuggler to cover a specific 
+If you need to extend any of the functionalities of PlotJuggler to cover a specific
 need or to parse your custom data formats, you can receive commercial
 support from the main author, [Davide Faconti](mailto:davide.faconti@gmail.com).
 

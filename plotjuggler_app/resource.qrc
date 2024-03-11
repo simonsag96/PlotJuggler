@@ -105,6 +105,11 @@
         <file>resources/memes/meme_87.jpg</file>
         <file>resources/memes/meme_88.jpg</file>
         <file>resources/memes/meme_89.jpg</file>
+        <file>resources/memes/meme_90.jpg</file>
+        <file>resources/memes/meme_91.jpg</file>
+        <file>resources/memes/meme_92.jpg</file>
+        <file>resources/memes/meme_93.jpg</file>
+        <file>resources/memes/meme_94.jpg</file>
         <file>resources/office_chart_line_stacked.png</file>
         <file>resources/plotjuggler.svg</file>
         <file>resources/skin/about_window_body.html</file>
@@ -145,6 +150,7 @@
         <file>resources/svg/point_chart.svg</file>
         <file>resources/svg/ratio.svg</file>
         <file>resources/svg/red_circle.svg</file>
+        <file>resources/svg/reload.svg</file>
         <file>resources/svg/remove_list.svg</file>
         <file>resources/svg/remove_red.svg</file>
         <file>resources/svg/right-arrow.svg</file>

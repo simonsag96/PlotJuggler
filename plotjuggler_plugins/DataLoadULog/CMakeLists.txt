@@ -23,4 +23,3 @@ target_link_libraries(DataLoadULog
     plotjuggler_base)
 
 install(TARGETS DataLoadULog DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY}  )
-

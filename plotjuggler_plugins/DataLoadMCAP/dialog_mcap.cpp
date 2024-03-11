@@ -10,6 +10,7 @@ const QString DialogMCAP::prefix = "DialogLoadMCAP::";
 
 DialogMCAP::DialogMCAP(const std::unordered_map<int, mcap::ChannelPtr>& channels,
                        const std::unordered_map<int, mcap::SchemaPtr>& schemas,
+                       std::optional<mcap::LoadParams> default_parameters,
                        QWidget* parent)
   : QDialog(parent), ui(new Ui::dialog_mcap)
 {
@@ -24,14 +25,22 @@ DialogMCAP::DialogMCAP(const std::unordered_map<int, mcap::ChannelPtr>& channels
   ui->tableWidget->setRowCount(channels.size());
 
   QSettings settings;
-
   restoreGeometry(settings.value(prefix + "geometry").toByteArray());
-  auto selected = settings.value(prefix + "selected").toStringList();
-  bool clamp_checked = settings.value(prefix + "clamp", true).toBool();
-  int max_array = settings.value(prefix + "max_array", 500).toInt();
-  bool use_timestamp = settings.value(prefix + "use_timestamp", false).toBool();
 
-  if (clamp_checked)
+  mcap::LoadParams params;
+  if (!default_parameters)
+  {
+    params.selected_topics = settings.value(prefix + "selected").toStringList();
+    params.clamp_large_arrays = settings.value(prefix + "clamp", true).toBool();
+    params.max_array_size = settings.value(prefix + "max_array", 500).toInt();
+    params.use_timestamp = settings.value(prefix + "use_timestamp", false).toBool();
+  }
+  else
+  {
+    params = *default_parameters;
+  }
+
+  if (params.clamp_large_arrays)
   {
     ui->radioClamp->setChecked(true);
   }
@@ -39,8 +48,8 @@ DialogMCAP::DialogMCAP(const std::unordered_map<int, mcap::ChannelPtr>& channels
   {
     ui->radioSkip->setChecked(true);
   }
-  ui->spinBox->setValue(max_array);
-  ui->checkBoxUseTimestamp->setChecked(use_timestamp);
+  ui->spinBox->setValue(params.max_array_size);
+  ui->checkBoxUseTimestamp->setChecked(params.use_timestamp);
 
   int row = 0;
   for (const auto& [id, channel] : channels)
@@ -54,13 +63,13 @@ DialogMCAP::DialogMCAP(const std::unordered_map<int, mcap::ChannelPtr>& channels
     ui->tableWidget->setItem(
         row, 2, new QTableWidgetItem(QString::fromStdString(schema->encoding)));
 
-    if (selected.contains(topic))
+    if (params.selected_topics.contains(topic))
     {
       ui->tableWidget->selectRow(row);
     }
     row++;
   }
-  ui->tableWidget->sortByColumn(0);
+  ui->tableWidget->sortByColumn(0, Qt::SortOrder::DescendingOrder);
 }
 
 DialogMCAP::~DialogMCAP()
@@ -68,9 +77,9 @@ DialogMCAP::~DialogMCAP()
   delete ui;
 }
 
-DialogMCAP::Params DialogMCAP::getParams() const
+mcap::LoadParams DialogMCAP::getParams() const
 {
-  Params params;
+  mcap::LoadParams params;
   params.max_array_size = ui->spinBox->value();
   params.clamp_large_arrays = ui->radioClamp->isChecked();
   params.use_timestamp = ui->checkBoxUseTimestamp->isChecked();

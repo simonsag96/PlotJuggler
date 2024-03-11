@@ -8,17 +8,17 @@ class PlotPanner : public QwtPlotPanner
   Q_OBJECT
 
 public:
-  explicit PlotPanner( QWidget* canvas): QwtPlotPanner(canvas){}
+  explicit PlotPanner(QWidget* canvas) : QwtPlotPanner(canvas)
+  {
+  }
 
 public Q_SLOTS:
-  void moveCanvas( int dx, int dy ) override;
+  void moveCanvas(int dx, int dy) override;
 
 signals:
   void rescaled(QRectF new_size);
 
 private:
-
 };
 
-
-#endif // PLOTPANNER_H
+#endif  // PLOTPANNER_H

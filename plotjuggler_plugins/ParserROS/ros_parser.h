@@ -1,7 +1,7 @@
 #ifndef ROS_PARSER_H
 #define ROS_PARSER_H
 
-#include "PlotJuggler/fmt/core.h"
+#include "PlotJuggler/contrib/fmt/core.h"
 #include "PlotJuggler/messageparser_base.h"
 #include "rosx_introspection/ros_parser.hpp"
 #include "special_messages.h"
@@ -59,14 +59,20 @@ public:
 
   void setLargeArraysPolicy(bool clamp, unsigned max_size) override;
 
+  void enableTruncationCheck(bool enable)
+  {
+    _strict_truncation_check = enable;
+  }
+
 protected:
   RosMsgParser::Parser _parser;
-  std::shared_ptr<RosMsgParser::Deserializer> _deserializer;
+  std::unique_ptr<RosMsgParser::Deserializer> _deserializer;
   RosMsgParser::FlatMessage _flat_msg;
   std::string _topic;
 
   PJ::Msg::Header readHeader(double& timestamp);
   void parseHeader(const std::string& prefix, double& timestamp);
+  void parseEmpty(const std::string& prefix, double& timestamp);
 
   template <size_t N>
   void parseCovariance(const std::string& prefix, double& timestamp);
@@ -106,6 +112,7 @@ protected:
   std::function<void(const std::string& prefix, double&)> _customized_parser;
 
   bool _has_header = false;
+  bool _strict_truncation_check = true;
 
 private:
   // TUM Debug stuff
@@ -129,7 +136,7 @@ inline void ParserROS::parseCovariance(const std::string& prefix, double& timest
     for (int j = i; j < N; j++)
     {
       const size_t index = i * N + j;
-      getSeries(fmt::format("{}[{};{}]", prefix, i, j))
+      getSeries(fmt::format("{}/[{};{}]", prefix, i, j))
           .pushBack({ timestamp, cov[index] });
     }
   }

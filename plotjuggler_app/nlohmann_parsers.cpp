@@ -6,7 +6,7 @@
 
 #include "nlohmann_parsers.h"
 
-#include "PlotJuggler/fmt/format.h"
+#include "PlotJuggler/contrib/fmt/format.h"
 
 bool NlohmannParser::parseMessageImpl(double& timestamp)
 {

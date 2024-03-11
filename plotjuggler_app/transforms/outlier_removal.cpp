@@ -36,6 +36,10 @@ bool OutlierRemovalFilter::xmlSaveState(QDomDocument& doc,
 bool OutlierRemovalFilter::xmlLoadState(const QDomElement& parent_element)
 {
   QDomElement widget_el = parent_element.firstChildElement("options");
+  if (widget_el.isNull())
+  {
+    return false;
+  }
   ui->spinBoxFactor->setValue(widget_el.attribute("value", "100.0").toDouble());
   return true;
 }

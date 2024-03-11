@@ -44,8 +44,7 @@ public:
   }
 
   template <typename T>
-  explicit MessageRef(const std::vector<T>& vect)
-    : MessageRef(vect.data(), vect.size())
+  explicit MessageRef(const std::vector<T>& vect) : MessageRef(vect.data(), vect.size())
   {
   }
 
@@ -54,7 +53,7 @@ public:
     return _ptr;
   }
 
-  uint8_t* data() // this is bad and will be removed
+  uint8_t* data()  // this is bad and will be removed
   {
     return const_cast<uint8_t*>(_ptr);
   }
@@ -127,6 +126,7 @@ protected:
   {
     return _plot_data.getOrCreateStringSeries(key);
   }
+
 private:
   bool _clamp_large_arrays = false;
   unsigned _max_array_size = 10000;
@@ -155,7 +155,6 @@ public:
 };
 
 using ParserFactories = std::map<QString, std::shared_ptr<ParserFactoryPlugin>>;
-
 
 }  // namespace PJ
 

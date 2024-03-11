@@ -53,7 +53,7 @@ jobs:
               libprotoc-dev \
               libzmq3-dev \
               liblz4-dev libzstd-dev
-              
+
     - name: Build Plotjuggler
       run: |
           cmake -B build -DCMAKE_INSTALL_PREFIX=install PlotJuggler;

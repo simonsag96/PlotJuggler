@@ -23,6 +23,7 @@ public:
   ~NewReleaseDialog();
 
   bool link_opened = false;
+
 private:
   Ui::NewReleaseDialog* ui;
 };

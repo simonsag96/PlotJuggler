@@ -7,11 +7,10 @@ RUN mkdir -p /opt/plotjuggler
 COPY . /opt/plotjuggler
 RUN mkdir /opt/plotjuggler/build
 WORKDIR /opt/plotjuggler/build
-RUN cmake .. -DCMAKE_INSTALL_PREFIX=/usr 
+RUN cmake .. -DCMAKE_INSTALL_PREFIX=/usr
 RUN make -j `nproc`
 RUN make install DESTDIR=AppDir
 RUN /opt/plotjuggler/appimage/AppImage.sh
 
 FROM scratch as exporter
 COPY --from=builder /opt/plotjuggler/build/PlotJuggler-x86_64.AppImage /
-

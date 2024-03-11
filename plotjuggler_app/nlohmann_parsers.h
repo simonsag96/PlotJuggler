@@ -116,12 +116,11 @@ public:
   }
 
   template <typename ParserT>
-  MessageParserPtr createParserImpl(const std::string& topic_name,
-                                    PlotDataMapRef& data)
+  MessageParserPtr createParserImpl(const std::string& topic_name, PlotDataMapRef& data)
   {
     std::string timestamp_name = _checkbox_use_timestamp->lineedit->text().toStdString();
     return std::make_shared<ParserT>(
-      topic_name, data, _checkbox_use_timestamp->isChecked(), timestamp_name);
+        topic_name, data, _checkbox_use_timestamp->isChecked(), timestamp_name);
   }
 
   virtual QWidget* optionsWidget()
@@ -156,10 +155,8 @@ public:
 class CBOR_ParserFactory : public NlohmannParserCreator
 {
 public:
-  MessageParserPtr createParser(const std::string& topic_name,
-                                const std::string&,
-                                const std::string&,
-                                PlotDataMapRef& data) override
+  MessageParserPtr createParser(const std::string& topic_name, const std::string&,
+                                const std::string&, PlotDataMapRef& data) override
   {
     return createParserImpl<CBOR_Parser>(topic_name, data);
   }
@@ -176,10 +173,8 @@ public:
 class BSON_ParserFactory : public NlohmannParserCreator
 {
 public:
-  MessageParserPtr createParser(const std::string& topic_name,
-                                const std::string&,
-                                const std::string&,
-                                PlotDataMapRef& data) override
+  MessageParserPtr createParser(const std::string& topic_name, const std::string&,
+                                const std::string&, PlotDataMapRef& data) override
   {
     return createParserImpl<BSON_Parser>(topic_name, data);
   }
@@ -196,10 +191,8 @@ public:
 class MessagePack_ParserFactory : public NlohmannParserCreator
 {
 public:
-  MessageParserPtr createParser(const std::string& topic_name,
-                                const std::string& ,
-                                const std::string& ,
-                                PlotDataMapRef& data) override
+  MessageParserPtr createParser(const std::string& topic_name, const std::string&,
+                                const std::string&, PlotDataMapRef& data) override
   {
     return createParserImpl<MessagePack_Parser>(topic_name, data);
   }

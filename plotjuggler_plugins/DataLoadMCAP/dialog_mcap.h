@@ -4,6 +4,7 @@
 #include <QDialog>
 
 #include "mcap/reader.hpp"
+#include "dataload_params.h"
 
 namespace Ui
 {
@@ -15,20 +16,13 @@ class DialogMCAP : public QDialog
   Q_OBJECT
 
 public:
-  struct Params
-  {
-    QStringList selected_topics;
-    unsigned max_array_size;
-    bool clamp_large_arrays;
-    bool use_timestamp = false;
-  };
-
   explicit DialogMCAP(const std::unordered_map<int, mcap::ChannelPtr>& channels,
                       const std::unordered_map<int, mcap::SchemaPtr>& schemas,
+                      std::optional<mcap::LoadParams> default_parameters,
                       QWidget* parent = nullptr);
   ~DialogMCAP();
 
-  Params getParams() const;
+  mcap::LoadParams getParams() const;
 
 private slots:
   void on_tableWidget_itemSelectionChanged();

@@ -18,7 +18,15 @@ public:
 
   ~ScaleTransform() override;
 
-  const char* name() const override;
+  static const char* transformName()
+  {
+    return "Scale/Offset";
+  }
+
+  const char* name() const override
+  {
+    return ScaleTransform::transformName();
+  }
 
   QWidget* optionsWidget() override;
 

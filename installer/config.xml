@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Installer>
   <Name>PlotJuggler</Name>
-  <Version>3.6.0</Version>
+  <Version>3.9.0</Version>
   <Title>PlotJuggler installer</Title>
   <Publisher>Davide Faconti</Publisher>
   <StartMenuDir>PlotJuggler</StartMenuDir>
@@ -9,4 +9,3 @@
   <DependsOnLocalInstallerBinary>true</DependsOnLocalInstallerBinary>
   <RunProgram>@TargetDir@/PlotJuggler</RunProgram>
 </Installer>
-

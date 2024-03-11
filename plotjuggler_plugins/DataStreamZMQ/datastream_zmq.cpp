@@ -73,6 +73,31 @@ bool DataStreamZMQ::start(QStringList*)
   QString address = settings.value("ZMQ_Subscriber::address", "localhost").toString();
   QString protocol = settings.value("ZMQ_Subscriber::protocol", "JSON").toString();
   QString topics = settings.value("ZMQ_Subscriber::topics", "").toString();
+  bool is_connect = settings.value("ZMQ_Subscriber::is_connect", true).toBool();
+
+  QString previous_address = address;
+
+  connect(dialog->ui->radioConnect, &QRadioButton::toggled, dialog, [&](bool toggled) {
+    dialog->ui->lineEditAddress->setEnabled(toggled);
+    if (toggled)
+    {
+      dialog->ui->lineEditAddress->setText(previous_address);
+    }
+    else
+    {
+      previous_address = dialog->ui->lineEditAddress->text();
+      dialog->ui->lineEditAddress->setText("*");
+    }
+  });
+
+  if (is_connect)
+  {
+    dialog->ui->radioConnect->setChecked(true);
+  }
+  else
+  {
+    dialog->ui->radioBind->setChecked(true);
+  }
 
   int port = settings.value("ZMQ_Subscriber::port", 9872).toInt();
 
@@ -113,6 +138,7 @@ bool DataStreamZMQ::start(QStringList*)
   port = dialog->ui->lineEditPort->text().toUShort(&ok);
   protocol = dialog->ui->comboBoxProtocol->currentText();
   topics = dialog->ui->lineEditTopics->text();
+  is_connect = dialog->ui->radioConnect->isChecked();
 
   _parser = parser_creator->createParser({}, {}, {}, dataMap());
 
@@ -121,12 +147,19 @@ bool DataStreamZMQ::start(QStringList*)
   settings.setValue("ZMQ_Subscriber::protocol", protocol);
   settings.setValue("ZMQ_Subscriber::port", port);
   settings.setValue("ZMQ_Subscriber::topics", topics);
+  settings.setValue("ZMQ_Subscriber::is_connect", is_connect);
 
-  _socket_address =
-      (dialog->ui->comboBox->currentText() + address + ":" + QString::number(port))
-          .toStdString();
-
-  _zmq_socket.connect(_socket_address.c_str());
+  QString addr =
+      dialog->ui->comboBox->currentText() + address + ":" + QString::number(port);
+  _socket_address = addr.toStdString();
+  if (is_connect)
+  {
+    _zmq_socket.connect(_socket_address.c_str());
+  }
+  else
+  {
+    _zmq_socket.bind(_socket_address.c_str());
+  }
 
   parseTopicFilters(topics);
   subscribeTopics();

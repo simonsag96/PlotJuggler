@@ -1,9 +1,9 @@
 if(BUILDING_WITH_VCPKG)
     message(STATUS "Finding Parquet with vcpkg")
-    set(PARQUET_LIBRARIES 
-        re2::re2 
-        arrow_shared 
-        parquet_shared 
+    set(PARQUET_LIBRARIES
+        re2::re2
+        arrow_shared
+        parquet_shared
         arrow_bundled_dependencies)
 
     find_package(arrow CONFIG QUIET)
@@ -44,5 +44,3 @@ if(Arrow_FOUND)
 else()
     message("[Parquet] not found. Skipping plugin DataLoadParquet.")
 endif()
-
-

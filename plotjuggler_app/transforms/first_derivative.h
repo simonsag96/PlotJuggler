@@ -14,9 +14,14 @@ public:
 
   ~FirstDerivative() override;
 
-  const char* name() const override
+  static const char* transformName()
   {
     return "Derivative";
+  }
+
+  const char* name() const override
+  {
+    return FirstDerivative::transformName();
   }
 
   QWidget* optionsWidget() override;

@@ -1,6 +1,5 @@
 #include "moving_average_filter.h"
 #include "ui_moving_average_filter.h"
-#include <numeric>
 #include <QCheckBox>
 
 MovingAverageFilter::MovingAverageFilter()
@@ -84,6 +83,11 @@ bool MovingAverageFilter::xmlSaveState(QDomDocument& doc,
 bool MovingAverageFilter::xmlLoadState(const QDomElement& parent_element)
 {
   QDomElement widget_el = parent_element.firstChildElement("options");
+  if (widget_el.isNull())
+  {
+    return false;
+  }
+
   ui->spinBoxSamples->setValue(widget_el.attribute("value").toInt());
   bool checked = widget_el.attribute("compensate_offset") == "true";
   ui->checkBoxTimeOffset->setChecked(checked);

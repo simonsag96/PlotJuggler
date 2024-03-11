@@ -1,11 +1,14 @@
 #include "scale_transform.h"
+#include <QDoubleValidator>
 #include "ui_scale_transform.h"
 
 ScaleTransform::ScaleTransform() : _widget(new QWidget()), ui(new Ui::ScaleTransform)
 {
   ui->setupUi(_widget);
 
-  //  ui->lineEditValue->setValidator( new QDoubleValidator() );
+  ui->lineEditTimeOffset->setValidator(new QDoubleValidator());
+  ui->lineEditValueOffset->setValidator(new QDoubleValidator());
+  ui->lineEditValueScale->setValidator(new QDoubleValidator());
 
   connect(ui->buttonDegRad, &QPushButton::clicked, this, [=]() {
     const double deg_rad = 3.14159265359 / 180;
@@ -33,11 +36,6 @@ ScaleTransform::~ScaleTransform()
   delete _widget;
 }
 
-const char* ScaleTransform::name() const
-{
-  return "Scale/Offset";
-}
-
 QWidget* ScaleTransform::optionsWidget()
 {
   return _widget;
@@ -57,6 +55,10 @@ bool ScaleTransform::xmlSaveState(QDomDocument& doc, QDomElement& parent_element
 bool ScaleTransform::xmlLoadState(const QDomElement& parent_element)
 {
   QDomElement widget_el = parent_element.firstChildElement("options");
+  if (widget_el.isNull())
+  {
+    return false;
+  }
   ui->lineEditTimeOffset->setText(widget_el.attribute("time_offset"));
   ui->lineEditValueOffset->setText(widget_el.attribute("value_offset"));
   ui->lineEditValueScale->setText(widget_el.attribute("value_scale"));

@@ -48,7 +48,7 @@ std::optional<PlotData::Point> MovingVarianceFilter::calculateNextPoint(size_t i
   }
 
   double total = 0;
-  for (const auto& point: _ring_view)
+  for (const auto& point : _ring_view)
   {
     total += point.y;
   }
@@ -56,17 +56,17 @@ std::optional<PlotData::Point> MovingVarianceFilter::calculateNextPoint(size_t i
   const double avg = total / N;
 
   double total_sqr = 0;
-  for (const auto& point: _ring_view)
+  for (const auto& point : _ring_view)
   {
     const auto v = point.y - avg;
-    total_sqr += v*v;
+    total_sqr += v * v;
   }
 
-  if(ui->checkBoxStdDev->isChecked())
+  if (ui->checkBoxStdDev->isChecked())
   {
-    return PlotData::Point{ p.x, std::sqrt(total_sqr / N)};
+    return PlotData::Point{ p.x, std::sqrt(total_sqr / N) };
   }
-  return PlotData::Point{ p.x, total_sqr / N};
+  return PlotData::Point{ p.x, total_sqr / N };
 }
 
 QWidget* MovingVarianceFilter::optionsWidget()
@@ -75,9 +75,13 @@ QWidget* MovingVarianceFilter::optionsWidget()
 }
 
 bool MovingVarianceFilter::xmlSaveState(QDomDocument& doc,
-                                       QDomElement& parent_element) const
+                                        QDomElement& parent_element) const
 {
   QDomElement widget_el = doc.createElement("options");
+  if (widget_el.isNull())
+  {
+    return false;
+  }
   widget_el.setAttribute("value", ui->spinBoxSamples->value());
   widget_el.setAttribute("apply_sqrt",
                          ui->checkBoxStdDev->isChecked() ? "true" : "false");

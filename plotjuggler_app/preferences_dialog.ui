@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>611</width>
-    <height>506</height>
+    <width>545</width>
+    <height>509</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -219,7 +219,7 @@
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>40</height>
+           <height>0</height>
           </size>
          </property>
          <property name="title">
@@ -268,7 +268,7 @@
        <item>
         <widget class="QGroupBox" name="groupBox">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -278,7 +278,7 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <property name="spacing">
-           <number>0</number>
+           <number>7</number>
           </property>
           <item>
            <widget class="QRadioButton" name="radioGlobalColorIndex">
@@ -301,6 +301,28 @@
            <widget class="QCheckBox" name="checkBoxRememberColor">
             <property name="text">
              <string>remember color</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="title">
+          <string>Parsing</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_9">
+          <item>
+           <widget class="QCheckBox" name="checkBoxTruncation">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;PlotJuggler uses double (64bits) internally.&lt;/p&gt;&lt;p&gt;This means that integer numbers with more than 52 significant bits &lt;span style=&quot; font-weight:700;&quot;&gt;can not be represented&lt;/span&gt; exactly.&lt;/p&gt;&lt;p&gt;Disabling this check, you allow static type convertion and accept some degree of  numerical errors. &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+            <property name="text">
+             <string>Strict Truncation check (uncheck at your own risk)</string>
             </property>
             <property name="checked">
              <bool>true</bool>

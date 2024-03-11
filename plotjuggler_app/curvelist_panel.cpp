@@ -557,8 +557,18 @@ void CurveListPanel::on_pushButtonTrash_clicked(bool)
                     "[Delete All]: remove timeseries and plots.\n"
                     "[Delete Points]: reset data points, but keep plots and "
                     "timeseries.\n"));
-  QPushButton* buttonAll = msgBox.addButton(tr("Delete All"), QMessageBox::NoRole);
-  QPushButton* buttonPoints = msgBox.addButton(tr("Delete Points"), QMessageBox::NoRole);
+
+  QSettings settings;
+  QString theme = settings.value("StyleSheet::theme", "light").toString();
+
+  QPushButton* buttonAll =
+      msgBox.addButton(tr("Delete All"), QMessageBox::DestructiveRole);
+  buttonAll->setIcon(LoadSvg(":/resources/svg/clear.svg"));
+
+  QPushButton* buttonPoints =
+      msgBox.addButton(tr("Delete Points"), QMessageBox::DestructiveRole);
+  buttonPoints->setIcon(LoadSvg(":/resources/svg/point_chart.svg"));
+
   msgBox.addButton(QMessageBox::Cancel);
   msgBox.setDefaultButton(QMessageBox::Cancel);
 
@@ -566,10 +576,10 @@ void CurveListPanel::on_pushButtonTrash_clicked(bool)
 
   if (msgBox.clickedButton() == buttonAll)
   {
-    requestDeleteAll(1);
+    emit requestDeleteAll(1);
   }
   else if (msgBox.clickedButton() == buttonPoints)
   {
-    requestDeleteAll(2);
+    emit requestDeleteAll(2);
   }
 }

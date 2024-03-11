@@ -14,9 +14,14 @@ public:
 
   ~IntegralTransform() override;
 
-  const char* name() const override
+  static const char* transformName()
   {
     return "Integral";
+  }
+
+  const char* name() const override
+  {
+    return transformName();
   }
 
   QWidget* optionsWidget() override;

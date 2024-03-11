@@ -23,4 +23,3 @@ target_link_libraries(DataLoadCSV
 
 
 install(TARGETS DataLoadCSV DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY}  )
-

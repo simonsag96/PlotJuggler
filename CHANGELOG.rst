@@ -2,6 +2,47 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.9.1 (2024-02-20)
+------------------
+* embed zstd 1.5.5
+* updated lz4 1.9.4
+* PlotJuggler with Fast-CDR-2.x.x (`#932 <https://github.com/facontidavide/PlotJuggler/issues/932>`_)
+* fix ROS2 parser bug
+* fix `#935 <https://github.com/facontidavide/PlotJuggler/issues/935>`_ and `#934 <https://github.com/facontidavide/PlotJuggler/issues/934>`_
+* Add Sample Count to transforms
+* fix compilation in Windows
+* Contributors: Davide Faconti, Manuel Valch
+
+3.9.0 (2024-02-04)
+------------------
+* new status bar with messages from the internet
+* Merge branch 'ulog_improvement'
+* new memes
+* quick file reload!
+* transforms have now default values from previous
+* add icons to dialog Delete Series
+* cleanup and fix ULOG
+* add ULOG parameters as 1 sample timeseries
+* fix issue `#929 <https://github.com/facontidavide/PlotJuggler/issues/929>`_ : numerical truncation
+* bypass truncation check
+* Fixed parsing JointState messages (`#927 <https://github.com/facontidavide/PlotJuggler/issues/927>`_)
+* Contributors: Davide Faconti, Martin Pecka
+
+3.8.10 (2024-01-26)
+-------------------
+* Fix issue #924: crash when loading rosbag with std_msgs/Empty
+* Allow ZMQ plugin to work as server
+* Link against Abseil for macOS builds & improve macOS compile docs `#845 <https://github.com/facontidavide/PlotJuggler/issues/845>`_ (`#905 <https://github.com/facontidavide/PlotJuggler/issues/905>`_)
+* fix issue in CSV `#926 <https://github.com/facontidavide/PlotJuggler/issues/926>`_
+* attempt to match ambiguous ros msg within package before using external known type (`#922 <https://github.com/facontidavide/PlotJuggler/issues/922>`_)
+* Contributors: Davide Faconti, Manuel Valch, Will MacCormack, rugged-robotics
+
+3.8.9 (2024-01-24)
+------------------
+* fix bug `#924 <https://github.com/facontidavide/PlotJuggler/issues/924>`_ (messages with no fields)
+* Bugfix: Wrong curvestyle is preselected (`#921 <https://github.com/facontidavide/PlotJuggler/issues/921>`_)
+* Contributors: Davide Faconti, Simon Sagmeister
+
 3.8.8 (2024-01-18)
 ------------------
 * new update screen
@@ -174,7 +215,7 @@ Changelog for package plotjuggler
 3.6.0 (2022-08-13)
 ------------------
 * More memes
-* Refactoring of the MessageParser plugins 
+* Refactoring of the MessageParser plugins
 * Mcap support (`#722 <https://github.com/facontidavide/PlotJuggler/issues/722>`_)
 * Improve CSV loader error handling (`#721 <https://github.com/facontidavide/PlotJuggler/issues/721>`_)
 * Fix plotwidget drag and drop bug (Issue `#716 <https://github.com/facontidavide/PlotJuggler/issues/716>`_) (`#717 <https://github.com/facontidavide/PlotJuggler/issues/717>`_)
@@ -1486,7 +1527,7 @@ Changelog for package plotjuggler
 0.10.0 (2017-02-12)
 -------------------
 * auto loading of streamer based on saved layout
-* refactoring of the ROS plugins 
+* refactoring of the ROS plugins
 * REFACTORING to allow future improvements of drag&drop
 * trying to fix a compilation problem
 * Update README.md

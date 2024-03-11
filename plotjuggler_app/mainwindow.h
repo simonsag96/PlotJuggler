@@ -52,6 +52,8 @@ public:
   void startStreamingPlugin(QString streamer_name);
   void enableStreamingNotificationsButton(bool enabled);
 
+  void setStatusBarMessage(QString message);
+
 public slots:
 
   void resizeEvent(QResizeEvent*);
@@ -146,7 +148,8 @@ private:
   QStringList _enabled_plugins;
   QStringList _disabled_plugins;
 
-  std::vector<FileLoadInfo> _loaded_datafiles;
+  std::vector<FileLoadInfo> _loaded_datafiles_history;
+  std::vector<FileLoadInfo> _loaded_datafiles_previous;
   CurveTracker::Parameter _tracker_param;
 
   std::map<CurveTracker::Parameter, QIcon> _tracker_button_icons;
@@ -252,12 +255,12 @@ public slots:
   void on_actionAbout_triggered();
   void on_actionExit_triggered();
 
-  void on_pushButtonActivateGrid_toggled(bool checked);
-  void on_pushButtonRatio_toggled(bool checked);
-  void on_pushButtonPlay_toggled(bool checked);
-  void on_pushButtonUseDateTime_toggled(bool checked);
-  void on_pushButtonTimeTracker_pressed();
-  void on_pushButtonRemoveTimeOffset_toggled(bool checked);
+  void on_buttonActivateGrid_toggled(bool checked);
+  void on_buttonRatio_toggled(bool checked);
+  void on_buttonPlay_toggled(bool checked);
+  void on_buttonUseDateTime_toggled(bool checked);
+  void on_buttonTimeTracker_pressed();
+  void on_buttonRemoveTimeOffset_toggled(bool checked);
 
   void on_buttonStreamingStart_clicked();
 
@@ -267,8 +270,8 @@ private slots:
   void on_actionShare_the_love_triggered();
   void on_playbackStep_valueChanged(double arg1);
   void on_actionLoadStyleSheet_triggered();
-  void on_pushButtonLegend_clicked();
-  void on_pushButtonZoomOut_clicked();
+  void on_buttonLegend_clicked();
+  void on_buttonZoomOut_clicked();
 
   void on_buttonStreamingOptions_clicked();
   void on_buttonHideFileFrame_clicked();
@@ -277,11 +280,15 @@ private slots:
 
   void on_buttonRecentData_clicked();
   void on_buttonRecentLayout_clicked();
-  void on_pushButtonLoadLayout_clicked();
-  void on_pushButtonSaveLayout_clicked();
-  void on_pushButtonLoadDatafile_clicked();
+  void on_buttonLoadLayout_clicked();
+  void on_buttonSaveLayout_clicked();
+  void on_buttonLoadDatafile_clicked();
 
   void on_actionColorMap_Editor_triggered();
+
+  void on_buttonReloadData_clicked();
+
+  void on_buttonCloseStatus_clicked();
 
 private:
   QStringList readAllCurvesFromXML(QDomElement root_node);

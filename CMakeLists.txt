@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.2)
 
-PROJECT(plotjuggler LANGUAGES C CXX VERSION 3.8.8)
+PROJECT(plotjuggler LANGUAGES C CXX VERSION 3.9.1)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -21,6 +21,7 @@ add_definitions(
 
 option(ENABLE_ASAN "Enable Address Sanitizer" OFF)
 option(BASE_AS_SHARED "Build the base library as a shared libary" OFF)
+option(BUILDING_WITH_CONAN "Using Conan for depenencies" OFF)
 
 IF (NOT WIN32 AND ENABLE_ASAN)
   set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -fsanitize=address")
@@ -32,10 +33,6 @@ include_directories( plotjuggler_base/src )
 
 add_definitions( -DFMT_HEADER_ONLY )
 
-if (EXISTS ${CMAKE_BINARY_DIR}/conanbuildinfo.txt)
-    set(BUILDING_WITH_CONAN ON)
-    message(STATUS "BUILDING_WITH_CONAN")
-endif()
 
 if(VCPKG_TOOLCHAIN)
     set(BUILDING_WITH_VCPKG ON)
@@ -161,7 +158,8 @@ include_directories(
     ./3rdparty/sol
     ./3rdparty/lua-5.4.3/src
     ./3rdparty/QCodeEditor/include
-    ./3rdparty/lz4
+    ./3rdparty/lz4-1.9.4
+    ./3rdparty/zstd-1.5.5
 )
 
 #########################  BASE library  ####################################
@@ -249,7 +247,8 @@ install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/plotjuggler.svg
 ######################## Main App, Libraries and Plugins ###################################
 
 add_subdirectory( 3rdparty/qwt/src )
-add_subdirectory( 3rdparty/lz4 )
+add_subdirectory( 3rdparty/lz4-1.9.4 )
+add_subdirectory( 3rdparty/zstd-1.5.5 )
 add_subdirectory( 3rdparty/QCodeEditor )
 add_subdirectory( 3rdparty/color_widgets )
 add_subdirectory( 3rdparty/Qt-Advanced-Docking )

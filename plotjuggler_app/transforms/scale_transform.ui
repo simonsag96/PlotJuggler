@@ -19,7 +19,6 @@
      <property name="font">
       <font>
        <pointsize>12</pointsize>
-       <weight>75</weight>
        <bold>true</bold>
       </font>
      </property>
@@ -55,7 +54,7 @@
         <enum>Qt::ClickFocus</enum>
        </property>
        <property name="text">
-        <string>0</string>
+        <string>0.0</string>
        </property>
       </widget>
      </item>
@@ -101,7 +100,7 @@
         <enum>Qt::ClickFocus</enum>
        </property>
        <property name="text">
-        <string>0</string>
+        <string>0.0</string>
        </property>
       </widget>
      </item>
@@ -125,7 +124,6 @@
      <property name="font">
       <font>
        <pointsize>12</pointsize>
-       <weight>75</weight>
        <bold>true</bold>
       </font>
      </property>
@@ -186,7 +184,7 @@
       <widget class="QPushButton" name="buttonRadDeg">
        <property name="maximumSize">
         <size>
-         <width>200</width>
+         <width>16777215</width>
          <height>16777215</height>
         </size>
        </property>
@@ -202,7 +200,7 @@
       <widget class="QPushButton" name="buttonDegRad">
        <property name="maximumSize">
         <size>
-         <width>200</width>
+         <width>16777215</width>
          <height>16777215</height>
         </size>
        </property>

@@ -86,11 +86,12 @@ MoveDataRet MoveData(PlotDataMapRef& source, PlotDataMapRef& destination,
         destination_plot.setMaximumRangeX(max_range_x);
       }
 
-      if(destination_plot.size() == 0)
+      if (destination_plot.size() == 0)
       {
         std::swap(destination_plot, source_plot);
       }
-      else {
+      else
+      {
         for (size_t i = 0; i < source_plot.size(); i++)
         {
           destination_plot.pushBack(source_plot.at(i));

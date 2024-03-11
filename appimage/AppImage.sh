@@ -29,5 +29,4 @@ cd linuxdeploy-plugin-qt
 mv squashfs-root/AppRun squashfs-root/linuxdeploy-plugin-qt
 cd -
 
-PATH=$PATH:linuxdeploy-plugin-qt/squashfs-root ./linuxdeploy/squashfs-root/AppRun --appdir $APPDIRPATH -d ../PlotJuggler.desktop -i ../plotjuggler.png --plugin qt --output appimage 
-
+PATH=$PATH:linuxdeploy-plugin-qt/squashfs-root ./linuxdeploy/squashfs-root/AppRun --appdir $APPDIRPATH -d ../PlotJuggler.desktop -i ../plotjuggler.png --plugin qt --output appimage

@@ -8,13 +8,15 @@
 #include <QDateTime>
 #include <QInputDialog>
 #include <QPushButton>
-#include "QSyntaxStyle"
+#include <QSyntaxStyle>
+#include <array>
 #include "datetimehelp.h"
 
 #include <QStandardItemModel>
 
-const int TIME_INDEX_NOT_DEFINED = -2;
-const int TIME_INDEX_GENERATED = -1;
+static constexpr int TIME_INDEX_NOT_DEFINED = -2;
+static constexpr int TIME_INDEX_GENERATED = -1;
+static constexpr const char* INDEX_AS_TIME = "__TIME_INDEX_GENERATED__";
 
 void SplitLine(const QString& line, QChar separator, QStringList& parts)
 {
@@ -353,21 +355,8 @@ int DataLoadCSV::launchDialog(QFile& file, std::vector<std::string>* column_name
   QObject* context = pcontext.get();
   QObject::connect(_ui->comboBox, qOverload<int>(&QComboBox::currentIndexChanged),
                    context, [&](int index) {
-                     switch (index)
-                     {
-                       case 0:
-                         _delimiter = ',';
-                         break;
-                       case 1:
-                         _delimiter = ';';
-                         break;
-                       case 2:
-                         _delimiter = ' ';
-                         break;
-                       case 3:
-                         _delimiter = '\t';
-                         break;
-                     }
+                     const std::array<char, 4> delimiters = { ',', ';', ' ', '\t' };
+                     _delimiter = delimiters[std::clamp(index, 0, 3)];
                      _csvHighlighter.delimiter = _delimiter;
                      parseHeader(file, *column_names);
                    });
@@ -416,31 +405,24 @@ int DataLoadCSV::launchDialog(QFile& file, std::vector<std::string>* column_name
 
 bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data)
 {
-  bool use_provided_configuration = false;
   multiple_columns_warning_ = true;
 
   _fileInfo = info;
-  _default_time_axis.clear();
-
-  if (info->plugin_config.hasChildNodes())
-  {
-    use_provided_configuration = true;
-    xmlLoadState(info->plugin_config.firstChildElement());
-  }
 
   QFile file(info->filename);
   std::vector<std::string> column_names;
 
   int time_index = TIME_INDEX_NOT_DEFINED;
 
-  if (!use_provided_configuration)
+  if (!info->plugin_config.hasChildNodes())
   {
+    _default_time_axis.clear();
     time_index = launchDialog(file, &column_names);
   }
   else
   {
     parseHeader(file, column_names);
-    if (_default_time_axis == "__TIME_INDEX_GENERATED__")
+    if (_default_time_axis == INDEX_AS_TIME)
     {
       time_index = TIME_INDEX_GENERATED;
     }
@@ -480,6 +462,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
   }
 
   QProgressDialog progress_dialog;
+  progress_dialog.setWindowTitle("Loading the CSV file");
   progress_dialog.setLabelText("Loading... please wait");
   progress_dialog.setWindowModality(Qt::ApplicationModal);
   progress_dialog.setRange(0, tot_lines - 1);
@@ -509,45 +492,54 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
   QString format_string = _ui->lineEditDateFormat->text();
 
   auto ParseTimestamp = [&](QString str, bool& is_number) {
-      QString str_trimmed = str.trimmed();
-      double val = 0.0;
-      is_number = false;
-      // Support the case where the timestamp is in nanoseconds / microseconds
-      uint64_t ts = str_trimmed.toULong(&is_number);
-      uint64_t first_ts = 1400000000; //May 13, 2014
-      uint64_t last_ts  = 2000000000; // May 18, 2033
-      if(is_number)
+    QString str_trimmed = str.trimmed();
+    double val = 0.0;
+    is_number = false;
+    // Support the case where the timestamp is in nanoseconds / microseconds
+    int64_t ts = str_trimmed.toLong(&is_number);
+    const int64_t first_ts = 1400000000;  // July 14, 2017
+    const int64_t last_ts = 2000000000;   // May 18, 2033
+    if (is_number)
+    {
+      // check if it is an absolute time in nanoseconds.
+      // convert to seconds if it is
+      if (ts > first_ts * 1e9 && ts < last_ts * 1e9)
       {
-        if(ts > first_ts*1e9 && ts < last_ts*1e9) {
-          // convert from nanoseconds to seconds
-          val = double(ts) * 1e-9;
-        }
-        else if(ts > first_ts*1e6 && ts < last_ts*1e6) {
-          // convert from nanoseconds to seconds
-          val = double(ts) * 1e-6;
-        }
+        val = double(ts) * 1e-9;
       }
+      else if (ts > first_ts * 1e6 && ts < last_ts * 1e6)
+      {
+        // check if it is an absolute time in microseconds.
+        // convert to seconds if it is
+        val = double(ts) * 1e-6;
+      }
+      else
+      {
+        val = double(ts);
+      }
+    }
+    else
+    {
       // Try a double value (seconds)
-      if (!is_number) {
-        val = str_trimmed.toDouble(&is_number);
-      }
+      val = str_trimmed.toDouble(&is_number);
+    }
 
-      // handle numbers with comma instead of point as decimal separator
-      if (!is_number)
+    // handle numbers with comma instead of point as decimal separator
+    if (!is_number)
+    {
+      static QLocale locale_with_comma(QLocale::German);
+      val = locale_with_comma.toDouble(str_trimmed, &is_number);
+    }
+    if (!is_number && parse_date_format && !format_string.isEmpty())
+    {
+      QDateTime ts = QDateTime::fromString(str_trimmed, format_string);
+      is_number = ts.isValid();
+      if (is_number)
       {
-          static QLocale locale_with_comma(QLocale::German);
-          val = locale_with_comma.toDouble(str_trimmed, &is_number);
+        val = ts.toMSecsSinceEpoch() / 1000.0;
       }
-      if (!is_number && parse_date_format && !format_string.isEmpty())
-      {
-          QDateTime ts = QDateTime::fromString(str_trimmed, format_string);
-          is_number = ts.isValid();
-          if (is_number)
-          {
-              val = ts.toMSecsSinceEpoch() / 1000.0;
-          }
-      }
-      return val;
+    }
+    return val;
   };
 
   auto ParseNumber = [&](QString str, bool& is_number) {
@@ -757,7 +749,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
   }
   else if (time_index == TIME_INDEX_GENERATED)
   {
-    _default_time_axis = "__TIME_INDEX_GENERATED__";
+    _default_time_axis = INDEX_AS_TIME;
   }
 
   // cleanups
@@ -783,7 +775,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
 
 bool DataLoadCSV::xmlSaveState(QDomDocument& doc, QDomElement& parent_element) const
 {
-  QDomElement elem = doc.createElement("default");
+  QDomElement elem = doc.createElement("parameters");
   elem.setAttribute("time_axis", _default_time_axis.c_str());
   elem.setAttribute("delimiter", _ui->comboBox->currentIndex());
 
@@ -799,35 +791,36 @@ bool DataLoadCSV::xmlSaveState(QDomDocument& doc, QDomElement& parent_element) c
 
 bool DataLoadCSV::xmlLoadState(const QDomElement& parent_element)
 {
-  QDomElement elem = parent_element.firstChildElement("default");
-  if (!elem.isNull())
+  QDomElement elem = parent_element.firstChildElement("parameters");
+  if (elem.isNull())
   {
-    if (elem.hasAttribute("time_axis"))
+    return false;
+  }
+  if (elem.hasAttribute("time_axis"))
+  {
+    _default_time_axis = elem.attribute("time_axis").toStdString();
+  }
+  if (elem.hasAttribute("delimiter"))
+  {
+    int separator_index = elem.attribute("delimiter").toInt();
+    _ui->comboBox->setCurrentIndex(separator_index);
+    switch (separator_index)
     {
-      _default_time_axis = elem.attribute("time_axis").toStdString();
+      case 0:
+        _delimiter = ',';
+        break;
+      case 1:
+        _delimiter = ';';
+        break;
+      case 2:
+        _delimiter = ' ';
+        break;
     }
-    if (elem.hasAttribute("delimiter"))
-    {
-      int separator_index = elem.attribute("delimiter").toInt();
-      _ui->comboBox->setCurrentIndex(separator_index);
-      switch (separator_index)
-      {
-        case 0:
-          _delimiter = ',';
-          break;
-        case 1:
-          _delimiter = ';';
-          break;
-        case 2:
-          _delimiter = ' ';
-          break;
-      }
-    }
-    if (elem.hasAttribute("date_format"))
-    {
-      _ui->checkBoxDateFormat->setChecked(true);
-      _ui->lineEditDateFormat->setText(elem.attribute("date_format"));
-    }
+  }
+  if (elem.hasAttribute("date_format"))
+  {
+    _ui->checkBoxDateFormat->setChecked(true);
+    _ui->lineEditDateFormat->setText(elem.attribute("date_format"));
   }
   return true;
 }

@@ -25,6 +25,3 @@ else()
     install(TARGETS DataStreamWebSocket DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY}  )
 
 endif()
-
-
-

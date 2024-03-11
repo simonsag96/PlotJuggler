@@ -37,12 +37,12 @@ QWT_INSTALL_LIBS      = $${QWT_INSTALL_PREFIX}/lib
 # Features
 # When building a Qwt application with qmake you might want to load
 # the compiler/linker flags, that are required to build a Qwt application
-# from qwt.prf. Therefore all you need to do is to add "CONFIG += qwt" 
+# from qwt.prf. Therefore all you need to do is to add "CONFIG += qwt"
 # to your project file and take care, that qwt.prf can be found by qmake.
 # ( see http://doc.trolltech.com/4.7/qmake-advanced-usage.html#adding-new-configuration-features )
 # I recommend not to install the Qwt features together with the
 # Qt features, because you will have to reinstall the Qwt features,
-# with every Qt upgrade. 
+# with every Qt upgrade.
 ######################################################################
 
 QWT_INSTALL_FEATURES  = $${QWT_INSTALL_PREFIX}/features
@@ -57,15 +57,15 @@ QWT_INSTALL_FEATURES  = $${QWT_INSTALL_PREFIX}/features
 #QWT_CONFIG           += QwtDll
 
 ######################################################################
-# QwtPlot enables all classes, that are needed to use the QwtPlot 
-# widget. 
+# QwtPlot enables all classes, that are needed to use the QwtPlot
+# widget.
 ######################################################################
 
 QWT_CONFIG       += QwtPlot
 
 ######################################################################
 # QwtWidgets enables all classes, that are needed to use the all other
-# widgets (sliders, dials, ...), beside QwtPlot. 
+# widgets (sliders, dials, ...), beside QwtPlot.
 ######################################################################
 
 #QWT_CONFIG     += QwtWidgets
@@ -84,10 +84,10 @@ QWT_CONFIG       += QwtPlot
 QWT_CONFIG     += QwtOpenGL
 
 ######################################################################
-# You can use the MathML renderer of the Qt solutions package to 
+# You can use the MathML renderer of the Qt solutions package to
 # enable MathML support in Qwt. Because of license implications
 # the ( modified ) code of the MML Widget solution is included and
-# linked together with the QwtMathMLTextEngine into an own library. 
+# linked together with the QwtMathMLTextEngine into an own library.
 # To use it you will have to add "CONFIG += qwtmathml"
 # to your qmake project file.
 ######################################################################

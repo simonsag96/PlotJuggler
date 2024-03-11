@@ -44,4 +44,3 @@ while True:
 	  } }"
 
     sock.sendto( test_str.encode("utf-8"), (args.address, args.port) )
-

@@ -13,4 +13,3 @@ export CMAKE_PREFIX_PATH=${SNAP}/opt/ros/noetic
 export ROSCONSOLE_CONFIG_FILE=${SNAP_USER_DATA}/rosconsole.config
 
 ${SNAP}/usr/local/bin/plotjuggler --plugin_folders $PLUGIN_FOLDERS $@
-

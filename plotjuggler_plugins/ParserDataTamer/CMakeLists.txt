@@ -14,4 +14,3 @@ target_link_libraries(ParserDataTamer
 
 install(TARGETS ParserDataTamer
     DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY}  )
-

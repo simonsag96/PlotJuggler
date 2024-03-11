@@ -78,7 +78,7 @@ QTabWidget::right-corner {
 }
 
 QTabWidget::tab-bar {
-    left: 0; 
+    left: 0;
 }
 
 QTabBar::tab {
@@ -667,7 +667,7 @@ QHeaderView::text{
     padding-right: 4px;
 }
 
-QHeaderView::up-arrow { 
+QHeaderView::up-arrow {
     subcontrol-position: center right;
     image: url(":/style_${theme}/arrow_up.png");
     height: 12px;
@@ -676,7 +676,7 @@ QHeaderView::up-arrow {
     padding-right: 4px;
 }
 
-QHeaderView::down-arrow { 
+QHeaderView::down-arrow {
     subcontrol-position: center right;
     image: url(":/style_${theme}/arrow_down.png");
     height: 12px;
@@ -904,4 +904,3 @@ QWidget#qwtCanvas {
 QDialog#PlotWidgetEditor QListView::item:selected {
     background-color: ${main_background};
 }
-

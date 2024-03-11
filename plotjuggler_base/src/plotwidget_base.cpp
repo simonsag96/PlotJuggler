@@ -88,25 +88,18 @@ public:
     panner2->setMouseButton(Qt::MiddleButton, Qt::NoModifier);
 
     connect(zoomer, &PlotZoomer::zoomed, this,
-            [this](const QRectF& r) {
-              resized_callback(r);
-            });
+            [this](const QRectF& r) { resized_callback(r); });
 
-    connect(magnifier, &PlotMagnifier::rescaled, this,
-            [this](const QRectF& r) {
-        resized_callback(r);
-        replot();
+    connect(magnifier, &PlotMagnifier::rescaled, this, [this](const QRectF& r) {
+      resized_callback(r);
+      replot();
     });
 
     connect(panner1, &PlotPanner::rescaled, this,
-            [this](QRectF r) {
-              resized_callback(r);
-            });
+            [this](QRectF r) { resized_callback(r); });
 
     connect(panner2, &PlotPanner::rescaled, this,
-            [this](QRectF r) {
-              resized_callback(r);
-            });
+            [this](QRectF r) { resized_callback(r); });
 
     QwtScaleWidget* bottomAxis = axisWidget(QwtPlot::xBottom);
     QwtScaleWidget* leftAxis = axisWidget(QwtPlot::yLeft);
@@ -158,7 +151,7 @@ public:
 
   void dragLeaveEvent(QDragLeaveEvent* event) override
   {
-      event_callback(event);
+    event_callback(event);
   }
 
   void dropEvent(QDropEvent* event) override
@@ -316,18 +309,16 @@ void PlotWidgetBase::setModeXY(bool enable)
 PlotWidgetBase::PlotWidgetBase(QWidget* parent)
   : _xy_mode(false), _keep_aspect_ratio(false)
 {
-  auto onViewResized = [this](const QRectF& r) {
-    emit viewResized(r);
-  };
+  auto onViewResized = [this](const QRectF& r) { emit viewResized(r); };
 
   auto onEvent = [this](QEvent* event) {
     if (auto ev = dynamic_cast<QDragEnterEvent*>(event))
     {
       emit dragEnterSignal(ev);
     }
-    else if(auto ev = dynamic_cast<QDragLeaveEvent*>(event))
+    else if (auto ev = dynamic_cast<QDragLeaveEvent*>(event))
     {
-        emit dragLeaveSignal(ev);
+      emit dragLeaveSignal(ev);
     }
     else if (auto ev = dynamic_cast<QDropEvent*>(event))
     {
@@ -610,15 +601,16 @@ bool PlotWidgetBase::eventFilter(QObject* obj, QEvent* event)
             for (auto& it : curveList())
             {
               QSettings settings;
-              bool autozoom_visibility = settings.value("Preferences::autozoom_visibility",true).toBool();
+              bool autozoom_visibility =
+                  settings.value("Preferences::autozoom_visibility", true).toBool();
               if (clicked_item == it.curve)
               {
                 it.curve->setVisible(!it.curve->isVisible());
                 //_tracker->redraw();
 
-                if(autozoom_visibility)
+                if (autozoom_visibility)
                 {
-                    resetZoom();
+                  resetZoom();
                 }
                 replot();
                 return true;
@@ -725,7 +717,7 @@ void PlotWidgetBase::setStyle(QwtPlotCurve* curve, CurveStyle style)
       curve->setStyle(QwtPlotCurve::Steps);
       curve->setCurveAttribute(QwtPlotCurve::Inverted, false);
       break;
-      case STEPSINV:
+    case STEPSINV:
       curve->setStyle(QwtPlotCurve::Steps);
       curve->setCurveAttribute(QwtPlotCurve::Inverted, true);
       break;

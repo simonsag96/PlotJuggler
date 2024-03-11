@@ -26,12 +26,12 @@ void PJ::DataStreamer::setMaximumRangeX(double range)
   }
 }
 
-void DataStreamer::setParserFactories(ParserFactories *parsers)
+void DataStreamer::setParserFactories(ParserFactories* parsers)
 {
   _parser_factories = parsers;
 }
 
-const ParserFactories *DataStreamer::parserFactories() const
+const ParserFactories* DataStreamer::parserFactories() const
 {
   return _parser_factories;
 }

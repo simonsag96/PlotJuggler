@@ -17,5 +17,3 @@ target_link_libraries(DataStreamUDP
     )
 
 install(TARGETS DataStreamUDP DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY}  )
-
-

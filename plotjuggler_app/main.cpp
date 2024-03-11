@@ -24,6 +24,7 @@
 
 #include "PlotJuggler/transform_function.h"
 #include "transforms/first_derivative.h"
+#include "transforms/samples_count.h"
 #include "transforms/scale_transform.h"
 #include "transforms/moving_average_filter.h"
 #include "transforms/moving_variance.h"
@@ -60,23 +61,22 @@ inline int GetVersionNumber(QString str)
 
 void ShowChangelogDialog()
 {
-    QDialog* dialog = new QDialog();
-    auto ui = new Ui::ChangelogDialog();
-    ui->setupUi(dialog);
+  QDialog* dialog = new QDialog();
+  auto ui = new Ui::ChangelogDialog();
+  ui->setupUi(dialog);
 
-    QObject::connect(ui->buttonChangelog, &QPushButton::clicked, dialog, [](bool) {
-        QDesktopServices::openUrl(QUrl("https://bit.ly/plotjuggler-update"));
-        QSettings settings;
-        settings.setValue("Changelog/first", false);
-    });
+  QObject::connect(ui->buttonChangelog, &QPushButton::clicked, dialog, [](bool) {
+    QDesktopServices::openUrl(QUrl("https://bit.ly/plotjuggler-update"));
+    QSettings settings;
+    settings.setValue("Changelog/first", false);
+  });
 
+  QObject::connect(ui->checkBox, &QCheckBox::toggled, dialog, [](bool toggle) {
+    QSettings settings;
+    settings.setValue("Changelog/dont", toggle);
+  });
 
-    QObject::connect(ui->checkBox, &QCheckBox::toggled, dialog, [](bool toggle) {
-        QSettings settings;
-        settings.setValue("Changelog/dont", toggle);
-    });
-
-    dialog->exec();
+  dialog->exec();
 }
 
 void OpenNewReleaseDialog(QNetworkReply* reply)
@@ -113,7 +113,7 @@ QPixmap getFunnySplashscreen()
   srand(time(nullptr));
 
   auto getNum = []() {
-    const int last_image_num = 89;
+    const int last_image_num = 94;
     int n = rand() % (last_image_num + 2);
     if (n > last_image_num)
     {
@@ -245,6 +245,7 @@ int main(int argc, char* argv[])
   TransformFactory::registerTransform<IntegralTransform>();
   TransformFactory::registerTransform<AbsoluteTransform>();
   TransformFactory::registerTransform<MovingVarianceFilter>();
+  TransformFactory::registerTransform<SamplesCountFilter>();
   //---------------------------
 
   QCommandLineParser parser;
@@ -335,11 +336,10 @@ int main(int argc, char* argv[])
                                     "file_name (no extension)");
   parser.addOption(start_streamer);
 
-  QCommandLineOption window_title(QStringList() << "window_title",
-                                  "Set the window title",
+  QCommandLineOption window_title(QStringList() << "window_title", "Set the window title",
                                   "window_title");
   parser.addOption(window_title);
-  
+
   parser.process(*qApp);
 
   if (parser.isSet(publish_option) && !parser.isSet(layout_option))
@@ -376,13 +376,14 @@ int main(int argc, char* argv[])
   QIcon app_icon("://resources/plotjuggler.svg");
   QApplication::setWindowIcon(app_icon);
 
-  QNetworkAccessManager manager;
-  QObject::connect(&manager, &QNetworkAccessManager::finished, OpenNewReleaseDialog);
+  QNetworkAccessManager manager_new_release;
+  QObject::connect(&manager_new_release, &QNetworkAccessManager::finished,
+                   OpenNewReleaseDialog);
 
-  QNetworkRequest request;
-  request.setUrl(QUrl("https://api.github.com/repos/facontidavide/PlotJuggler/releases/latest"));
-
-  manager.get(request);
+  QNetworkRequest request_new_release;
+  request_new_release.setUrl(QUrl("https://api.github.com/repos/facontidavide/"
+                                  "PlotJuggler/releases/latest"));
+  manager_new_release.get(request_new_release);
 
   MainWindow* window = nullptr;
 
@@ -402,8 +403,9 @@ int main(int argc, char* argv[])
   bool first_changelog = settings.value("Changelog/first", true).toBool();
   bool dont_changelog = settings.value("Changelog/dont", false).toBool();
 
-  if(first_changelog && !dont_changelog) {
-      ShowChangelogDialog();
+  if (first_changelog && !dont_changelog)
+  {
+    ShowChangelogDialog();
   }
   else if (!parser.isSet(nosplash_option) &&
            !(parser.isSet(loadfile_option) || parser.isSet(layout_option)))
@@ -438,7 +440,7 @@ int main(int argc, char* argv[])
     auto deadline = QDateTime::currentDateTime().addMSecs(500);
     while (QDateTime::currentDateTime() < deadline)
     {
-        app.processEvents();
+      app.processEvents();
     }
 
     window = new MainWindow(parser);
@@ -450,7 +452,7 @@ int main(int argc, char* argv[])
     }
   }
 
-  if(!window)
+  if (!window)
   {
     window = new MainWindow(parser);
   }
@@ -461,6 +463,24 @@ int main(int argc, char* argv[])
   {
     window->on_buttonStreamingStart_clicked();
   }
+
+  QNetworkAccessManager manager_message;
+  QObject::connect(&manager_message, &QNetworkAccessManager::finished,
+                   [window](QNetworkReply* reply) {
+                     if (reply->error())
+                     {
+                       return;
+                     }
+                     QString answer = reply->readAll();
+                     QJsonDocument document = QJsonDocument::fromJson(answer.toUtf8());
+                     QJsonObject data = document.object();
+                     QString message = data["message"].toString();
+                     window->setStatusBarMessage(message);
+                   });
+
+  QNetworkRequest request_message;
+  request_message.setUrl(QUrl("https://fastapi-example-7kz3.onrender.com"));
+  manager_message.get(request_message);
 
   return app.exec();
 }

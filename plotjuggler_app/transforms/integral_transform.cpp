@@ -6,8 +6,7 @@ IntegralTransform::IntegralTransform()
   : _widget(new QWidget()), ui(new Ui::IntegralTransform), _dT(0.0)
 {
   ui->setupUi(_widget);
-  ui->lineEditCustom->setValidator(
-      new QDoubleValidator(0.0001, 1000, 4, ui->lineEditCustom));
+  ui->lineEditCustom->setValidator(new QDoubleValidator(0.0001, 1000, 4));
 
   connect(ui->buttonCompute, &QPushButton::clicked, this,
           &IntegralTransform::on_buttonCompute_clicked);
@@ -101,7 +100,10 @@ bool IntegralTransform::xmlSaveState(QDomDocument& doc, QDomElement& parent_elem
 bool IntegralTransform::xmlLoadState(const QDomElement& parent_element)
 {
   QDomElement widget_el = parent_element.firstChildElement("options");
-
+  if (widget_el.isNull())
+  {
+    return false;
+  }
   ui->lineEditCustom->setText(widget_el.attribute("lineEdit"));
 
   if (widget_el.attribute("radioChecked") == "radioActual")

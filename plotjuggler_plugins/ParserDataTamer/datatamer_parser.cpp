@@ -1,9 +1,7 @@
-#include <sstream>
-#include <iostream>
 
 #include "datatamer_parser.h"
 #include "data_tamer_parser/data_tamer_parser.hpp"
-#include "PlotJuggler/fmt/format.h"
+#include "PlotJuggler/contrib/fmt/core.h"
 
 using namespace PJ;
 

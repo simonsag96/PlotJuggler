@@ -18,14 +18,14 @@ jobs:
     steps:
       - name: Sync repository
         uses: actions/checkout@v2
-        
+
       - name: Cache Qt
         id: cache-qt
         uses: actions/cache@v1  # not v2!
         with:
           path: '${{ github.workspace }}/qt_installation/'
           key: ${{ runner.os }}-QtCache
-          
+
       - name: Install Qt
         uses: jurplel/install-qt-action@v2.13.0
         with:
@@ -39,4 +39,3 @@ jobs:
         run: >
           cmake -Ax64 -T host=x64 -B build -DCMAKE_INSTALL_PREFIX=install PlotJuggler;
           cmake --build build --target install
- 

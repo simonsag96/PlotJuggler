@@ -1,10 +1,11 @@
 #pragma once
 
+#include <optional>
 #include <QObject>
 #include <QtPlugin>
 #include <QStandardItemModel>
 #include "PlotJuggler/dataloader_base.h"
-#include "PlotJuggler/messageparser_base.h"
+#include "dataload_params.h"
 
 using namespace PJ;
 
@@ -28,4 +29,11 @@ public:
   {
     return "DataLoad MCAP";
   }
+
+  bool xmlSaveState(QDomDocument& doc, QDomElement& parent_element) const override;
+
+  bool xmlLoadState(const QDomElement& parent_element) override;
+
+private:
+  std::optional<mcap::LoadParams> _dialog_parameters;
 };

@@ -14,4 +14,3 @@ target_link_libraries(PublisherCSV
     )
 
 install(TARGETS PublisherCSV DESTINATION ${PJ_PLUGIN_INSTALL_DIRECTORY}  )
-

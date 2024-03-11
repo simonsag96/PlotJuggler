@@ -1,8 +1,7 @@
 #include <QSettings>
 #include <QMessageBox>
 #include "protobuf_parser.h"
-#include "PlotJuggler/fmt/format.h"
-#include "PlotJuggler/svg_util.h"
+#include "PlotJuggler/contrib/fmt/core.h"
 
 namespace gp = google::protobuf;
 

@@ -318,13 +318,13 @@ using std::operator<<;
 #define nssv_noexcept /*noexcept*/
 #endif
 
-//#if nssv_HAVE_REF_QUALIFIER
-//# define nssv_ref_qual  &
-//# define nssv_refref_qual  &&
-//#else
-//# define nssv_ref_qual  /*&*/
-//# define nssv_refref_qual  /*&&*/
-//#endif
+// #if nssv_HAVE_REF_QUALIFIER
+// # define nssv_ref_qual  &
+// # define nssv_refref_qual  &&
+// #else
+// # define nssv_ref_qual  /*&*/
+// # define nssv_refref_qual  /*&&*/
+// #endif
 
 #if nssv_HAVE_NULLPTR
 #define nssv_nullptr nullptr

@@ -76,7 +76,7 @@ public:
     return _data_map;
   }
 
-  void setParserFactories( ParserFactories* parsers);
+  void setParserFactories(ParserFactories* parsers);
 
   const ParserFactories* parserFactories() const;
 
@@ -101,7 +101,6 @@ signals:
   void notificationsChanged(int active_notification_count);
 
 private:
-
   std::mutex _mutex;
   PlotDataMapRef _data_map;
   QAction* _start_streamer;

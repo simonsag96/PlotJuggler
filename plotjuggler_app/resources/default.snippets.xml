@@ -90,7 +90,7 @@ end
 return value - first_value</function>
     <linkedSource></linkedSource>
   </snippet>
-  
+
   <snippet name="quat_to_roll">
     <global></global>
     <function>w = value

@@ -2,7 +2,6 @@
 #define ABSOLUTE_TRANSFORM_H
 
 #include "PlotJuggler/transform_function.h"
-#include "ui_integral_transform.h"
 
 using namespace PJ;
 
@@ -13,9 +12,14 @@ public:
 
   ~AbsoluteTransform() override = default;
 
-  const char* name() const override
+  static const char* transformName()
   {
     return "Absolute";
+  }
+
+  const char* name() const override
+  {
+    return transformName();
   }
 
 private:

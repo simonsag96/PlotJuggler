@@ -4,7 +4,7 @@
 #include <QDoubleSpinBox>
 #include "PlotJuggler/transform_function.h"
 #include "ui_outlier_removal.h"
-#include "PlotJuggler/ring_span.hpp"
+#include "PlotJuggler/contrib/ring_span.hpp"
 
 using namespace PJ;
 
@@ -20,9 +20,14 @@ public:
 
   ~OutlierRemovalFilter() override;
 
-  const char* name() const override
+  static const char* transformName()
   {
     return "Outlier Removal";
+  }
+
+  const char* name() const override
+  {
+    return transformName();
   }
 
   QWidget* optionsWidget() override;

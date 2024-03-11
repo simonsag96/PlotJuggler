@@ -34,7 +34,9 @@ set(LUA_LIB_SRCS
     )
 set(LUA_LIB_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-add_compile_options(-fPIC)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang|AppleClang")
+    add_compile_options(-fPIC)
+endif()
 
 add_library(lua_static STATIC
     ${LUA_LIB_SRCS}

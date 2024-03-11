@@ -129,6 +129,7 @@ private:
   TransformFactory& operator=(const TransformFactory&) = delete;
 
   std::map<std::string, std::function<TransformFunction::Ptr()>> creators_;
+  std::map<std::string, QDomDocument> default_params_;
   std::set<std::string> names_;
 
   static TransformFactory* instance();
@@ -139,10 +140,29 @@ public:
   template <typename T>
   static void registerTransform()
   {
-    T temp;
-    std::string name = temp.name();
+    const std::string name = T::transformName();
     instance()->names_.insert(name);
-    instance()->creators_[name] = []() { return std::make_shared<T>(); };
+    auto doc_it = instance()->default_params_.insert({ name, {} }).first;
+    QDomDocument* document = &(doc_it->second);
+    instance()->creators_[name] = [document]() {
+      auto trans = std::make_shared<T>();
+      T* transform = trans.get();
+
+      connect(transform, &TransformFunction_SISO::parametersChanged,
+              [transform, document]() {
+                *document = {};
+                auto root = document->createElement("root");
+                document->appendChild(root);
+                transform->xmlSaveState(*document, root);
+              });
+      auto root = document->firstChildElement("root");
+      if (!root.isNull())
+      {
+        QSignalBlocker block(trans.get());
+        trans->xmlLoadState(root);
+      }
+      return trans;
+    };
   }
 
   static TransformFunction::Ptr create(const std::string& name);

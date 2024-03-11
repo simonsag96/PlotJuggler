@@ -5,9 +5,8 @@
 #include <QDebug>
 #include <QWidget>
 #include <QSettings>
-#include <QProgressDialog>
 #include <QMainWindow>
-#include "selectlistdialog.h"
+
 #include "ulog_parser.h"
 #include "ulog_parameters_dialog.h"
 
@@ -46,7 +45,7 @@ bool DataLoadULog::readDataFromFile(FileLoadInfo* fileload_info,
   ULogParser parser(datastream);
 
   const auto& timeseries_map = parser.getTimeseriesMap();
-
+  auto min_msg_time = std::numeric_limits<double>::max();
   for (const auto& it : timeseries_map)
   {
     const std::string& sucsctiption_name = it.first;
@@ -61,10 +60,20 @@ bool DataLoadULog::readDataFromFile(FileLoadInfo* fileload_info,
       for (size_t i = 0; i < data.second.size(); i++)
       {
         double msg_time = static_cast<double>(timeseries.timestamps[i]) * 0.000001;
+        min_msg_time = std::min(min_msg_time, msg_time);
         PlotData::Point point(msg_time, data.second[i]);
         series->second.pushBack(point);
       }
     }
+  }
+
+  // store parameters as a timeseries with a single point
+  for (const auto& param : parser.getParameters())
+  {
+    auto series = plot_data.addNumeric("_parameters/" + param.name);
+    double value = (param.val_type == ULogParser::FLOAT) ? double(param.value.val_real) :
+                                                           double(param.value.val_int);
+    series->second.pushBack({ min_msg_time, value });
   }
 
   ULogParametersDialog* dialog = new ULogParametersDialog(parser, _main_win);

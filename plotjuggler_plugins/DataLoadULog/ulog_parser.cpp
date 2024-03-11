@@ -1,7 +1,6 @@
 #include "ulog_parser.h"
 #include "ulog_messages.h"
 
-#include <fstream>
 #include <string.h>
 #include <iosfwd>
 #include <sstream>
@@ -105,8 +104,22 @@ ULogParser::ULogParser(DataStream& datastream) : _file_start_time(0)
       case (int)ULogMessageType::PARAMETER_DEFAULT:  // printf("PARAMETER_DEFAULT\n" );
         break;
       case (int)ULogMessageType::PARAMETER:
-        printf("PARAMETER changed at run-time. Ignored\n");
-        std::cout << std::flush;
+        Parameter new_param;
+        new_param.readFromBuffer(message);
+        bool found = false;
+        for (auto& prev_param : _parameters)
+        {
+          if (prev_param.name == new_param.name)
+          {
+            prev_param = std::move(new_param);
+            found = true;
+            break;
+          }
+        }
+        if (!found)
+        {
+          _parameters.push_back(new_param);
+        }
         break;
     }
   }
@@ -643,44 +656,45 @@ bool ULogParser::readInfo(DataStream& datastream, uint16_t msg_size)
   message++;
   std::string raw_key((char*)message, key_len);
   message += key_len;
+  std::string raw_value((char*)message, msg_size - key_len - 1);
 
   auto key_parts = splitString(raw_key, ' ');
 
   std::string key = key_parts[1].to_string();
-
   std::string value;
+
   if (key_parts[0].starts_with("char["))
   {
-    value = std::string((char*)message, msg_size - key_len - 1);
+    value = raw_value;
   }
   else if (key_parts[0] == StringView("bool"))
   {
-    bool val = *reinterpret_cast<const bool*>(key_parts[0].data());
+    bool val = *reinterpret_cast<const bool*>(raw_value.data());
     value = std::to_string(val);
   }
   else if (key_parts[0] == StringView("uint8_t"))
   {
-    uint8_t val = *reinterpret_cast<const uint8_t*>(key_parts[0].data());
+    uint8_t val = *reinterpret_cast<const uint8_t*>(raw_value.data());
     value = std::to_string(val);
   }
   else if (key_parts[0] == StringView("int8_t"))
   {
-    int8_t val = *reinterpret_cast<const int8_t*>(key_parts[0].data());
+    int8_t val = *reinterpret_cast<const int8_t*>(raw_value.data());
     value = std::to_string(val);
   }
   else if (key_parts[0] == StringView("uint16_t"))
   {
-    uint16_t val = *reinterpret_cast<const uint16_t*>(key_parts[0].data());
+    uint16_t val = *reinterpret_cast<const uint16_t*>(raw_value.data());
     value = std::to_string(val);
   }
   else if (key_parts[0] == StringView("int16_t"))
   {
-    int16_t val = *reinterpret_cast<const int16_t*>(key_parts[0].data());
+    int16_t val = *reinterpret_cast<const int16_t*>(raw_value.data());
     value = std::to_string(val);
   }
   else if (key_parts[0] == StringView("uint32_t"))
   {
-    uint32_t val = *reinterpret_cast<const uint32_t*>(key_parts[0].data());
+    uint32_t val = *reinterpret_cast<const uint32_t*>(raw_value.data());
     if (key_parts[1].starts_with("ver_") && key_parts[1].ends_with("_release"))
     {
       value = int_to_hex(val);
@@ -692,27 +706,27 @@ bool ULogParser::readInfo(DataStream& datastream, uint16_t msg_size)
   }
   else if (key_parts[0] == StringView("int32_t"))
   {
-    int32_t val = *reinterpret_cast<const int32_t*>(key_parts[0].data());
+    int32_t val = *reinterpret_cast<const int32_t*>(raw_value.data());
     value = std::to_string(val);
   }
   else if (key_parts[0] == StringView("float"))
   {
-    float val = *reinterpret_cast<const float*>(key_parts[0].data());
+    float val = *reinterpret_cast<const float*>(raw_value.data());
     value = std::to_string(val);
   }
   else if (key_parts[0] == StringView("double"))
   {
-    double val = *reinterpret_cast<const double*>(key_parts[0].data());
+    double val = *reinterpret_cast<const double*>(raw_value.data());
     value = std::to_string(val);
   }
   else if (key_parts[0] == StringView("uint64_t"))
   {
-    uint64_t val = *reinterpret_cast<const uint64_t*>(key_parts[0].data());
+    uint64_t val = *reinterpret_cast<const uint64_t*>(raw_value.data());
     value = std::to_string(val);
   }
   else if (key_parts[0] == StringView("int64_t"))
   {
-    int64_t val = *reinterpret_cast<const int64_t*>(key_parts[0].data());
+    int64_t val = *reinterpret_cast<const int64_t*>(raw_value.data());
     value = std::to_string(val);
   }
 
@@ -723,43 +737,15 @@ bool ULogParser::readInfo(DataStream& datastream, uint16_t msg_size)
 bool ULogParser::readParameter(DataStream& datastream, uint16_t msg_size)
 {
   _read_buffer.reserve(msg_size);
-  uint8_t* message = (uint8_t*)_read_buffer.data();
+  char* message = (char*)_read_buffer.data();
   datastream.read((char*)message, msg_size);
-
   if (!datastream)
   {
     return false;
   }
 
-  uint8_t key_len = message[0];
-  std::string key((char*)message + 1, key_len);
-
-  size_t pos = key.find(' ');
-
-  if (pos == std::string::npos)
-  {
-    return false;
-  }
-
-  std::string type = key.substr(0, pos);
-
   Parameter param;
-  param.name = key.substr(pos + 1);
-
-  if (type == "int32_t")
-  {
-    param.value.val_int = *reinterpret_cast<int32_t*>(message + 1 + key_len);
-    param.val_type = INT32;
-  }
-  else if (type == "float")
-  {
-    param.value.val_real = *reinterpret_cast<float*>(message + 1 + key_len);
-    param.val_type = FLOAT;
-  }
-  else
-  {
-    throw std::runtime_error("unknown parameter type");
-  }
+  param.readFromBuffer(message);
   _parameters.push_back(param);
   return true;
 }
@@ -804,4 +790,37 @@ ULogParser::Timeseries ULogParser::createTimeseries(const ULogParser::Format* fo
 
   appendVector(*format, {});
   return timeseries;
+}
+
+bool ULogParser::Parameter::readFromBuffer(const char* message)
+{
+  const uint8_t key_len = static_cast<uint8_t>(message[0]);
+  message++;
+  std::string key((char*)message, key_len);
+
+  const size_t pos = key.find(' ');
+  if (pos == std::string::npos)
+  {
+    return false;
+  }
+
+  const std::string type = key.substr(0, pos);
+  this->name = key.substr(pos + 1);
+  message += key_len;
+
+  if (type == "int32_t")
+  {
+    this->value.val_int = *reinterpret_cast<const int32_t*>(message);
+    this->val_type = INT32;
+  }
+  else if (type == "float")
+  {
+    this->value.val_real = *reinterpret_cast<const float*>(message);
+    this->val_type = FLOAT;
+  }
+  else
+  {
+    throw std::runtime_error("unknown parameter type");
+  }
+  return true;
 }

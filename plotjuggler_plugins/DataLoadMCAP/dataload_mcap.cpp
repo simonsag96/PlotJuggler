@@ -1,4 +1,5 @@
 #include "dataload_mcap.h"
+
 #include <QTextStream>
 #include <QFile>
 #include <QMessageBox>
@@ -10,6 +11,7 @@
 #include <QPushButton>
 
 #include "data_tamer_parser/data_tamer_parser.hpp"
+#include "PlotJuggler/messageparser_base.h"
 
 #include "mcap/reader.hpp"
 #include "dialog_mcap.h"
@@ -23,6 +25,40 @@ DataLoadMCAP::DataLoadMCAP()
 
 DataLoadMCAP::~DataLoadMCAP()
 {
+}
+
+bool DataLoadMCAP::xmlSaveState(QDomDocument& doc, QDomElement& parent_element) const
+{
+  if (!_dialog_parameters)
+  {
+    return false;
+  }
+  QDomElement elem = doc.createElement("parameters");
+  const auto& params = *_dialog_parameters;
+  elem.setAttribute("use_timestamp", int(params.use_timestamp));
+  elem.setAttribute("clamp_large_arrays", int(params.clamp_large_arrays));
+  elem.setAttribute("max_array_size", params.max_array_size);
+  elem.setAttribute("selected_topics", params.selected_topics.join(';'));
+
+  parent_element.appendChild(elem);
+  return true;
+}
+
+bool DataLoadMCAP::xmlLoadState(const QDomElement& parent_element)
+{
+  QDomElement elem = parent_element.firstChildElement("parameters");
+  if (elem.isNull())
+  {
+    _dialog_parameters = std::nullopt;
+    return false;
+  }
+  mcap::LoadParams params;
+  params.use_timestamp = bool(elem.attribute("use_timestamp").toInt());
+  params.clamp_large_arrays = bool(elem.attribute("clamp_large_arrays").toInt());
+  params.max_array_size = elem.attribute("max_array_size").toInt();
+  params.selected_topics = elem.attribute("selected_topics").split(';');
+  _dialog_parameters = params;
+  return true;
 }
 
 const std::vector<const char*>& DataLoadMCAP::compatibleFileExtensions() const
@@ -129,25 +165,33 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
     parsers_by_channel.insert({ channel_ptr->id, parser });
   };
 
-  DialogMCAP dialog(channels, mcap_schemas);
-  auto ret = dialog.exec();
-  if (ret != QDialog::Accepted)
+  if (!info->plugin_config.hasChildNodes())
   {
-    return false;
+    _dialog_parameters = std::nullopt;
   }
 
-  const auto dialog_params = dialog.getParams();
+  // don't show the dialog if we already loaded the parameters with xmlLoadState
+  if (!_dialog_parameters)
+  {
+    DialogMCAP dialog(channels, mcap_schemas, _dialog_parameters);
+    auto ret = dialog.exec();
+    if (ret != QDialog::Accepted)
+    {
+      return false;
+    }
+    _dialog_parameters = dialog.getParams();
+  }
 
   std::unordered_set<int> enabled_channels;
 
   for (const auto& [channel_id, parser] : parsers_by_channel)
   {
-    parser->setLargeArraysPolicy(dialog_params.clamp_large_arrays,
-                                 dialog_params.max_array_size);
-      parser->enableEmbeddedTimestamp(dialog_params.use_timestamp);
+    parser->setLargeArraysPolicy(_dialog_parameters->clamp_large_arrays,
+                                 _dialog_parameters->max_array_size);
+    parser->enableEmbeddedTimestamp(_dialog_parameters->use_timestamp);
 
     QString topic_name = QString::fromStdString(channels[channel_id]->topic);
-    if (dialog_params.selected_topics.contains(topic_name))
+    if (_dialog_parameters->selected_topics.contains(topic_name))
     {
       enabled_channels.insert(channel_id);
     }
@@ -163,6 +207,7 @@ bool DataLoadMCAP::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_dat
   auto messages = reader.readMessages(onProblem);
 
   QProgressDialog progress_dialog("Loading... please wait", "Cancel", 0, 0, nullptr);
+  progress_dialog.setWindowTitle("Loading the MCAP file");
   progress_dialog.setModal(true);
   progress_dialog.setAutoClose(true);
   progress_dialog.setAutoReset(true);

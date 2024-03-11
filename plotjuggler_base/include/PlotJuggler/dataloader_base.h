@@ -9,7 +9,6 @@
 
 #include <QFile>
 
-#include <functional>
 #include "PlotJuggler/plotdata.h"
 #include "PlotJuggler/pj_plugin.h"
 #include "PlotJuggler/messageparser_base.h"
@@ -22,8 +21,6 @@ struct FileLoadInfo
   QString filename;
   /// prefix to be added to the name of the series (optional)
   QString prefix;
-  /// Optional list of pre-selected datasource
-  QStringList selected_datasources;
   /// Saved configuration from a previous run or a Layout file
   QDomDocument plugin_config;
 };
@@ -47,7 +44,7 @@ public:
   virtual bool readDataFromFile(FileLoadInfo* fileload_info,
                                 PlotDataMapRef& destination) = 0;
 
-  void setParserFactories(ParserFactories *parsers)
+  void setParserFactories(ParserFactories* parsers)
   {
     _parser_factories = parsers;
   }

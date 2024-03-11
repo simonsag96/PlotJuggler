@@ -19,8 +19,8 @@ NewReleaseDialog::NewReleaseDialog(QWidget* parent, QString release, QString tit
   setWindowFlags(Qt::WindowStaysOnTopHint);
 
   connect(ui->pushButtonWeb, &QPushButton::clicked, this, [=] {
-      QDesktopServices::openUrl(QUrl(url));
-      link_opened = true;
+    QDesktopServices::openUrl(QUrl(url));
+    link_opened = true;
   });
 
   connect(ui->buttonBox, &QDialogButtonBox::rejected, this, [=] {

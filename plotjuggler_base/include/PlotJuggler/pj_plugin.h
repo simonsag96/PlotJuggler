@@ -68,7 +68,6 @@ public:
     static std::vector<QAction*> empty;
     return empty;
   }
-
 };
 
 }  // namespace PJ
