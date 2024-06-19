@@ -4,6 +4,8 @@
 #include "custom_function.h"
 #include "sol.hpp"
 
+#include <mutex>
+
 class LuaCustomFunction : public CustomFunction
 {
 public:

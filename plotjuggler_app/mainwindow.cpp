@@ -91,7 +91,7 @@ MainWindow::MainWindow(const QCommandLineParser& commandline_parser, QWidget* pa
   if (commandline_parser.isSet("enabled_plugins"))
   {
     _enabled_plugins =
-        commandline_parser.value("enabled_plugins").split(";", QString::SkipEmptyParts);
+        commandline_parser.value("enabled_plugins").split(";", PJ::SkipEmptyParts);
     // Treat the command-line parameter  '--enabled_plugins *' to mean all plugings are
     // enabled
     if ((_enabled_plugins.size() == 1) && (_enabled_plugins.contains("*")))
@@ -102,7 +102,7 @@ MainWindow::MainWindow(const QCommandLineParser& commandline_parser, QWidget* pa
   if (commandline_parser.isSet("disabled_plugins"))
   {
     _disabled_plugins =
-        commandline_parser.value("disabled_plugins").split(";", QString::SkipEmptyParts);
+        commandline_parser.value("disabled_plugins").split(";", PJ::SkipEmptyParts);
   }
 
   _curvelist_widget = new CurveListPanel(_mapped_plot_data, _transform_functions, this);
@@ -240,7 +240,7 @@ MainWindow::MainWindow(const QCommandLineParser& commandline_parser, QWidget* pa
 
   //------------ Load plugins -------------
   auto plugin_extra_folders =
-      commandline_parser.value("plugin_folders").split(";", QString::SkipEmptyParts);
+      commandline_parser.value("plugin_folders").split(";", PJ::SkipEmptyParts);
 
   _default_streamer = commandline_parser.value("start_streamer");
 
@@ -2422,7 +2422,14 @@ void MainWindow::updateDataAndReplot(bool replot_hidden_tabs)
       _curvelist_widget->refreshColumns();
     }
 
-    _mapped_plot_data.setMaximumRangeX(ui->streamingSpinBox->value());
+    if (ui->streamingSpinBox->value() == ui->streamingSpinBox->maximum())
+    {
+      _mapped_plot_data.setMaximumRangeX(std::numeric_limits<double>::max());
+    }
+    else
+    {
+      _mapped_plot_data.setMaximumRangeX(ui->streamingSpinBox->value());
+    }
   }
 
   const bool is_streaming_active = isStreamingActive();
@@ -2473,6 +2480,18 @@ void MainWindow::updateDataAndReplot(bool replot_hidden_tabs)
 void MainWindow::on_streamingSpinBox_valueChanged(int value)
 {
   double real_value = value;
+
+  if (value == ui->streamingSpinBox->maximum())
+  {
+    real_value = std::numeric_limits<double>::max();
+    ui->streamingSpinBox->setStyleSheet("QSpinBox { color: red; }");
+    ui->streamingSpinBox->setSuffix("=inf");
+  }
+  else
+  {
+    ui->streamingSpinBox->setStyleSheet("QSpinBox { color: black; }");
+    ui->streamingSpinBox->setSuffix(" sec");
+  }
 
   if (isStreamingActive() == false)
   {
@@ -3196,7 +3215,7 @@ void MainWindow::on_buttonSaveLayout_clicked()
   if (file.open(QIODevice::WriteOnly))
   {
     QTextStream stream(&file);
-    stream << doc.toString() << endl;
+    stream << doc.toString() << "\n";
   }
 }
 

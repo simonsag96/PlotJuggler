@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.2)
 
-PROJECT(plotjuggler LANGUAGES C CXX VERSION 3.9.1)
+PROJECT(plotjuggler LANGUAGES C CXX VERSION 3.9.2)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -281,6 +281,7 @@ add_subdirectory( plotjuggler_plugins/ToolboxLuaEditor )
 add_subdirectory( plotjuggler_plugins/ParserProtobuf )
 add_subdirectory( plotjuggler_plugins/ParserROS )
 add_subdirectory( plotjuggler_plugins/ParserDataTamer )
+add_subdirectory( plotjuggler_plugins/ParserLineInflux )
 
 add_subdirectory( plotjuggler_plugins/PluginsZcm )
 

@@ -106,25 +106,28 @@ bool UDP_Server::start(QStringList*)
 
   ParserFactoryPlugin::Ptr parser_creator;
 
+  auto onComboChanged = [&](const QString& selected_protocol) {
+    if (parser_creator)
+    {
+      if (auto prev_widget = parser_creator->optionsWidget())
+      {
+        prev_widget->setVisible(false);
+      }
+    }
+    parser_creator = parserFactories()->at(selected_protocol);
+
+    if (auto widget = parser_creator->optionsWidget())
+    {
+      widget->setVisible(true);
+    }
+  };
+
   connect(dialog.ui->comboBoxProtocol,
           qOverload<const QString&>(&QComboBox::currentIndexChanged), this,
-          [&](const QString& selected_protocol) {
-            if (parser_creator)
-            {
-              if (auto prev_widget = parser_creator->optionsWidget())
-              {
-                prev_widget->setVisible(false);
-              }
-            }
-            parser_creator = parserFactories()->at(selected_protocol);
-
-            if (auto widget = parser_creator->optionsWidget())
-            {
-              widget->setVisible(true);
-            }
-          });
+          onComboChanged);
 
   dialog.ui->comboBoxProtocol->setCurrentText(protocol);
+  onComboChanged(protocol);
 
   int res = dialog.exec();
   if (res == QDialog::Rejected)

@@ -7,22 +7,17 @@
 #ifndef PJ_PLOTDATA_BASE_H
 #define PJ_PLOTDATA_BASE_H
 
-#include <vector>
 #include <memory>
 #include <string>
-#include <map>
-#include <mutex>
 #include <deque>
 #include <type_traits>
-#include <iostream>
 #include <cmath>
 #include <cstdlib>
 #include <unordered_map>
-#include <set>
-#include <string_view>
-#include <any>
 #include <optional>
+
 #include <QVariant>
+#include <QtGlobal>
 
 namespace PJ
 {
@@ -31,6 +26,12 @@ struct Range
   double min;
   double max;
 };
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+const auto SkipEmptyParts = Qt::SkipEmptyParts;
+#else
+const auto SkipEmptyParts = QString::SkipEmptyParts;
+#endif
 
 typedef std::optional<Range> RangeOpt;
 

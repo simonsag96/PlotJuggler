@@ -9,12 +9,14 @@ find_package(fastcdr QUIET)
 
 add_subdirectory(rosx_introspection)
 
-include_directories( rosx_introspection/include )
-
 add_library(ParserROS1 SHARED
     special_messages.cpp
     ros_parser.cpp
     ros1_parser.h )
+
+target_include_directories(rosx_introspection PRIVATE
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/rosx_introspection/include>
+    )
 
 target_link_libraries(ParserROS1
     ${Qt5Widgets_LIBRARIES}

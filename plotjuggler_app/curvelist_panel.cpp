@@ -407,7 +407,7 @@ QString StringifyArray(QString str)
 
 QString CurveListPanel::getTreeName(QString name)
 {
-  auto parts = name.split('/', QString::SplitBehavior::SkipEmptyParts);
+  auto parts = name.split('/', PJ::SkipEmptyParts);
 
   QString out;
   for (int i = 0; i < parts.size(); i++)

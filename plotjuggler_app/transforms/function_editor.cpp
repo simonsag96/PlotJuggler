@@ -918,7 +918,7 @@ void FunctionEditorWidget::onLineEditTab2FilterChanged()
   }
   else
   {
-    QStringList spaced_items = filter_text.split(' ', QString::SkipEmptyParts);
+    QStringList spaced_items = filter_text.split(' ', PJ::SkipEmptyParts);
     for (const auto& [name, plotdata] : _plot_map_data.numeric)
     {
       bool show = true;

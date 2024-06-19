@@ -72,7 +72,7 @@ class TreeModel : public QAbstractItemModel {
   }
 
   void addToTree(const QString& name, int reference_row) {
-    auto parts = name.split('/', QString::SplitBehavior::SkipEmptyParts);
+    auto parts = name.split('/', PJ::SkipEmptyParts);
     if (parts.size() == 0) {
       return;
     }

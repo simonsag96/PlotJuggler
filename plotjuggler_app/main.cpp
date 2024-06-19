@@ -158,8 +158,7 @@ QPixmap getFunnySplashscreen()
 std::vector<std::string> MergeArguments(const std::vector<std::string>& args)
 {
 #ifdef PJ_DEFAULT_ARGS
-  auto default_cmdline_args =
-      QString(PJ_DEFAULT_ARGS).split(" ", QString::SkipEmptyParts);
+  auto default_cmdline_args = QString(PJ_DEFAULT_ARGS).split(" ", PJ::SkipEmptyParts);
 
   std::vector<std::string> new_args;
   new_args.push_back(args.front());

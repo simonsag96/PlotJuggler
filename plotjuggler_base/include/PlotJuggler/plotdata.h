@@ -10,6 +10,7 @@
 #include "plotdatabase.h"
 #include "timeseries.h"
 #include "stringseries.h"
+#include <any>
 
 namespace PJ
 {

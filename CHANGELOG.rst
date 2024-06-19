@@ -2,6 +2,23 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.9.2 (2024-05-08)
+------------------
+* Save NlohmannParser (JSON) settings (`#971 <https://github.com/facontidavide/PlotJuggler/issues/971>`_)
+* Fix infinite streaming buffer regression (`#953 <https://github.com/facontidavide/PlotJuggler/issues/953>`_)
+  Co-authored-by: paul <paul@WorkLaptop>
+* fix warning and includes
+* updated fastcdr
+* Added support for empty messages (`#960 <https://github.com/facontidavide/PlotJuggler/issues/960>`_)
+* add a parser for the Line Protocol (InfluxDB)
+* Fixed the value dereference for ULog information messages (`#946 <https://github.com/facontidavide/PlotJuggler/issues/946>`_)
+* adding pre-commit check in CI
+* fmt updated to 10.2.1
+* apply clang format and move PlotJuggler/fmt
+* moved KissFFT
+* pre-commit
+* Contributors: Davide Faconti, Declan Mullen, Jonathan, Michel Jansson, Paul, ubaldot
+
 3.9.1 (2024-02-20)
 ------------------
 * embed zstd 1.5.5

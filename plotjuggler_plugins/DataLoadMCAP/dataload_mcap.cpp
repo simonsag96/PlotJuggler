@@ -1,5 +1,11 @@
 #include "dataload_mcap.h"
 
+#include "data_tamer_parser/data_tamer_parser.hpp"
+#include "PlotJuggler/messageparser_base.h"
+
+#include "mcap/reader.hpp"
+#include "dialog_mcap.h"
+
 #include <QTextStream>
 #include <QFile>
 #include <QMessageBox>
@@ -9,15 +15,10 @@
 #include <QDateTime>
 #include <QInputDialog>
 #include <QPushButton>
-
-#include "data_tamer_parser/data_tamer_parser.hpp"
-#include "PlotJuggler/messageparser_base.h"
-
-#include "mcap/reader.hpp"
-#include "dialog_mcap.h"
-
 #include <QElapsedTimer>
 #include <QStandardItemModel>
+
+#include <set>
 
 DataLoadMCAP::DataLoadMCAP()
 {
