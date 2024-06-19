@@ -107,6 +107,9 @@ protected:
   void parseTUMDebugSignalNames(const std::string& _, double& timestamp);
   void parseTUMDebugValues(const std::string& _, double& timestamp);
 
+  void parseTSLDefinition(const std::string& prefix, double& timestamp);
+  void parseTSLValues(const std::string& prefix, double& timestamp);
+
   // Prop
 
   std::function<void(const std::string& prefix, double&)> _customized_parser;
