@@ -667,7 +667,7 @@ void ParserROS::parseTSLDefinition(const std::string& prefix, double& timestamp)
   auto & buffer_queue = _tsl_values_buffer[definition_hash];
   while (!buffer_queue.empty()) {
     const auto & tuple = buffer_queue.front();
-    process_tsl_values(std::get<0>(tuple), std::get<1>(tuple), definition, std::get<2>(tuple));
+    process_tsl_values(std::get<0>(tuple), std::get<1>(tuple), _tsl_definitions[definition_hash], std::get<2>(tuple));
     buffer_queue.pop();
   }
 }
@@ -690,7 +690,7 @@ void ParserROS::parseTSLValues(const std::string& prefix, double& timestamp)
     values.resize(values.size() + num_signals);
     for ( ; index < values.size(); index++) {
       values[index] = _deserializer->
-            deserialize(BuiltinType::UINT64).convert<double>();
+            deserialize(type_id).convert<double>();
     }
   }
   // endregion
