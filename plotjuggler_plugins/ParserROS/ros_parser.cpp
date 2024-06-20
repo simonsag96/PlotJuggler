@@ -3,7 +3,9 @@
 #include <unordered_map>
 #include <vector>
 #include <queue>
+#include <algorithm>
 #include "PlotJuggler/contrib/fmt/core.h"
+
 
 using namespace PJ;
 using namespace RosMsgParser;
@@ -613,17 +615,22 @@ constexpr static std::array<BuiltinType, 11> _tsl_type_order = {
 };
 static std::unordered_map<std::uint64_t, std::vector<std::string>>
   _tsl_definitions;
+// Add a buffer for messages that are recieved before their definition
+static std::unordered_map<std::uint64_t,
+  std::queue<std::tuple<std::string, double, std::vector<double>>>> _tsl_values_buffer;
 
-// inline void process_tsl_values(
-//   const std::string& prefix, double& timestamp,
-//   const std::vector<std::string>& definition, const std::vector<std::double>& values) {
-//     const std::size_t N = std::min(definition.size(), values.size());
-//     for (size_t i = 0; i < N; i++)
-//     {
-//       auto& series = getSeries(fmt::format("{}/{}", prefix, definition[i]));
-//       series.pushBack({ timestamp, values[i] });
-//     }
-// }
+inline void ParserROS::process_tsl_values(const std::string& prefix,
+                        const double& timestamp,
+                        const std::vector<std::string> & definition,
+                        const std::vector<double> & values)
+{
+    const std::size_t N = std::min(definition.size(), values.size());
+    for (size_t i = 0; i < N; i++) {
+      auto& series = getSeries(
+        fmt::format("{}/{}", prefix, definition[i]));
+      series.pushBack({ timestamp, values[i] });
+    }
+}
 
 void ParserROS::parseTSLDefinition(const std::string& prefix, double& timestamp)
 {
@@ -656,16 +663,16 @@ void ParserROS::parseTSLDefinition(const std::string& prefix, double& timestamp)
   // Insert the scheme
   _tsl_definitions[definition_hash] = std::move(definition);
 
-  // TODO Now process the buffer
-
+  // Process all the stuff in the buffer
+  auto & buffer_queue = _tsl_values_buffer[definition_hash];
+  while (!buffer_queue.empty()) {
+    const auto & tuple = buffer_queue.front();
+    process_tsl_values(std::get<0>(tuple), std::get<1>(tuple), definition, std::get<2>(tuple));
+    buffer_queue.pop();
+  }
 }
-
-// Add a buffer for messages that are recieved before their definition
-static std::unordered_map<std::uint64_t,
-  std::queue<std::pair<double, std::vector<double>>>> _tsl_values_buffer;
 void ParserROS::parseTSLValues(const std::string& prefix, double& timestamp)
 {
-
   // region Deserialize into a flattened array of double values since the type
   // is not relevant inside plotjuggler any more
   std::uint32_t sec = _deserializer->deserializeUInt32();  // stamp
@@ -691,32 +698,14 @@ void ParserROS::parseTSLValues(const std::string& prefix, double& timestamp)
 
   // If no definition was found, add to the queue and return
   if (_tsl_definitions.count(definition_hash) == 0) {
-    _tsl_values_buffer[definition_hash].push({timestamp, std::move(values)});
+    _tsl_values_buffer[definition_hash].push(
+      {prefix, timestamp, std::move(values)});
     return;
   }
 
-  // If a definition is found, it is ensure that the buffer is already processed
-  // const auto header = readHeader(timestamp);
-  // std::vector<double> values;
-  // const size_t vector_size = _deserializer->deserializeUInt32();
-  // values.resize(vector_size);
+  // Process the signal
+  process_tsl_values(prefix, timestamp, _tsl_definitions[definition_hash], values);
 
-  // for (auto& value : values)
-  // {
-  //   value = _deserializer->deserialize(BuiltinType::FLOAT64).convert<double>();
-  // }
-  // uint32_t names_version = _deserializer->deserializeUInt32();
-  // auto it = _pal_statistics_names.find(names_version);
-  // if (it != _pal_statistics_names.end())
-  // {
-  //   const auto& names = it->second;
-  //   const size_t N = std::min(names.size(), values.size());
-  //   for (size_t i = 0; i < N; i++)
-  //   {
-  //     auto& series = getSeries(fmt::format("{}/{}", prefix, names[i]));
-  //     series.pushBack({ timestamp, values[i] });
-  //   }
-  // }
 }
 
 void ParserROS::parseTUMDebugSignalNames(const std::string& _, double& timestamp)
