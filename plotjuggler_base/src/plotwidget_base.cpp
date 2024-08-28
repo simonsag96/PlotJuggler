@@ -140,7 +140,7 @@ public:
 
   std::list<CurveInfo> curve_list;
 
-  CurveStyle curve_style = LINES;
+  CurveStyle curve_style = STEPSINV;
 
   bool zoom_enabled = true;
 
