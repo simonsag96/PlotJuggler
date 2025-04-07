@@ -43,7 +43,7 @@ CPMAddPackage("gh:ThePhD/sol2@3.3.0")
 CPMAddPackage(
     NAME data_tamer
     GITHUB_REPOSITORY PickNikRobotics/data_tamer
-    GIT_TAG 0.9.3
+    GIT_TAG 1.0.1
     DOWNLOAD_ONLY YES
 )
     
