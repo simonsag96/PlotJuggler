@@ -31,8 +31,8 @@ class CurveListPanel : public QWidget
   Q_OBJECT
 
 public:
-  explicit CurveListPanel(PlotDataMapRef& mapped_plot_data,
-                          const TransformsMap& mapped_math_plots, QWidget* parent);
+  explicit CurveListPanel(PlotDataMapRef& mapped_plot_data, const TransformsMap& mapped_math_plots,
+                          QWidget* parent);
 
   ~CurveListPanel() override;
 
@@ -70,8 +70,9 @@ private slots:
 
   void on_buttonEditCustom_clicked();
 
-  void onCustomSelectionChanged(const QItemSelection& selected,
-                                const QItemSelection& deselected);
+  void on_buttonDeleteCustom_clicked();
+
+  void onCustomSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
   void on_checkBoxShowValues_toggled(bool show);
 

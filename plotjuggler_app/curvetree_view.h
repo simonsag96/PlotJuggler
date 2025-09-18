@@ -18,8 +18,7 @@ public:
 
   void clear() override;
 
-  void addItem(const QString& prefix, const QString& tree_name,
-               const QString& plot_ID) override;
+  void addItem(const QString& prefix, const QString& tree_name, const QString& plot_ID) override;
 
   void refreshColumns() override;
 

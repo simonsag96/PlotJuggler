@@ -7,8 +7,7 @@
 #include "utils.h"
 #include <QDebug>
 
-MoveDataRet MoveData(PlotDataMapRef& source, PlotDataMapRef& destination,
-                     bool remove_older)
+MoveDataRet MoveData(PlotDataMapRef& source, PlotDataMapRef& destination, bool remove_older)
 {
   MoveDataRet ret;
 
@@ -51,8 +50,7 @@ MoveDataRet MoveData(PlotDataMapRef& source, PlotDataMapRef& destination,
       // Copy the group name and attributes
       if (source_plot.group())
       {
-        if (!destination_group ||
-            destination_group->name() != source_plot.group()->name())
+        if (!destination_group || destination_group->name() != source_plot.group()->name())
         {
           destination_group = destination.getOrCreateGroup(source_plot.group()->name());
           destination_plot.changeGroup(destination_group);

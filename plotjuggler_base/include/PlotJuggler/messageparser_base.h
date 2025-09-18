@@ -28,8 +28,7 @@ namespace PJ
 class MessageRef
 {
 public:
-  explicit MessageRef(const uint8_t* first_ptr, size_t size)
-    : _ptr(first_ptr), _size(size)
+  explicit MessageRef(const uint8_t* first_ptr, size_t size) : _ptr(first_ptr), _size(size)
   {
   }
 
@@ -148,10 +147,8 @@ public:
 
   // create an instance of MessageParser, already configured to
   // decode a specific schema.
-  virtual MessageParserPtr createParser(const std::string& topic_name,
-                                        const std::string& type_name,
-                                        const std::string& schema,
-                                        PlotDataMapRef& data) = 0;
+  virtual MessageParserPtr createParser(const std::string& topic_name, const std::string& type_name,
+                                        const std::string& schema, PlotDataMapRef& data) = 0;
 };
 
 using ParserFactories = std::map<QString, std::shared_ptr<ParserFactoryPlugin>>;

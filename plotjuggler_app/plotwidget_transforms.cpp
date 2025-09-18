@@ -160,8 +160,7 @@ void DialogTransformEditor::on_listTransforms_itemSelectionChanged()
   {
     return;
   }
-  auto row_widget =
-      dynamic_cast<RowWidget*>(ui->listCurves->itemWidget(selected_curves.front()));
+  auto row_widget = dynamic_cast<RowWidget*>(ui->listCurves->itemWidget(selected_curves.front()));
 
   QString curve_name = row_widget->text();
 
@@ -265,8 +264,7 @@ void DialogTransformEditor::on_lineEditAlias_editingFinished()
   {
     return;
   }
-  auto row_widget =
-      dynamic_cast<RowWidget*>(ui->listCurves->itemWidget(selected_curves.front()));
+  auto row_widget = dynamic_cast<RowWidget*>(ui->listCurves->itemWidget(selected_curves.front()));
 
   QString curve_name = row_widget->text();
 

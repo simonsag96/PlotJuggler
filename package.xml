@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
     <name>plotjuggler</name>
-    <version>3.9.2</version>
+    <version>3.12.0</version>
     <description>PlotJuggler: juggle with data</description>
 
     <maintainer email="davide.faconti@gmail.com">Davide Faconti</maintainer>
@@ -11,28 +11,40 @@
 
     <author email="davide.faconti@gmail.com">Davide Faconti</author>
 
-    <buildtool_depend>ament_cmake</buildtool_depend>
-    <depend>ament_index_cpp</depend>
-    <depend>rclcpp</depend>
-    <depend>fastcdr</depend>
+    <buildtool_depend condition="$ROS_VERSION == 1">catkin</buildtool_depend>
+    <buildtool_depend condition="$ROS_VERSION == 2">ament_cmake</buildtool_depend>
 
-    <!-- Qt dependancies -->
+    <depend  condition="$ROS_VERSION == 1">roslib</depend>
+    <depend  condition="$ROS_VERSION == 1">roscpp</depend>
+
+    <depend  condition="$ROS_VERSION == 2">ament_index_cpp</depend>
+    <depend  condition="$ROS_VERSION == 2">rclcpp</depend>
+    <depend  condition="$ROS_VERSION == 2">data_tamer_cpp</depend>
+
+    <!-- Qt dependencies -->
     <depend>qtbase5-dev</depend>
     <depend>libqt5-svg-dev</depend>
     <depend>libqt5-websockets-dev</depend>
     <depend>libqt5-opengl-dev</depend>
     <depend>libqt5x11extras5-dev</depend>
 
+    <depend>fmt</depend>
+
     <!-- needed for backward_cpp -->
     <depend>binutils</depend>
 
+    <!-- general dependencies -->
     <depend>boost</depend>
     <depend>libzmq3-dev</depend>
-
+    <depend>lz4</depend>
+    <depend>libzstd-dev</depend>
     <depend>protobuf-dev</depend>
+    <depend>lua-dev</depend>
+    <depend>nlohmann-json-dev</depend>
 
     <!-- The export tag contains other, unspecified, tags -->
     <export>
-        <build_type>ament_cmake</build_type>
+        <build_type condition="$ROS_VERSION == 1">catkin</build_type>
+        <build_type condition="$ROS_VERSION == 2">ament_cmake</build_type>
     </export>
 </package>

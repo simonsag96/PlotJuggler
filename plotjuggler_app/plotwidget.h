@@ -25,6 +25,7 @@
 #include "qwt_plot_legenditem.h"
 
 #include "PlotJuggler/plotwidget_base.h"
+#include "PlotJuggler/save_plot.h"
 #include "customtracker.h"
 #include "colormap_editor.h"
 
@@ -140,7 +141,13 @@ public slots:
 
   void onBackgroundColorRequest(QString name);
 
+  void onReferenceLineChecked(bool checked);
+
+  void onShowPlot(bool checked);
+
   void onShowDataStatistics();
+
+  void plotOn(const PlotSaveHelper& plot_save_helper, QRect paint_at);
 
 private slots:
 
@@ -155,6 +162,8 @@ private slots:
   void on_copyAction_triggered();
 
   void on_pasteAction_triggered();
+
+  void showPointValues(QPoint point);
 
 private slots:
 
@@ -183,6 +192,11 @@ private:
 
   CurveTracker* _tracker;
   QwtPlotGrid* _grid;
+  QwtPlotMarker* _reference_line_marker = nullptr;
+
+  bool _show_point_enabled = false;
+  QwtPlotMarker* _show_point_marker;
+  QwtPlotMarker* _show_point_text;
 
   QString _statistics_window_title = "";
 

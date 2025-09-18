@@ -68,9 +68,7 @@ std::optional<QPointF> QwtTimeseries::sampleFromTime(double t)
 }
 
 TransformedTimeseries::TransformedTimeseries(const PlotData* source_data)
-  : QwtTimeseries(&_dst_data)
-  , _dst_data(source_data->plotName(), {})
-  , _src_data(source_data)
+  : QwtTimeseries(&_dst_data), _dst_data(source_data->plotName(), {}), _src_data(source_data)
 {
 }
 

@@ -12,8 +12,7 @@
 
 using namespace PJ;
 
-StreamZMQDialog::StreamZMQDialog(QWidget* parent)
-  : QDialog(parent), ui(new Ui::DataStreamZMQ)
+StreamZMQDialog::StreamZMQDialog(QWidget* parent) : QDialog(parent), ui(new Ui::DataStreamZMQ)
 {
   ui->setupUi(this);
   ui->lineEditPort->setValidator(new QIntValidator());
@@ -106,9 +105,8 @@ bool DataStreamZMQ::start(QStringList*)
   dialog->ui->lineEditPort->setText(QString::number(port));
   dialog->ui->lineEditTopics->setText(topics);
 
-  connect(dialog->ui->comboBoxProtocol,
-          qOverload<const QString&>(&QComboBox::currentIndexChanged), this,
-          [&](const QString& selected_protocol) {
+  connect(dialog->ui->comboBoxProtocol, qOverload<const QString&>(&QComboBox::currentIndexChanged),
+          this, [&](const QString& selected_protocol) {
             if (_parser_creator)
             {
               if (auto prev_widget = _parser_creator->optionsWidget())
@@ -148,8 +146,7 @@ bool DataStreamZMQ::start(QStringList*)
   settings.setValue("ZMQ_Subscriber::topics", topics);
   settings.setValue("ZMQ_Subscriber::is_connect", _is_connect);
 
-  QString addr =
-      dialog->ui->comboBox->currentText() + address + ":" + QString::number(port);
+  QString addr = dialog->ui->comboBox->currentText() + address + ":" + QString::number(port);
   _socket_address = addr.toStdString();
   if (_is_connect)
   {
@@ -221,8 +218,7 @@ void DataStreamZMQ::receiveLoop()
     std::string topic = "";
     if (recv_msg.more())
     {
-      topic =
-          std::string(reinterpret_cast<const char*>(recv_msg.data()), recv_msg.size());
+      topic = std::string(reinterpret_cast<const char*>(recv_msg.data()), recv_msg.size());
 
       // Then it is the payload
       recv_msg.rebuild();
@@ -248,8 +244,8 @@ void DataStreamZMQ::receiveLoop()
       if (recv_msg.size() > 0)
       {
         // The timestamp is the seconds since the epoch as a string
-        timestamp = std::stod(
-            std::string(reinterpret_cast<const char*>(recv_msg.data()), recv_msg.size()));
+        timestamp =
+            std::stod(std::string(reinterpret_cast<const char*>(recv_msg.data()), recv_msg.size()));
       }
     }
     else

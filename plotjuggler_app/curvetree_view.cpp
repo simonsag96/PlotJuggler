@@ -23,13 +23,11 @@ public:
 
   bool operator<(const QTreeWidgetItem& other) const
   {
-    return doj::alphanum_impl(this->text(0).toLocal8Bit(), other.text(0).toLocal8Bit()) <
-           0;
+    return doj::alphanum_impl(this->text(0).toLocal8Bit(), other.text(0).toLocal8Bit()) < 0;
   }
 };
 
-CurveTreeView::CurveTreeView(CurveListPanel* parent)
-  : QTreeWidget(parent), CurvesView(parent)
+CurveTreeView::CurveTreeView(CurveListPanel* parent) : QTreeWidget(parent), CurvesView(parent)
 {
   setColumnCount(2);
   setEditTriggers(NoEditTriggers);
@@ -48,13 +46,12 @@ CurveTreeView::CurveTreeView(CurveListPanel* parent)
   header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
   setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
 
-  connect(this, &QTreeWidget::itemDoubleClicked, this,
-          [this](QTreeWidgetItem* item, int column) {
-            if (column == 0)
-            {
-              expandChildren(!item->isExpanded(), item);
-            }
-          });
+  connect(this, &QTreeWidget::itemDoubleClicked, this, [this](QTreeWidgetItem* item, int column) {
+    if (column == 0)
+    {
+      expandChildren(!item->isExpanded(), item);
+    }
+  });
 
   connect(selectionModel(), &QItemSelectionModel::selectionChanged, this, [this]() {
     if (getSelectedNames().empty())

@@ -6,8 +6,7 @@ FirstDerivative::FirstDerivative()
   : _widget(new QWidget()), ui(new Ui::FirstDerivariveForm), _dT(0.0)
 {
   ui->setupUi(_widget);
-  ui->lineEditCustom->setValidator(
-      new QDoubleValidator(0.0001, 1000, 4, ui->lineEditCustom));
+  ui->lineEditCustom->setValidator(new QDoubleValidator(0.0001, 1000, 4, ui->lineEditCustom));
 
   connect(ui->buttonCompute, &QPushButton::clicked, this,
           &FirstDerivative::on_buttonCompute_clicked);

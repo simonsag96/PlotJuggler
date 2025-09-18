@@ -8,10 +8,8 @@
 #include "qwt_series_data.h"
 #include "qwt_plot.h"
 #include "qwt_plot_curve.h"
-#include "qwt_event_pattern.h"
 #include "qwt_scale_map.h"
 #include "qwt_symbol.h"
-#include "qwt_graphic.h"
 #include "qwt_text.h"
 #include <qevent.h>
 #include <QFontDatabase>
@@ -77,11 +75,11 @@ bool CurveTracker::isEnabled() const
   return _visible;
 }
 
-void CurveTracker::setPosition(const QPointF& position)
+void CurveTracker::setPosition(const QPointF& tracker_position)
 {
   const QwtPlotItemList curves = _plot->itemList(QwtPlotItem::Rtti_PlotCurve);
 
-  _line_marker->setValue(position);
+  _line_marker->setValue(tracker_position);
 
   QRectF rect;
   rect.setBottom(_plot->canvasMap(QwtPlot::yLeft).s1());
@@ -107,7 +105,21 @@ void CurveTracker::setPosition(const QPointF& position)
 
   double text_X_offset = 0;
 
-  std::multimap<double, QString> text_lines;
+  struct LineParts
+  {
+    QColor color;
+    QString value;
+    QString delta;
+    QString name;
+  };
+
+  std::multimap<double, LineParts> text_lines;
+
+  QSettings settings;
+  const int prec = settings.value("Preferences::precision", 3).toInt();
+
+  int values_char_count = 0;
+  int delta_char_count = 0;
 
   for (int i = 0; i < curves.size(); i++)
   {
@@ -119,65 +131,43 @@ void CurveTracker::setPosition(const QPointF& position)
       continue;
     }
     QColor color = curve->pen().color();
-
     text_X_offset = rect.width() * 0.02;
-
     if (!_marker[i]->symbol() || _marker[i]->symbol()->brush().color() != color)
     {
-      QwtSymbol* sym =
-          new QwtSymbol(QwtSymbol::Ellipse, color, QPen(Qt::black), QSize(5, 5));
+      QwtSymbol* sym = new QwtSymbol(QwtSymbol::Ellipse, color, QPen(Qt::black), QSize(5, 5));
       _marker[i]->setSymbol(sym);
     }
-
-    const QLineF line = curveLineAt(curve, position.x());
-
-    if (line.isNull())
+    const auto maybe_point = curvePointAt(curve, tracker_position.x());
+    if (!maybe_point)
     {
       continue;
     }
+    const std::optional<QPointF> maybe_reference =
+        (_reference_pos) ? curvePointAt(curve, _reference_pos->x()) : std::nullopt;
 
-    QPointF point;
-    double middle_X = (line.p1().x() + line.p2().x()) / 2.0;
-
-    if (position.x() < middle_X)
-      point = line.p1();
-    else
-      point = line.p2();
-
+    const QPointF point = maybe_point.value();
     _marker[i]->setValue(point);
-
     if (rect.contains(point) && _visible)
     {
       min_Y = std::min(min_Y, point.y());
       max_Y = std::max(max_Y, point.y());
 
       visible_points++;
-      double val = point.y();
-
-      QString line;
-
-      QSettings settings;
-      int prec = settings.value("Preferences::precision", 3).toInt();
-
-      if (_param == VALUE)
+      double value = point.y();
+      LineParts parts;
+      parts.value = QString::number(value, 'f', prec);
+      if (maybe_reference)
       {
-        line = QString("<font color=%1>%2</font>").arg(color.name()).arg(val);
+        auto delta_str = QString::number(value - maybe_reference->y(), 'f', prec);
+        parts.delta = QString(" (Δ %1)").arg(delta_str);
       }
-      else if (_param == VALUE_NAME)
-      {
-        QString value = QString::number(val, 'f', prec);
-        int whitespaces = 8 - value.length();
-        while (whitespaces-- > 0)
-          value.prepend("&nbsp;");
-
-        line = QString("<font color=%1>%2 : %3</font>")
-                   .arg(color.name())
-                   .arg(value)
-                   .arg(curve->title().text());
-      }
-
-      text_lines.insert(std::make_pair(val, line));
+      parts.name = curve->title().text();
+      parts.color = color;
+      text_lines.insert(std::make_pair(value, parts));
       _marker[i]->setVisible(true);
+
+      values_char_count = std::max(values_char_count, parts.value.length());
+      delta_char_count = std::max(delta_char_count, parts.delta.length());
     }
     else
     {
@@ -186,36 +176,78 @@ void CurveTracker::setPosition(const QPointF& position)
     _marker[i]->setValue(point);
   }
 
-  QwtText mark_text;
-
-  QString text_marker_info;
-
-  int count = 0;
-  for (auto it = text_lines.rbegin(); it != text_lines.rend(); it++)
+  // add indentation to align the columns
+  for (auto& [_, parts] : text_lines)
   {
-    text_marker_info += it->second;
-    if (count++ < text_lines.size() - 1)
+    while (parts.value.length() < values_char_count)
     {
-      text_marker_info += "<br>";
+      parts.value.prepend("&nbsp;");
+    }
+    while (parts.delta.length() < delta_char_count)
+    {
+      parts.delta.prepend("&nbsp;");
     }
   }
-  mark_text.setBorderPen(QColor(Qt::transparent));
 
-  QColor background_color = _plot->palette().background().color();
-  background_color.setAlpha(180);
-  mark_text.setBackgroundBrush(background_color);
-  mark_text.setText(text_marker_info);
+  QwtText mark_text;
+  QString text_marker_info;
 
-  QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-  font.setPointSize(9);
+  const QString time_str = QString::number(tracker_position.x(), 'f', prec);
+  if (_reference_pos)
+  {
+    auto delta_time = tracker_position.x() - _reference_pos->x();
+    auto delta_str = QString::number(delta_time, 'f', prec);
+    text_marker_info = QString("time : %1 (Δ %2)<br>").arg(time_str).arg(delta_str);
+  }
+  else
+  {
+    text_marker_info = QString("time : %1<br>").arg(time_str);
+  }
 
-  mark_text.setFont(font);
-  mark_text.setRenderFlags(_param == VALUE ? Qt::AlignCenter : Qt::AlignLeft);
+  if (_param != LINE_ONLY)
+  {
+    int count = 0;
+    for (auto it = text_lines.rbegin(); it != text_lines.rend(); it++)
+    {
+      LineParts parts = it->second;
+      QString line_str;
+      if (_param == VALUE)
+      {
+        line_str = QString("<font color=%1>%2%3</font>")
+                       .arg(parts.color.name())
+                       .arg(parts.value)
+                       .arg(parts.delta);
+      }
+      else if (_param == VALUE_NAME)
+      {
+        line_str = QString("<font color=%1>%2%3 : %4</font>")
+                       .arg(parts.color.name())
+                       .arg(parts.value)
+                       .arg(parts.delta)
+                       .arg(parts.name);
+      }
 
-  _text_marker->setLabel(mark_text);
-  _text_marker->setLabelAlignment(Qt::AlignRight);
+      text_marker_info += line_str;
+      if (count++ < text_lines.size() - 1)
+      {
+        text_marker_info += "<br>";
+      }
+    }
+    mark_text.setBorderPen(QColor(Qt::transparent));
 
-  _text_marker->setXValue(position.x() + text_X_offset);
+    QColor background_color = _plot->palette().background().color();
+    background_color.setAlpha(180);
+    mark_text.setBackgroundBrush(background_color);
+    mark_text.setText(text_marker_info);
+
+    QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    font.setPointSize(9);
+    mark_text.setFont(font);
+    mark_text.setRenderFlags(_param == VALUE ? Qt::AlignCenter : Qt::AlignLeft);
+    _text_marker->setLabel(mark_text);
+    _text_marker->setLabelAlignment(Qt::AlignRight);
+    _text_marker->setXValue(tracker_position.x() + text_X_offset);
+  }
 
   if (visible_points > 0)
   {
@@ -228,27 +260,33 @@ void CurveTracker::setPosition(const QPointF& position)
 
   if (exceed_right)
   {
-    _text_marker->setXValue(position.x() - text_X_offset - text_width);
+    _text_marker->setXValue(tracker_position.x() - text_X_offset - text_width);
   }
 
   _text_marker->setVisible(visible_points > 0 && _visible && _param != LINE_ONLY);
 
-  _prev_trackerpoint = position;
+  _prev_trackerpoint = tracker_position;
 }
 
-QLineF CurveTracker::curveLineAt(const QwtPlotCurve* curve, double x) const
+void CurveTracker::setReferencePosition(std::optional<QPointF> reference_pos)
 {
-  QLineF line;
+  _reference_pos = reference_pos;
+  redraw();
+}
 
+std::optional<QPointF> curvePointAt(const QwtPlotCurve* curve, double x)
+{
   if (curve->dataSize() >= 2)
   {
     int index = qwtUpperSampleIndex<QPointF>(*curve->data(), x, compareX());
 
     if (index > 0)
     {
-      line.setP1(curve->sample(index - 1));
-      line.setP2(curve->sample(index));
+      auto p1 = (curve->sample(index - 1));
+      auto p2 = (curve->sample(index));
+      double middle_X = (p1.x() + p2.x()) / 2.0;
+      return (x < middle_X) ? p1 : p2;
     }
   }
-  return line;
+  return std::nullopt;
 }

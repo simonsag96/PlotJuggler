@@ -48,6 +48,7 @@
 #include "plotmagnifier.h"
 #include "plotlegend.h"
 
+#include "PlotJuggler/save_plot.h"
 #include "PlotJuggler/svg_util.h"
 #include "point_series_xy.h"
 #include "colormap_selector.h"
@@ -81,8 +82,7 @@ PlotWidget::PlotWidget(PlotDataMapRef& datamap, QWidget* parent)
   , _transform_select_dialog(nullptr)
   , _context_menu_enabled(true)
 {
-  connect(this, &PlotWidget::curveListChanged, this,
-          [this]() { this->updateMaximumZoomArea(); });
+  connect(this, &PlotWidget::curveListChanged, this, [this]() { this->updateMaximumZoomArea(); });
 
   qwtPlot()->setAcceptDrops(true);
 
@@ -112,6 +112,22 @@ PlotWidget::PlotWidget(PlotDataMapRef& datamap, QWidget* parent)
 
   _custom_Y_limits.min = (-MAX_DOUBLE);
   _custom_Y_limits.max = (MAX_DOUBLE);
+
+  _reference_line_marker = new QwtPlotMarker();
+
+  _reference_line_marker->setLinePen(QPen(Qt::blue));
+  _reference_line_marker->setLineStyle(QwtPlotMarker::VLine);
+  _reference_line_marker->attach(qwtPlot());
+  _reference_line_marker->setVisible(false);
+
+  QwtSymbol* sym = new QwtSymbol(QwtSymbol::Ellipse, Qt::black, QPen(Qt::black), QSize(5, 5));
+
+  _show_point_marker = (new QwtPlotMarker);
+  _show_point_marker->attach(qwtPlot());
+  _show_point_marker->setSymbol(sym);
+
+  _show_point_text = new QwtPlotMarker();
+  _show_point_text->attach(qwtPlot());
 
   //  QwtScaleWidget* bottomAxis = qwtPlot()->axisWidget( QwtPlot::xBottom );
   //  QwtScaleWidget* leftAxis = qwtPlot()->axisWidget( QwtPlot::yLeft );
@@ -164,17 +180,14 @@ void PlotWidget::buildActions()
   });
 
   _action_split_horizontal = new QAction("&Split Horizontally", this);
-  connect(_action_split_horizontal, &QAction::triggered, this,
-          &PlotWidget::splitHorizontal);
+  connect(_action_split_horizontal, &QAction::triggered, this, &PlotWidget::splitHorizontal);
 
   _action_split_vertical = new QAction("&Split Vertically", this);
   connect(_action_split_vertical, &QAction::triggered, this, &PlotWidget::splitVertical);
 
   _action_removeAllCurves = new QAction("&Remove ALL curves", this);
-  connect(_action_removeAllCurves, &QAction::triggered, this,
-          &PlotWidget::removeAllCurves);
-  connect(_action_removeAllCurves, &QAction::triggered, this,
-          &PlotWidget::undoableChange);
+  connect(_action_removeAllCurves, &QAction::triggered, this, &PlotWidget::removeAllCurves);
+  connect(_action_removeAllCurves, &QAction::triggered, this, &PlotWidget::undoableChange);
 
   _action_zoomOutMaximum = new QAction("&Zoom Out", this);
   connect(_action_zoomOutMaximum, &QAction::triggered, this, [this]() {
@@ -207,12 +220,10 @@ void PlotWidget::buildActions()
   connect(_action_copy, &QAction::triggered, this, &PlotWidget::on_copyAction_triggered);
 
   _action_paste = new QAction("&Paste", this);
-  connect(_action_paste, &QAction::triggered, this,
-          &PlotWidget::on_pasteAction_triggered);
+  connect(_action_paste, &QAction::triggered, this, &PlotWidget::on_pasteAction_triggered);
 
   _action_image_to_clipboard = new QAction("&Copy image to clipboard", this);
-  connect(_action_image_to_clipboard, &QAction::triggered, this,
-          &PlotWidget::on_copyToClipboard);
+  connect(_action_image_to_clipboard, &QAction::triggered, this, &PlotWidget::on_copyToClipboard);
 
   _flip_x = new QAction("&Flip Horizontal Axis", this);
   _flip_x->setCheckable(true);
@@ -223,8 +234,7 @@ void PlotWidget::buildActions()
   connect(_flip_y, &QAction::changed, this, &PlotWidget::onFlipAxis);
 
   _action_data_statistics = new QAction("&Show data statistics", this);
-  connect(_action_data_statistics, &QAction::triggered, this,
-          &PlotWidget::onShowDataStatistics);
+  connect(_action_data_statistics, &QAction::triggered, this, &PlotWidget::onShowDataStatistics);
 }
 
 void PlotWidget::canvasContextMenuTriggered(const QPoint& pos)
@@ -243,8 +253,7 @@ void PlotWidget::canvasContextMenuTriggered(const QPoint& pos)
   _action_split_horizontal->setIcon(LoadSvg(":/resources/svg/add_column.svg", theme));
   _action_split_vertical->setIcon(LoadSvg(":/resources/svg/add_row.svg", theme));
   _action_zoomOutMaximum->setIcon(LoadSvg(":/resources/svg/zoom_max.svg", theme));
-  _action_zoomOutHorizontally->setIcon(
-      LoadSvg(":/resources/svg/zoom_horizontal.svg", theme));
+  _action_zoomOutHorizontally->setIcon(LoadSvg(":/resources/svg/zoom_horizontal.svg", theme));
   _action_zoomOutVertically->setIcon(LoadSvg(":/resources/svg/zoom_vertical.svg", theme));
   _action_copy->setIcon(LoadSvg(":/resources/svg/copy.svg", theme));
   _action_paste->setIcon(LoadSvg(":/resources/svg/paste.svg", theme));
@@ -317,11 +326,11 @@ PlotWidget::CurveInfo* PlotWidget::addCurveXY(std::string name_x, std::string na
 
     if (name.empty() || curve_it)
     {
-      int ret = QMessageBox::warning(qwtPlot(), "Missing name",
-                                     "The name of the curve is missing or exist already. "
-                                     "Try again or abort.",
-                                     QMessageBox::Abort | QMessageBox::Retry,
-                                     QMessageBox::NoButton);
+      int ret =
+          QMessageBox::warning(qwtPlot(), "Missing name",
+                               "The name of the curve is missing or exist already. "
+                               "Try again or abort.",
+                               QMessageBox::Abort | QMessageBox::Retry, QMessageBox::NoButton);
       if (ret == QMessageBox::Abort || ret == QMessageBox::NoButton)
       {
         return nullptr;
@@ -450,8 +459,7 @@ void PlotWidget::onDataSourceRemoved(const std::string& src_name)
     _tracker->redraw();
     emit curveListChanged();
   }
-  if (_background_item &&
-      _background_item->dataName() == QString::fromStdString(src_name))
+  if (_background_item && _background_item->dataName() == QString::fromStdString(src_name))
   {
     _background_item->detach();
     _background_item.reset();
@@ -614,8 +622,7 @@ void PlotWidget::onDropEvent(QDropEvent*)
     emit curveListChanged();
 
     QSettings settings;
-    bool autozoom_curve_added =
-        settings.value("Preferences::autozoom_curve_added", true).toBool();
+    bool autozoom_curve_added = settings.value("Preferences::autozoom_curve_added", true).toBool();
     if (autozoom_curve_added || noCurves)
     {
       zoomOut(autozoom_curve_added);
@@ -767,8 +774,8 @@ bool PlotWidget::xmlLoadState(QDomElement& plot_widget, bool autozoom)
 
   // insert curves
   QStringList missing_curves;
-  for (QDomElement curve_element = plot_widget.firstChildElement("curve");
-       !curve_element.isNull(); curve_element = curve_element.nextSiblingElement("curve"))
+  for (QDomElement curve_element = plot_widget.firstChildElement("curve"); !curve_element.isNull();
+       curve_element = curve_element.nextSiblingElement("curve"))
   {
     bool is_merged_xy =
         curve_element.hasAttribute("curve_x") && curve_element.hasAttribute("curve_y");
@@ -916,8 +923,7 @@ bool PlotWidget::xmlLoadState(QDomElement& plot_widget, bool autozoom)
       else
       {
         // everything fine.
-        _background_item =
-            std::make_unique<BackgroundColorItem>(plot_it->second, bg_colormap);
+        _background_item = std::make_unique<BackgroundColorItem>(plot_it->second, bg_colormap);
         _background_item->setTimeOffset(&_time_offset);
         _background_item->attach(qwtPlot());
       }
@@ -1262,6 +1268,27 @@ void PlotWidget::onBackgroundColorRequest(QString name)
   }
 }
 
+void PlotWidget::onReferenceLineChecked(bool checked)
+{
+  if (checked)
+  {
+    _reference_line_marker->setVisible(true);
+    _reference_line_marker->setValue(_tracker->actualPosition());
+    _tracker->setReferencePosition(_tracker->actualPosition());
+  }
+  if (!checked)
+  {
+    _reference_line_marker->setVisible(false);
+    _tracker->setReferencePosition(std::nullopt);
+  }
+  qwtPlot()->replot();
+}
+
+void PlotWidget::onShowPlot(bool checked)
+{
+  _show_point_enabled = checked;
+}
+
 void PlotWidget::setStatisticsTitle(QString title)
 {
   _statistics_window_title = title;
@@ -1291,15 +1318,13 @@ void PlotWidget::onShowDataStatistics()
 
   auto setToNull = [this]() { _statistics_dialog = nullptr; };
 
-  connect(this, &PlotWidget::rectChanged, _statistics_dialog,
-          [this](PlotWidget*, QRectF rect) {
-            _statistics_dialog->update({ rect.left(), rect.right() });
-          });
+  connect(this, &PlotWidget::rectChanged, _statistics_dialog, [this](PlotWidget*, QRectF rect) {
+    _statistics_dialog->update({ rect.left(), rect.right() });
+  });
 
   connect(_statistics_dialog, &QDialog::rejected, this, setToNull);
 
-  connect(this, &PlotWidgetBase::curveListChanged, this,
-          [this]() { updateStatistics(); });
+  connect(this, &PlotWidgetBase::curveListChanged, this, [this]() { updateStatistics(); });
 }
 
 void PlotWidget::on_externallyResized(const QRectF& rect)
@@ -1383,8 +1408,7 @@ void PlotWidget::setModeXY(bool enable)
 void PlotWidget::updateAvailableTransformers()
 {
   QSettings settings;
-  QByteArray xml_text =
-      settings.value("AddCustomPlotDialog.savedXML", QByteArray()).toByteArray();
+  QByteArray xml_text = settings.value("AddCustomPlotDialog.savedXML", QByteArray()).toByteArray();
   if (!xml_text.isEmpty())
   {
     _snippets = GetSnippetsFromXML(xml_text);
@@ -1393,80 +1417,26 @@ void PlotWidget::updateAvailableTransformers()
 
 void PlotWidget::on_savePlotToFile()
 {
-  QString fileName;
+  const auto plot_size = plotSize();
+  PlotSaveHelper save_plots_helper(plot_size, this);
+  plotOn(save_plots_helper, { 0, 0, plot_size.width(), plot_size.height() });
+}
 
-  QFileDialog saveDialog(qwtPlot());
-  saveDialog.setAcceptMode(QFileDialog::AcceptSave);
-
-  QStringList filters;
-  filters << "png (*.png)"
-          << "jpg (*.jpg *.jpeg)"
-          << "svg (*.svg)";
-
-  saveDialog.setNameFilters(filters);
-  saveDialog.exec();
-
-  if (saveDialog.result() == QDialog::Accepted && !saveDialog.selectedFiles().empty())
+void PlotWidget::plotOn(const PlotSaveHelper& plot_save_helper, QRect paint_at)
+{
+  bool tracker_enabled = _tracker->isEnabled();
+  if (tracker_enabled)
   {
-    fileName = saveDialog.selectedFiles().first();
+    this->enableTracker(false);
+    replot();
+  }
 
-    if (fileName.isEmpty())
-    {
-      return;
-    }
+  plot_save_helper.paint(qwtPlot(), paint_at);
 
-    bool is_svg = false;
-    QFileInfo fileinfo(fileName);
-    if (fileinfo.suffix().isEmpty())
-    {
-      auto filter = saveDialog.selectedNameFilter();
-      if (filter == filters[0])
-      {
-        fileName.append(".png");
-      }
-      else if (filter == filters[1])
-      {
-        fileName.append(".jpg");
-      }
-      else if (filter == filters[2])
-      {
-        fileName.append(".svg");
-        is_svg = true;
-      }
-    }
-
-    bool tracker_enabled = _tracker->isEnabled();
-    if (tracker_enabled)
-    {
-      this->enableTracker(false);
-      replot();
-    }
-
-    QRect documentRect(0, 0, 1200, 900);
-    QwtPlotRenderer rend;
-
-    if (is_svg)
-    {
-      QSvgGenerator generator;
-      generator.setFileName(fileName);
-      generator.setResolution(80);
-      generator.setViewBox(documentRect);
-      QPainter painter(&generator);
-      rend.render(qwtPlot(), &painter, documentRect);
-    }
-    else
-    {
-      QPixmap pixmap(1200, 900);
-      QPainter painter(&pixmap);
-      rend.render(qwtPlot(), &painter, documentRect);
-      pixmap.save(fileName);
-    }
-
-    if (tracker_enabled)
-    {
-      this->enableTracker(true);
-      replot();
-    }
+  if (tracker_enabled)
+  {
+    this->enableTracker(true);
+    replot();
   }
 }
 
@@ -1542,6 +1512,86 @@ void PlotWidget::on_pasteAction_triggered()
     auto el = root.firstChildElement();
     xmlLoadState(el);
     emit undoableChange();
+  }
+}
+
+void PlotWidget::showPointValues(QPoint point)
+{
+  if (!_show_point_enabled)
+  {
+    return;
+  }
+  const QwtPlotItemList curves = qwtPlot()->itemList(QwtPlotItem::Rtti_PlotCurve);
+
+  auto paint_to_plot = [this](QPoint p) {
+    return QPointF(qwtPlot()->invTransform(QwtPlot::xBottom, p.x()),
+                   qwtPlot()->invTransform(QwtPlot::yLeft, p.y()));
+  };
+  auto plot_to_paint = [this](QPointF p) {
+    return QPoint(qwtPlot()->transform(QwtPlot::xBottom, p.x()),
+                  qwtPlot()->transform(QwtPlot::yLeft, p.y()));
+  };
+
+  const QPointF pointF = paint_to_plot(point);
+
+  QSettings settings;
+  const int prec = settings.value("Preferences::precision", 3).toInt();
+
+  QString text;
+  int min_distance_sqr = 40 * 40;
+  bool updated = false;
+  QPointF marker_point;
+  for (int i = 0; i < curves.size(); i++)
+  {
+    QwtPlotCurve* curve = static_cast<QwtPlotCurve*>(curves[i]);
+    auto maybe_point = curvePointAt(curve, pointF.x());
+    if (maybe_point)
+    {
+      QPoint p(qwtPlot()->transform(QwtPlot::xBottom, maybe_point->x()),
+               qwtPlot()->transform(QwtPlot::yLeft, maybe_point->y()));
+      QPoint diff = p - point;
+      int dist_sqr = diff.x() * diff.x() + diff.y() * diff.y();
+      if (dist_sqr < min_distance_sqr)
+      {
+        updated = true;
+        min_distance_sqr = dist_sqr;
+        _show_point_marker->setValue(maybe_point.value());
+        marker_point = maybe_point.value();
+
+        text = QString("<font color=%1>name: %2<br>time:%3<br>value: %4</font>")
+                   .arg(curve->pen().color().name())
+                   .arg(curve->title().text())
+                   .arg(QString::number(maybe_point->x(), 'f', prec))
+                   .arg(QString::number(maybe_point->y(), 'f', prec));
+      }
+    }
+  }
+  bool disappeared = !_show_point_marker->isVisible() && !updated;
+  _show_point_marker->setVisible(updated);
+  _show_point_text->setVisible(updated);
+
+  if (updated)
+  {
+    QPointF offset_point = paint_to_plot(plot_to_paint(marker_point) + QPoint(15, -20));
+
+    QwtText mark_text;
+    mark_text.setText(text);
+    mark_text.setBorderPen(QColor(Qt::transparent));
+    QColor background_color = qwtPlot()->palette().background().color();
+    background_color.setAlpha(220);
+    mark_text.setBackgroundBrush(background_color);
+    QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    font.setPointSize(9);
+    mark_text.setFont(font);
+    mark_text.setRenderFlags(Qt::AlignLeft);
+    _show_point_text->setLabel(mark_text);
+    _show_point_text->setLabelAlignment(Qt::AlignRight);
+    _show_point_text->setValue(offset_point);
+  }
+
+  if (updated || disappeared)
+  {
+    replot();
   }
 }
 
@@ -1657,16 +1707,16 @@ bool PlotWidget::canvasEventFilter(QEvent* event)
       }
 
       QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
+      const QPoint point = mouse_event->pos();
+      QPointF pointF(qwtPlot()->invTransform(QwtPlot::xBottom, point.x()),
+                     qwtPlot()->invTransform(QwtPlot::yLeft, point.y()));
 
-      if (mouse_event->buttons() == Qt::LeftButton &&
-          mouse_event->modifiers() == Qt::ShiftModifier)
+      if (mouse_event->buttons() == Qt::LeftButton && mouse_event->modifiers() == Qt::ShiftModifier)
       {
-        const QPoint point = mouse_event->pos();
-        QPointF pointF(qwtPlot()->invTransform(QwtPlot::xBottom, point.x()),
-                       qwtPlot()->invTransform(QwtPlot::yLeft, point.y()));
         emit trackerMoved(pointF);
         return true;
       }
+      showPointValues(point);
     }
     break;
 
@@ -1714,8 +1764,7 @@ void PlotWidget::setDefaultRangeX()
   }
 }
 
-QwtSeriesWrapper* PlotWidget::createCurveXY(const PlotData* data_x,
-                                            const PlotData* data_y)
+QwtSeriesWrapper* PlotWidget::createCurveXY(const PlotData* data_x, const PlotData* data_y)
 {
   PointSeriesXY* output = nullptr;
 
@@ -1742,8 +1791,7 @@ QwtSeriesWrapper* PlotWidget::createCurveXY(const PlotData* data_x,
   return output;
 }
 
-QwtSeriesWrapper* PlotWidget::createTimeSeries(const PlotData* data,
-                                               const QString& transform_ID)
+QwtSeriesWrapper* PlotWidget::createTimeSeries(const PlotData* data, const QString& transform_ID)
 {
   TransformedTimeseries* output = new TransformedTimeseries(data);
   output->setTransform(transform_ID);

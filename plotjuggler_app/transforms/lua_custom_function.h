@@ -13,8 +13,8 @@ public:
 
   void initEngine() override;
 
-  void calculatePoints(const std::vector<const PlotData*>& channels_data,
-                       size_t point_index, std::vector<PlotData::Point>& points) override;
+  void calculatePoints(const std::vector<const PlotData*>& channels_data, size_t point_index,
+                       std::vector<PlotData::Point>& points) override;
 
   QString language() const override
   {

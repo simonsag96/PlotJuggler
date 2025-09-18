@@ -163,11 +163,10 @@ void PlotwidgetEditor::setupColorWidget()
   connect(_color_wheel, &color_widgets::ColorWheel::colorChanged, _color_preview,
           &color_widgets::ColorPreview::setColor);
 
-  connect(_color_wheel, &color_widgets::ColorWheel::colorChanged, this,
-          [this](QColor col) {
-            QSignalBlocker block(ui->editColotText);
-            ui->editColotText->setText(col.name());
-          });
+  connect(_color_wheel, &color_widgets::ColorWheel::colorChanged, this, [this](QColor col) {
+    QSignalBlocker block(ui->editColotText);
+    ui->editColotText->setText(col.name());
+  });
 
   _color_wheel->setColor(Qt::blue);
 }
@@ -225,8 +224,7 @@ void PlotwidgetEditor::setupTable()
     item->setSizeHint(plot_row->sizeHint());
     ui->listWidget->setItemWidget(item, plot_row);
 
-    connect(plot_row, &EditorRowWidget::deleteRow, this,
-            [this](QWidget* w) { onDeleteRow(w); });
+    connect(plot_row, &EditorRowWidget::deleteRow, this, [this](QWidget* w) { onDeleteRow(w); });
     row++;
   }
   if (row == 0)
@@ -411,8 +409,7 @@ EditorRowWidget::EditorRowWidget(QString text, QColor color) : QWidget()
 
   _delete_button->setHidden(true);
 
-  connect(_delete_button, &QPushButton::clicked, this,
-          [this]() { emit deleteRow(this); });
+  connect(_delete_button, &QPushButton::clicked, this, [this]() { emit deleteRow(this); });
 }
 
 void EditorRowWidget::enterEvent(QEvent* ev)

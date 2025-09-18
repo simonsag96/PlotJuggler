@@ -9,7 +9,7 @@
 
 **Gold Sponsor**: [Greenzie](https://www.greenzie.com/)
 
-# PlotJuggler 3.9
+# PlotJuggler 3.12
 
 PlotJuggler is a tool to visualize time series that is **fast**, **powerful** and  **intuitive**.
 
@@ -18,7 +18,7 @@ Noteworthy features:
 - Simple Drag & Drop user interface.
 - Load __data from file__.
 - Connect to live __streaming__ of data.
-- Save the visualization layout and configurations to re-use them later.
+- Save the visualization layout and configurations to reuse them later.
 - Fast **OpenGL** visualization.
 - Can handle **thousands** of timeseries and **millions** of data points.
 - Transform your data using a simple editor: derivative, moving average, integral, etc…
