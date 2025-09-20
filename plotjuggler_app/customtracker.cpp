@@ -193,15 +193,20 @@ void CurveTracker::setPosition(const QPointF& tracker_position)
   QString text_marker_info;
 
   const QString time_str = QString::number(tracker_position.x(), 'f', prec);
+  QColor text_color = _plot->palette().color(QPalette::WindowText);
   if (_reference_pos)
   {
     auto delta_time = tracker_position.x() - _reference_pos->x();
     auto delta_str = QString::number(delta_time, 'f', prec);
-    text_marker_info = QString("time : %1 (Δ %2)<br>").arg(time_str).arg(delta_str);
+    text_marker_info = QString("<font color=%1>time : %2 (Δ %3)</font><br>")
+                           .arg(text_color.name())
+                           .arg(time_str)
+                           .arg(delta_str);
   }
   else
   {
-    text_marker_info = QString("time : %1<br>").arg(time_str);
+    text_marker_info =
+        QString("<font color=%1>time : %2</font><br>").arg(text_color.name()).arg(time_str);
   }
 
   if (_param != LINE_ONLY)
