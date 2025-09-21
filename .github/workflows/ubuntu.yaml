@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Sync repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Cache apt packages
         uses: awalsh128/cache-apt-pkgs-action@latest

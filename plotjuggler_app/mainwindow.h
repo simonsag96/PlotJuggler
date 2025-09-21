@@ -143,6 +143,7 @@ private:
   bool _autostart_publishers;
 
   double _tracker_time;
+  double _reference_tracker_time;
 
   QStringList _enabled_plugins;
   QStringList _disabled_plugins;

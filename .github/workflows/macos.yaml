@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Sync repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Prepare Homebrew and Install Dependencies
         run: |

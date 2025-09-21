@@ -936,6 +936,7 @@ void MainWindow::onPlotAdded(PlotWidget* plot)
 
   connect(plot, &PlotWidget::rectChanged, this, &MainWindow::onPlotZoomChanged);
 
+  plot->setTrackerPosition(_tracker_time);
   plot->on_changeTimeOffset(_time_offset.get());
   plot->on_changeDateTimeScale(ui->buttonUseDateTime->isChecked());
   plot->activateGrid(ui->buttonActivateGrid->isChecked());
@@ -943,6 +944,10 @@ void MainWindow::onPlotAdded(PlotWidget* plot)
   plot->setKeepRatioXY(ui->buttonRatio->isChecked());
   plot->configureTracker(_tracker_param);
   plot->onShowPlot(ui->buttonShowpoint->isChecked());
+  if (ui->buttonReferencePoint->isChecked())
+  {
+    plot->onReferenceLineChecked(ui->buttonReferencePoint->isChecked(), _reference_tracker_time);
+  }
 }
 
 void MainWindow::onPlotZoomChanged(PlotWidget* modified_plot, QRectF new_range)
@@ -3488,7 +3493,10 @@ void MainWindow::on_buttonCloseStatus_clicked()
 
 void MainWindow::on_buttonReferencePoint_toggled(bool checked)
 {
-  this->forEachWidget([checked](PlotWidget* plot) { plot->onReferenceLineChecked(checked); });
+  _reference_tracker_time = _tracker_time;
+  this->forEachWidget([checked, this](PlotWidget* plot) {
+    plot->onReferenceLineChecked(checked, this->_reference_tracker_time);
+  });
 }
 
 void MainWindow::on_buttonShowpoint_toggled(bool checked)

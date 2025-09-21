@@ -141,7 +141,7 @@ public slots:
 
   void onBackgroundColorRequest(QString name);
 
-  void onReferenceLineChecked(bool checked);
+  void onReferenceLineChecked(bool checked, double reference_tracker_position);
 
   void onShowPlot(bool checked);
 
@@ -232,6 +232,8 @@ private:
                                      const QString& transform_ID = {}) override;
 
   double _time_offset;
+
+  double _tracker_position;
 
   Range _custom_Y_limits;
 

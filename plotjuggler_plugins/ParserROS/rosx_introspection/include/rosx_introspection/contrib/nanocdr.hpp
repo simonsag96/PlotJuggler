@@ -323,7 +323,7 @@ constexpr bool is_type_defined_v()
   return is_type_defined<T>::value;
 }
 
-Endianness getCurrentEndianness()
+inline Endianness getCurrentEndianness()
 {
   union
   {

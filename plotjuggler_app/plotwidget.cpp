@@ -1081,6 +1081,13 @@ void PlotWidget::on_changeTimeOffset(double offset)
 {
   auto prev_offset = _time_offset;
   _time_offset = offset;
+  // move the trackers
+  if (!isXYPlot())
+  {
+    double prev_tracker = _tracker->actualPosition().x();
+    double new_tracker = prev_tracker + (prev_offset - offset);
+    _tracker->setPosition(QPointF(new_tracker, 0.0));
+  }
 
   if (fabs(prev_offset - offset) > std::numeric_limits<double>::epsilon())
   {
@@ -1268,13 +1275,19 @@ void PlotWidget::onBackgroundColorRequest(QString name)
   }
 }
 
-void PlotWidget::onReferenceLineChecked(bool checked)
+void PlotWidget::onReferenceLineChecked(bool checked, double reference_value)
 {
+  if (isXYPlot())
+  {
+    return;
+  }
+
   if (checked)
   {
+    QPointF reference_point(reference_value - _time_offset, 0);
     _reference_line_marker->setVisible(true);
-    _reference_line_marker->setValue(_tracker->actualPosition());
-    _tracker->setReferencePosition(_tracker->actualPosition());
+    _reference_line_marker->setValue(reference_point);
+    _tracker->setReferencePosition(reference_point);
   }
   if (!checked)
   {

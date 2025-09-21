@@ -23,7 +23,7 @@ jobs:
           required-ros-distributions: rolling
 
       # Run ROS CI
-      - uses: ros-tooling/action-ros-ci@v0.3
+      - uses: ros-tooling/action-ros-ci@v0.4
         with:
           package-name: plotjuggler
           target-ros2-distro: rolling
