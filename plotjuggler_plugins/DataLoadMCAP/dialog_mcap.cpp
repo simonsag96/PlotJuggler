@@ -77,6 +77,7 @@ DialogMCAP::DialogMCAP(const std::unordered_map<int, mcap::ChannelPtr>& channels
     ui->radioSkip->setChecked(true);
   }
   ui->spinBox->setValue(params.max_array_size);
+  ui->spinBox->setFocusPolicy(Qt::ClickFocus);
   ui->checkBoxUseTimestamp->setChecked(params.use_timestamp);
   if (params.use_mcap_log_time)
   {
