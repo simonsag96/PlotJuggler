@@ -32,7 +32,7 @@
 #include "transforms/outlier_removal.h"
 #include "transforms/integral_transform.h"
 #include "transforms/absolute_transform.h"
-#include "transforms/time_since_last_datapoint.h"
+#include "transforms/time_since_previous_point.h"
 
 #include "new_release_dialog.h"
 
@@ -217,7 +217,7 @@ int main(int argc, char* argv[])
   TransformFactory::registerTransform<OutlierRemovalFilter>();
   TransformFactory::registerTransform<IntegralTransform>();
   TransformFactory::registerTransform<AbsoluteTransform>();
-  TransformFactory::registerTransform<TimeSinceLastDataPointTransform>();
+  TransformFactory::registerTransform<TimeSincePreviousPointTranform>();
   TransformFactory::registerTransform<MovingVarianceFilter>();
   TransformFactory::registerTransform<SamplesCountFilter>();
   //---------------------------

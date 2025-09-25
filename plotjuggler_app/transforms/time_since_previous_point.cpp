@@ -1,8 +1,8 @@
-#include "time_since_last_datapoint.h"
+#include "time_since_previous_point.h"
 #include <QFormLayout>
 #include <QDoubleValidator>
 
-std::optional<PlotData::Point> TimeSinceLastDataPointTransform::calculateNextPoint(size_t index)
+std::optional<PlotData::Point> TimeSincePreviousPointTranform::calculateNextPoint(size_t index)
 {
   if (index == 0)
   {
