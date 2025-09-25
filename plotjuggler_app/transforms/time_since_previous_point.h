@@ -5,16 +5,16 @@
 
 using namespace PJ;
 
-class TimeSinceLastDataPointTransform : public TransformFunction_SISO
+class TimeSincePreviousPointTranform : public TransformFunction_SISO
 {
 public:
-  TimeSinceLastDataPointTransform() = default;
+  TimeSincePreviousPointTranform() = default;
 
-  ~TimeSinceLastDataPointTransform() override = default;
+  ~TimeSincePreviousPointTranform() override = default;
 
   static const char* transformName()
   {
-    return "Time Since Last Data Point";
+    return "Time Since Previous Point";
   }
 
   const char* name() const override

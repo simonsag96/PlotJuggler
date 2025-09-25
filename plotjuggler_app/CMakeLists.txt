@@ -76,7 +76,7 @@ set(PLOtJUGGLER_SRC
     transforms/samples_count.cpp
     transforms/first_derivative.cpp
     transforms/scale_transform.cpp
-    transforms/time_since_last_datapoint.cpp
+    transforms/time_since_previous_point.cpp
     utils.h
     utils.cpp
     mainwindow.h
