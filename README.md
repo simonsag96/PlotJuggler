@@ -7,7 +7,10 @@
 [![ROS2](https://github.com/facontidavide/PlotJuggler/workflows/ros2/badge.svg)](https://github.com/facontidavide/PlotJuggler/actions?query=workflow%3Aros2)
 [![Tweet](https://img.shields.io/twitter/url/http/shields.io.svg?style=social)](https://twitter.com/intent/tweet?text=I%20use%20PlotJuggler%20and%20it%20is%20amazing%0D%0A&url=https://github.com/facontidavide/PlotJuggler&via=facontidavide&hashtags=dataviz,plotjuggler,GoROS,PX4)
 
-**Gold Sponsor**: [Greenzie](https://www.greenzie.com/)
+## Gold Sponsor:
+[![Greenzie](docs/sponsor_greenzie.png)](https://www.greenzie.com/)
+[![Intermodalics](docs/sponsor_intermodalics.png)](https://www.intermodalics.ai/)
+[![Greenzie](docs/sponsor_ark.png)](https://arkelectron.com/)
 
 # PlotJuggler 3.12
 
