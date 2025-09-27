@@ -238,7 +238,7 @@
    </item>
   </layout>
  </widget>
- <resources />
+ <resources/>
  <connections>
   <connection>
    <sender>buttonBox</sender>
@@ -274,6 +274,6 @@
   </connection>
  </connections>
  <buttongroups>
-  <buttongroup name="buttonGroup" />
+  <buttongroup name="buttonGroup"/>
  </buttongroups>
 </ui>
