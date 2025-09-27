@@ -126,7 +126,8 @@ DialogMCAP::DialogMCAP(const std::unordered_map<int, mcap::ChannelPtr>& channels
   ui->tableWidget->sortByColumn(sort_count, sort_order);
 
   // Connect topic filter QLineEdit to filtering logic
-  connect(ui->lineEditFilter, &QLineEdit::textChanged, this, &DialogMCAP::on_lineEditFilter_textChanged);
+  connect(ui->lineEditFilter, &QLineEdit::textChanged, this,
+          &DialogMCAP::on_lineEditFilter_textChanged);
 }
 
 DialogMCAP::~DialogMCAP()
