@@ -39,6 +39,7 @@ public:
 private slots:
   void on_tableWidget_itemSelectionChanged();
   void accept() override;
+  void on_lineEditFilter_textChanged(const QString& search_string);
 
 private:
   Ui::dialog_mcap* ui;
