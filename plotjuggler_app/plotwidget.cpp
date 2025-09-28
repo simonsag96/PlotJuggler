@@ -87,7 +87,9 @@ PlotWidget::PlotWidget(PlotDataMapRef& datamap, QWidget* parent)
   qwtPlot()->setAcceptDrops(true);
 
   //--------------------------
-  _tracker = (new CurveTracker(qwtPlot()));
+  _tracker = (new CurveTracker(qwtPlot(), Qt::red));
+  _reference_tracker = (new CurveTracker(qwtPlot(), Qt::blue));
+  _reference_tracker->setParameter(CurveTracker::LINE_ONLY);
 
   _grid = new QwtPlotGrid();
   _grid->setPen(QPen(Qt::gray, 0.0, Qt::DotLine));
@@ -113,13 +115,6 @@ PlotWidget::PlotWidget(PlotDataMapRef& datamap, QWidget* parent)
   _custom_Y_limits.min = (-MAX_DOUBLE);
   _custom_Y_limits.max = (MAX_DOUBLE);
 
-  _reference_line_marker = new QwtPlotMarker();
-
-  _reference_line_marker->setLinePen(QPen(Qt::blue));
-  _reference_line_marker->setLineStyle(QwtPlotMarker::VLine);
-  _reference_line_marker->attach(qwtPlot());
-  _reference_line_marker->setVisible(false);
-
   QwtSymbol* sym = new QwtSymbol(QwtSymbol::Ellipse, Qt::black, QPen(Qt::black), QSize(5, 5));
 
   _show_point_marker = (new QwtPlotMarker);
@@ -128,13 +123,6 @@ PlotWidget::PlotWidget(PlotDataMapRef& datamap, QWidget* parent)
 
   _show_point_text = new QwtPlotMarker();
   _show_point_text->attach(qwtPlot());
-
-  //  QwtScaleWidget* bottomAxis = qwtPlot()->axisWidget( QwtPlot::xBottom );
-  //  QwtScaleWidget* leftAxis = qwtPlot()->axisWidget( QwtPlot::yLeft );
-
-  //  bottomAxis->installEventFilter(this);
-  //  leftAxis->installEventFilter(this);
-  //  qwtPlot()->canvas()->installEventFilter(this);
 }
 
 PlotWidget::~PlotWidget()
@@ -422,6 +410,8 @@ PlotWidgetBase::CurveInfo* PlotWidget::addCurve(const std::string& name, QColor 
       timeseries->setTimeOffset(_time_offset);
     }
   }
+  _tracker->redraw();
+  _reference_tracker->redraw();
   return info;
 }
 
@@ -429,6 +419,7 @@ void PlotWidget::removeCurve(const QString& title)
 {
   PlotWidgetBase::removeCurve(title);
   _tracker->redraw();
+  _reference_tracker->redraw();
 }
 
 void PlotWidget::onDataSourceRemoved(const std::string& src_name)
@@ -1285,13 +1276,13 @@ void PlotWidget::onReferenceLineChecked(bool checked, double reference_value)
   if (checked)
   {
     QPointF reference_point(reference_value - _time_offset, 0);
-    _reference_line_marker->setVisible(true);
-    _reference_line_marker->setValue(reference_point);
+    _reference_tracker->setEnabled(true);
+    _reference_tracker->setPosition(reference_point);
     _tracker->setReferencePosition(reference_point);
   }
   if (!checked)
   {
-    _reference_line_marker->setVisible(false);
+    _reference_tracker->setEnabled(false);
     _tracker->setReferencePosition(std::nullopt);
   }
   qwtPlot()->replot();

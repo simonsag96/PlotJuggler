@@ -4,7 +4,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-#include "customtracker.h"
+#include "curve_tracker.h"
 #include "qwt_series_data.h"
 #include "qwt_plot.h"
 #include "qwt_plot_curve.h"
@@ -23,11 +23,11 @@ struct compareX
   }
 };
 
-CurveTracker::CurveTracker(QwtPlot* plot) : QObject(plot), _plot(plot), _param(VALUE)
+CurveTracker::CurveTracker(QwtPlot* plot, QColor color) : QObject(plot), _plot(plot), _param(VALUE)
 {
   _line_marker = new QwtPlotMarker();
 
-  _line_marker->setLinePen(QPen(Qt::red));
+  _line_marker->setLinePen(QPen(color));
   _line_marker->setLineStyle(QwtPlotMarker::VLine);
   _line_marker->setValue(0, 0);
   _line_marker->attach(plot);
@@ -64,9 +64,9 @@ void CurveTracker::setEnabled(bool enable)
   _line_marker->setVisible(enable);
   _text_marker->setVisible(enable);
 
-  for (int i = 0; i < _marker.size(); i++)
+  for (int i = 0; i < _point_markers.size(); i++)
   {
-    _marker[i]->setVisible(enable);
+    _point_markers[i]->setVisible(enable);
   }
 }
 
@@ -91,16 +91,16 @@ void CurveTracker::setPosition(const QPointF& tracker_position)
   double max_Y = -min_Y;
   int visible_points = 0;
 
-  while (_marker.size() > curves.size())
+  while (_point_markers.size() > curves.size())
   {
-    _marker.back()->detach();
-    _marker.pop_back();
+    _point_markers.back()->detach();
+    _point_markers.pop_back();
   }
 
-  for (int i = _marker.size(); i < curves.size(); i++)
+  for (int i = _point_markers.size(); i < curves.size(); i++)
   {
-    _marker.push_back(new QwtPlotMarker);
-    _marker[i]->attach(_plot);
+    _point_markers.push_back(new QwtPlotMarker);
+    _point_markers[i]->attach(_plot);
   }
 
   double text_X_offset = 0;
@@ -124,7 +124,7 @@ void CurveTracker::setPosition(const QPointF& tracker_position)
   for (int i = 0; i < curves.size(); i++)
   {
     QwtPlotCurve* curve = static_cast<QwtPlotCurve*>(curves[i]);
-    _marker[i]->setVisible(curve->isVisible());
+    _point_markers[i]->setVisible(curve->isVisible());
 
     if (curve->isVisible() == false)
     {
@@ -132,10 +132,10 @@ void CurveTracker::setPosition(const QPointF& tracker_position)
     }
     QColor color = curve->pen().color();
     text_X_offset = rect.width() * 0.02;
-    if (!_marker[i]->symbol() || _marker[i]->symbol()->brush().color() != color)
+    if (!_point_markers[i]->symbol() || _point_markers[i]->symbol()->brush().color() != color)
     {
       QwtSymbol* sym = new QwtSymbol(QwtSymbol::Ellipse, color, QPen(Qt::black), QSize(5, 5));
-      _marker[i]->setSymbol(sym);
+      _point_markers[i]->setSymbol(sym);
     }
     const auto maybe_point = curvePointAt(curve, tracker_position.x());
     if (!maybe_point)
@@ -146,7 +146,7 @@ void CurveTracker::setPosition(const QPointF& tracker_position)
         (_reference_pos) ? curvePointAt(curve, _reference_pos->x()) : std::nullopt;
 
     const QPointF point = maybe_point.value();
-    _marker[i]->setValue(point);
+    _point_markers[i]->setValue(point);
     if (rect.contains(point) && _visible)
     {
       min_Y = std::min(min_Y, point.y());
@@ -164,16 +164,16 @@ void CurveTracker::setPosition(const QPointF& tracker_position)
       parts.name = curve->title().text();
       parts.color = color;
       text_lines.insert(std::make_pair(value, parts));
-      _marker[i]->setVisible(true);
+      _point_markers[i]->setVisible(true);
 
       values_char_count = std::max(values_char_count, parts.value.length());
       delta_char_count = std::max(delta_char_count, parts.delta.length());
     }
     else
     {
-      _marker[i]->setVisible(false);
+      _point_markers[i]->setVisible(false);
     }
-    _marker[i]->setValue(point);
+    _point_markers[i]->setValue(point);
   }
 
   // add indentation to align the columns

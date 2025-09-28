@@ -4,8 +4,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
 
-#ifndef CUSTOMTRACKER_H
-#define CUSTOMTRACKER_H
+#pragma once
 
 #include <QEvent>
 #include <QPointF>
@@ -21,7 +20,7 @@ class CurveTracker : public QObject
 {
   Q_OBJECT
 public:
-  explicit CurveTracker(QwtPlot*);
+  explicit CurveTracker(QwtPlot*, QColor color);
 
   ~CurveTracker();
 
@@ -58,12 +57,10 @@ private:
 
   QPointF _prev_trackerpoint;
   std::optional<QPointF> _reference_pos;
-  std::vector<QwtPlotMarker*> _marker;
+  std::vector<QwtPlotMarker*> _point_markers;
   QwtPlotMarker* _line_marker;
   QwtPlotMarker* _text_marker;
   QwtPlot* _plot;
   Parameter _param;
   bool _visible;
 };
-
-#endif  // CUSTOMTRACKER_H

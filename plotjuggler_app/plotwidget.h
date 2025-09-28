@@ -26,7 +26,7 @@
 
 #include "PlotJuggler/plotwidget_base.h"
 #include "PlotJuggler/save_plot.h"
-#include "customtracker.h"
+#include "curve_tracker.h"
 #include "colormap_editor.h"
 
 #include "transforms/transform_selector.h"
@@ -191,8 +191,8 @@ private:
   QAction* _flip_y;
 
   CurveTracker* _tracker;
+  CurveTracker* _reference_tracker;
   QwtPlotGrid* _grid;
-  QwtPlotMarker* _reference_line_marker = nullptr;
 
   bool _show_point_enabled = false;
   QwtPlotMarker* _show_point_marker;

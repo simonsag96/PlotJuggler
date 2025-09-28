@@ -31,9 +31,9 @@ qt5_wrap_ui(
   transforms/samples_count.ui
   cheatsheet/cheatsheet_dialog.ui)
 
-set(PLOtJUGGLER_SRC
+set(PLOTJUGGLER_SRC
     cheatsheet/cheatsheet_dialog.cpp
-    customtracker.cpp
+    curve_tracker.cpp
     multifile_prefix.cpp
     colormap_editor.cpp
     colormap_selector.cpp
@@ -83,7 +83,7 @@ set(PLOtJUGGLER_SRC
     realslider.h
     nlohmann_parsers.cpp)
 
-add_executable(plotjuggler ${PLOtJUGGLER_SRC} ${RES_SRC} ${UI_SRC}
+add_executable(plotjuggler ${PLOTJUGGLER_SRC} ${RES_SRC} ${UI_SRC}
                            ${BACKWARD_ENABLE})
 
 if(NOT WIN32)
