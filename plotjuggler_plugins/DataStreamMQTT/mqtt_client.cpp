@@ -29,10 +29,9 @@ void connect_callback(struct mosquitto* mosq, void* context, int result, int,
   }
   else
   {
-    QMessageBox::warning(
-        nullptr, "MQTT Client",
-        QString("Connection error: %1").arg(mosquitto_reason_string(result)),
-        QMessageBox::Ok);
+    QMessageBox::warning(nullptr, "MQTT Client",
+                         QString("Connection error: %1").arg(mosquitto_reason_string(result)),
+                         QMessageBox::Ok);
   }
   self->_connected = true;
 }
@@ -67,9 +66,8 @@ void log_callback(struct mosquitto* mosq, void* context, int log_level, const ch
     { MOSQ_LOG_WEBSOCKETS, "MOSQ_LOG_WEBSOCKETS" },
   };
 
-  const auto it =
-      std::find_if(std::begin(log_level_map), std::end(log_level_map),
-                   [log_level](const auto& pair) { return log_level == pair.first; });
+  const auto it = std::find_if(std::begin(log_level_map), std::end(log_level_map),
+                               [log_level](const auto& pair) { return log_level == pair.first; });
   if (it == std::end(log_level_map))
     return;
 
@@ -131,8 +129,7 @@ bool MQTTClient::configureMosquitto(const MosquittoConfig& config)
   mosquitto_log_callback_set(_mosq, log_callback);
 #endif
 
-  int rc =
-      mosquitto_int_option(_mosq, MOSQ_OPT_PROTOCOL_VERSION, config.protocol_version);
+  int rc = mosquitto_int_option(_mosq, MOSQ_OPT_PROTOCOL_VERSION, config.protocol_version);
   if (rc != MOSQ_ERR_SUCCESS)
   {
     QMessageBox::warning(nullptr, "MQTT Client", QString("MQTT initialization failed."),
@@ -143,8 +140,7 @@ bool MQTTClient::configureMosquitto(const MosquittoConfig& config)
 
   if ((!config.username.empty() || !config.password.empty()))
   {
-    rc = mosquitto_username_pw_set(_mosq, config.username.c_str(),
-                                   config.password.c_str());
+    rc = mosquitto_username_pw_set(_mosq, config.username.c_str(), config.password.c_str());
     if (rc != MOSQ_ERR_SUCCESS)
     {
       QMessageBox::warning(nullptr, "MQTT Client",
@@ -184,8 +180,8 @@ bool MQTTClient::configureMosquitto(const MosquittoConfig& config)
 
   const mosquitto_property* properties = nullptr;  // todo
 
-  rc = mosquitto_connect_bind_v5(_mosq, config.host.c_str(), config.port,
-                                 config.keepalive, nullptr, properties);
+  rc = mosquitto_connect_bind_v5(_mosq, config.host.c_str(), config.port, config.keepalive, nullptr,
+                                 properties);
   // TODO bind
   if (rc > 0)
   {
@@ -193,12 +189,11 @@ bool MQTTClient::configureMosquitto(const MosquittoConfig& config)
     {
       char err[1024];
 #ifndef WIN32
-      strerror_r(errno, err, 1024);
+      auto ret = strerror_r(errno, err, 1024);
 #else
       FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, errno, 0, (LPTSTR)&err, 1024, NULL);
 #endif
-      QMessageBox::warning(nullptr, "MQTT Client", QString("Error: %1").arg(err),
-                           QMessageBox::Ok);
+      QMessageBox::warning(nullptr, "MQTT Client", QString("Error: %1").arg(err), QMessageBox::Ok);
     }
     else
     {
@@ -256,8 +251,7 @@ bool MQTTClient::isConnected() const
   return _connected;
 }
 
-void MQTTClient::addMessageCallback(const std::string& topic,
-                                    MQTTClient::TopicCallback callback)
+void MQTTClient::addMessageCallback(const std::string& topic, MQTTClient::TopicCallback callback)
 {
   std::unique_lock<std::mutex> lk(_mutex);
   _message_callbacks[topic] = callback;

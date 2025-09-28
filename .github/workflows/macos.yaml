@@ -1,6 +1,11 @@
 name: macos
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize]
 
 jobs:
 
@@ -15,7 +20,7 @@ jobs:
 
     steps:
       - name: Sync repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Prepare Homebrew and Install Dependencies
         run: |

@@ -39,8 +39,7 @@ class MainWindow : public QMainWindow
   Q_OBJECT
 
 public:
-  explicit MainWindow(const QCommandLineParser& commandline_parser,
-                      QWidget* parent = nullptr);
+  explicit MainWindow(const QCommandLineParser& commandline_parser, QWidget* parent = nullptr);
 
   ~MainWindow();
 
@@ -144,6 +143,7 @@ private:
   bool _autostart_publishers;
 
   double _tracker_time;
+  double _reference_tracker_time;
 
   QStringList _enabled_plugins;
   QStringList _disabled_plugins;
@@ -289,6 +289,10 @@ private slots:
   void on_buttonReloadData_clicked();
 
   void on_buttonCloseStatus_clicked();
+
+  void on_buttonReferencePoint_toggled(bool checked);
+
+  void on_buttonShowpoint_toggled(bool checked);
 
 private:
   QStringList readAllCurvesFromXML(QDomElement root_node);

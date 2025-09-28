@@ -150,6 +150,7 @@
         <file>resources/svg/point_chart.svg</file>
         <file>resources/svg/ratio.svg</file>
         <file>resources/svg/red_circle.svg</file>
+        <file>resources/svg/reference_line.svg</file>
         <file>resources/svg/reload.svg</file>
         <file>resources/svg/remove_list.svg</file>
         <file>resources/svg/remove_red.svg</file>
@@ -157,6 +158,7 @@
         <file>resources/svg/save.svg</file>
         <file>resources/svg/scatter.svg</file>
         <file>resources/svg/settings_cog.svg</file>
+        <file>resources/svg/show_point.svg</file>
         <file>resources/svg/t0.svg</file>
         <file>resources/svg/trash.svg</file>
         <file>resources/svg/tree.svg</file>

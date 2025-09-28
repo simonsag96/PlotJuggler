@@ -85,8 +85,7 @@ public:
 
   size_t size() const
   {
-    return isSSO() ? (SSO_SIZE - _storage.sso.data[SSO_SIZE]) :
-                     _storage.no_sso.size & ~TYPE_BIT;
+    return isSSO() ? (SSO_SIZE - _storage.sso.data[SSO_SIZE]) : _storage.no_sso.size & ~TYPE_BIT;
   }
 };
 

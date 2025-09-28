@@ -163,6 +163,15 @@ public:
     _range_y_dirty = other._range_y_dirty;
   }
 
+  void clonePoints(PlotDataBase&& other)
+  {
+    _points = std::move(other._points);
+    _range_x = other._range_x;
+    _range_y = other._range_y;
+    _range_x_dirty = other._range_x_dirty;
+    _range_y_dirty = other._range_y_dirty;
+  }
+
   virtual ~PlotDataBase() = default;
 
   const std::string& plotName() const

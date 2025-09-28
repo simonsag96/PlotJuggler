@@ -72,8 +72,8 @@ public:
 class MessagePack_Parser : public NlohmannParser
 {
 public:
-  MessagePack_Parser(const std::string& topic_name, PlotDataMapRef& data,
-                     bool use_msg_stamp, const std::string& stamp_fieldname)
+  MessagePack_Parser(const std::string& topic_name, PlotDataMapRef& data, bool use_msg_stamp,
+                     const std::string& stamp_fieldname)
     : NlohmannParser(topic_name, data, use_msg_stamp, stamp_fieldname)
   {
   }
@@ -124,8 +124,8 @@ public:
     saveSettings();
 
     std::string timestamp_name = _checkbox_use_timestamp->lineedit->text().toStdString();
-    return std::make_shared<ParserT>(
-        topic_name, data, _checkbox_use_timestamp->isChecked(), timestamp_name);
+    return std::make_shared<ParserT>(topic_name, data, _checkbox_use_timestamp->isChecked(),
+                                     timestamp_name);
   }
 
   virtual QWidget* optionsWidget()
@@ -156,8 +156,7 @@ public:
     QSettings settings;
     QString prefix = QString("NlohmannParser.") + QString(encoding());
     settings.setValue(prefix + ".timestampEnabled", _checkbox_use_timestamp->isChecked());
-    settings.setValue(prefix + ".timestampFieldName",
-                      _checkbox_use_timestamp->lineedit->text());
+    settings.setValue(prefix + ".timestampFieldName", _checkbox_use_timestamp->lineedit->text());
   }
 
 protected:
@@ -172,10 +171,8 @@ public:
   {
   }
 
-  MessageParserPtr createParser(const std::string& topic_name,
-                                const std::string& /*type_name*/,
-                                const std::string& /*schema*/,
-                                PlotDataMapRef& data) override
+  MessageParserPtr createParser(const std::string& topic_name, const std::string& /*type_name*/,
+                                const std::string& /*schema*/, PlotDataMapRef& data) override
   {
     return createParserImpl<JSON_Parser>(topic_name, data);
   }

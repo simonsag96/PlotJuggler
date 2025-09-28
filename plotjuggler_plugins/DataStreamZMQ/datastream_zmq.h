@@ -64,8 +64,7 @@ private:
   bool _is_connect = false;
   void receiveLoop();
   bool parseMessage(const PJ::MessageRef& msg, double& timestamp);
-  bool parseMessage(const std::string& topic, const PJ::MessageRef& msg,
-                    double& timestamp);
+  bool parseMessage(const std::string& topic, const PJ::MessageRef& msg, double& timestamp);
   void parseTopicFilters(const QString& filters);
   void subscribeTopics();
   void unsubscribeTopics();
