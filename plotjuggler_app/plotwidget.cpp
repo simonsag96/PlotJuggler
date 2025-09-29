@@ -1576,7 +1576,8 @@ void PlotWidget::showPointValues(QPoint point)
 
   if (updated)
   {
-    QPointF offset_point = paint_to_plot(plot_to_paint(marker_point) + QPoint(15, -20));
+    const QPoint marker_pos_paint = plot_to_paint(marker_point);
+    const QPointF offset_point = paint_to_plot(marker_pos_paint + QPoint(15, -20));
 
     QwtText mark_text;
     mark_text.setText(text);
@@ -1584,6 +1585,7 @@ void PlotWidget::showPointValues(QPoint point)
     QColor background_color = qwtPlot()->palette().background().color();
     background_color.setAlpha(220);
     mark_text.setBackgroundBrush(background_color);
+
     QFont font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
     font.setPointSize(9);
     mark_text.setFont(font);
@@ -1591,6 +1593,18 @@ void PlotWidget::showPointValues(QPoint point)
     _show_point_text->setLabel(mark_text);
     _show_point_text->setLabelAlignment(Qt::AlignRight);
     _show_point_text->setValue(offset_point);
+
+    const double canvas_width = qwtPlot()->canvas()->width();
+    const double text_width = mark_text.textSize().width();
+    const double text_right_edge = marker_pos_paint.x() + 20 + text_width;
+
+    const bool flip_horizontally =
+        (marker_pos_paint.x() > (canvas_width * 0.5)) && text_right_edge > canvas_width;
+
+    if (flip_horizontally)
+    {
+      _show_point_text->setValue(paint_to_plot(marker_pos_paint + QPoint(-15 - text_width, -20)));
+    }
   }
 
   if (updated || disappeared)

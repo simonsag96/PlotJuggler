@@ -17,6 +17,7 @@
 #include <QTabWidget>
 #include <QPushButton>
 #include <QHBoxLayout>
+#include <algorithm>
 #include "qwt_plot_renderer.h"
 #include "mainwindow.h"
 #include "tabbedplotwidget.h"
@@ -101,9 +102,12 @@ TabbedPlotWidget::TabbedPlotWidget(QString name, QMainWindow* mainwindow,
 void TabbedPlotWidget::paintEvent(QPaintEvent* event)
 {
   QWidget::paintEvent(event);
-
-  auto size = tabWidget()->tabBar()->size();
-  _buttonAddTab->move(QPoint(size.width() + 5, 0));
+  const int margin = 5;
+  int width_tabbar = tabWidget()->tabBar()->width();
+  int max_width_tabbar = std::max(0, width() - _buttonAddTab->width() - margin);
+  int button_pos = std::min(width_tabbar + margin, max_width_tabbar);
+  tabWidget()->tabBar()->setMaximumWidth(max_width_tabbar);
+  _buttonAddTab->move(QPoint(button_pos, 0));
 }
 
 PlotDocker* TabbedPlotWidget::currentTab()
