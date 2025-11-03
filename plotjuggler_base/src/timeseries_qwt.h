@@ -78,7 +78,8 @@ public:
 
   TransformFunction::Ptr transform();
 
-  void setTransform(QString transform_ID);
+  // return true if the transform was set, false if the transform_ID was not found
+  bool setTransform(QString transform_ID);
 
   virtual void updateCache(bool reset_old_data) override;
 

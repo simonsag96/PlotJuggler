@@ -2,6 +2,39 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.13.2 (2025-10-07)
+-------------------
+* Fix issue `#1194 <https://github.com/facontidavide/PlotJuggler/issues/1194>`_
+* address issue `#1195 <https://github.com/facontidavide/PlotJuggler/issues/1195>`_
+* fix issue `#1193 <https://github.com/facontidavide/PlotJuggler/issues/1193>`_
+* bug fix
+* Contributors: Davide Faconti
+
+3.13.1 (2025-10-01)
+-------------------
+* [Feature] New Filter to display the time since the previous datapoint (`#1180 <https://github.com/facontidavide/PlotJuggler/issues/1180>`_)
+  * add new filter to get the time since the last data point
+  * rename for clarity
+* fix LZ4 and ZSTD (`#1188 <https://github.com/facontidavide/PlotJuggler/issues/1188>`_)
+* fix issue `#1189 <https://github.com/facontidavide/PlotJuggler/issues/1189>`_
+* make library rosx static
+* Contributors: Davide Faconti, Simon Sagmeister
+
+3.13.0 (2025-09-29)
+-------------------
+* Merge branch 'plugin_manager'
+* fix CI
+* add WASM based pligins (experimental)
+* add Ankel unordered map
+* minor changes
+* Merge pull request `#1185 <https://github.com/facontidavide/PlotJuggler/issues/1185>`_ from simonsag96/fix_tab_add_button
+  [Bugfix] Add Tab Button being placed outside plot widget
+* Fix tab adding button being placed outside plot widget
+* Merge pull request `#1184 <https://github.com/facontidavide/PlotJuggler/issues/1184>`_ from MichelJansson/feature/fix-windows-icon
+* Fixed windows app icon + moved resource file
+* created plugin manager
+* Contributors: Davide Faconti, Michel Jansson, Simon Sagmeister
+
 3.12.2 (2025-09-29)
 -------------------
 * Merge pull request `#1147 <https://github.com/facontidavide/PlotJuggler/issues/1147>`_ from gvz/nix_flake

@@ -1,7 +1,5 @@
 function(find_or_download_lua)
 
-  # Lua + Sol2 ######
-
   find_package(Lua QUIET)
 
   if(LUA_FOUND)

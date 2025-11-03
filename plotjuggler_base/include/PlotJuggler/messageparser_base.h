@@ -8,7 +8,6 @@
 
 #include <QtPlugin>
 #include <QApplication>
-#include <map>
 #include "PlotJuggler/plotdata.h"
 #include "PlotJuggler/pj_plugin.h"
 
@@ -151,7 +150,8 @@ public:
                                         const std::string& schema, PlotDataMapRef& data) = 0;
 };
 
-using ParserFactories = std::map<QString, std::shared_ptr<ParserFactoryPlugin>>;
+using ParserFactoryPtr = std::shared_ptr<ParserFactoryPlugin>;
+using ParserFactories = std::map<QString, ParserFactoryPtr>;
 
 }  // namespace PJ
 

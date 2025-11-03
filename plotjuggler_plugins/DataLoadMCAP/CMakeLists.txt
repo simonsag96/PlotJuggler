@@ -1,11 +1,5 @@
 
-include(${PROJECT_SOURCE_DIR}/cmake/find_or_download_lz4.cmake)
-find_or_download_lz4()
 
-include(${PROJECT_SOURCE_DIR}/cmake/find_or_download_zstd.cmake)
-find_or_download_zstd()
-
-# ##############################################################################
 
 qt5_wrap_ui(UI_SRC dialog_mcap.ui)
 
@@ -14,12 +8,15 @@ target_include_directories(DataLoadMCAP PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/3rdp
 
 target_link_libraries(DataLoadMCAP
    PRIVATE
+    LZ4::lz4_static
+    zstd::libzstd_static)
+
+target_link_libraries(DataLoadMCAP
+   PRIVATE
     Qt5::Widgets
     Qt5::Xml
     Qt5::Concurrent
-    plotjuggler_base
-    LZ4::lz4_static
-    zstd::libzstd_static)
+    plotjuggler_base)
 
 # Suppress LNK4217 warnings on Windows for MCAP static library symbols
 if(WIN32 AND MSVC)

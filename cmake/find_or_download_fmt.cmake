@@ -10,7 +10,7 @@ function(find_or_download_fmt)
     cpmaddpackage(NAME fmt URL
                   https://github.com/fmtlib/fmt/archive/refs/tags/11.2.0.zip)
 
-    set(fmt_FOUND TRUE)
+    set(fmt_FOUND TRUE FORCE)
     add_library(fmt::fmt ALIAS fmt)
   endif()
 

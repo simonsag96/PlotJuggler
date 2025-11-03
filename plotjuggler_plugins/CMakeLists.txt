@@ -22,5 +22,3 @@ add_subdirectory(ParserDataTamer)
 add_subdirectory(ParserLineInflux)
 
 add_subdirectory(PluginsZcm)
-
-#add_subdirectory(ParserIDL)

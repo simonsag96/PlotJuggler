@@ -10,7 +10,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 ###############################################
 ## Declare a C++ library
 ###############################################
-add_library(rosx_introspection
+add_library(rosx_introspection STATIC
     src/ros_type.cpp
     src/ros_field.cpp
     src/stringtree_leaf.cpp

@@ -77,23 +77,27 @@ TransformFunction::Ptr TransformedTimeseries::transform()
   return _transform;
 }
 
-void TransformedTimeseries::setTransform(QString transform_ID)
+bool TransformedTimeseries::setTransform(QString transform_ID)
 {
   if (transformName() == transform_ID)
   {
-    return;
+    return true;
   }
   if (transform_ID.isEmpty())
   {
     _transform.reset();
+    return false;
   }
-  else
+
+  _transform = TransformFactory::create(transform_ID.toStdString());
+  if (!_transform)
   {
-    _dst_data.clear();
-    _transform = TransformFactory::create(transform_ID.toStdString());
-    std::vector<PlotData*> dest = { &_dst_data };
-    _transform->setData(nullptr, { _src_data }, dest);
+    return false;
   }
+  std::vector<PlotData*> dest = { &_dst_data };
+  _dst_data.clear();
+  _transform->setData(nullptr, { _src_data }, dest);
+  return true;
 }
 
 void TransformedTimeseries::updateCache(bool reset_old_data)
