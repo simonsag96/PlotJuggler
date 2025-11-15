@@ -73,6 +73,8 @@ double get_arrow_value(const std::shared_ptr<arrow::Array>& array, int64_t index
 {
   switch (arrow_type)
   {
+    case arrow::Type::BOOL:
+      return get_arrow_value<arrow::BooleanArray>(array, index);
     case arrow::Type::INT8:
       return get_arrow_value<arrow::Int8Array>(array, index);
     case arrow::Type::INT16:
