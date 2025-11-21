@@ -98,6 +98,7 @@ jobs:
           cp -rp DEBIAN plotjuggler_'${{ steps.define_version.outputs.version }}'_amd64/
           chmod ogu+x plotjuggler_'${{ steps.define_version.outputs.version }}'_amd64/DEBIAN/postinst
           chmod ogu+x plotjuggler_'${{ steps.define_version.outputs.version }}'_amd64/DEBIAN/preinst
+          chmod ogu+x plotjuggler_'${{ steps.define_version.outputs.version }}'_amd64/DEBIAN/postrm
           mv plotjuggler_'${{ steps.define_version.outputs.version }}'_amd64/DEBIAN/_control.'${{ steps.dist_short.outputs.short_name }}' plotjuggler_'${{ steps.define_version.outputs.version }}'_amd64/DEBIAN/control
           rm plotjuggler_'${{ steps.define_version.outputs.version }}'_amd64/DEBIAN/_*
 
