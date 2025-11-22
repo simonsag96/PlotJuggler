@@ -2,8 +2,8 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.14.0 (2025-11-22)
+-------------------
 * bug fix in multiple curves filter
 * Merge pull request `#1192 <https://github.com/facontidavide/PlotJuggler/issues/1192>`_ from MichelJansson/feature/transform-multiselect
   Support curve multi-selection in Transform Editor
