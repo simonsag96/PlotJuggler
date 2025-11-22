@@ -22,6 +22,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/cmake")
 option(ENABLE_ASAN "Enable Address Sanitizer" OFF)
 option(BASE_AS_SHARED "Build the base library as a shared library" OFF)
 option(BUILDING_WITH_CONAN "Using Conan for dependencies" OFF)
+option(PJ_INSTALLATION "Installation type" "undefined")
 
 if(NOT WIN32 AND ENABLE_ASAN)
   set(CMAKE_CXX_FLAGS
@@ -58,6 +59,13 @@ if(catkin_FOUND)
   include_directories(${catkin_INCLUDE_DIRS})
   # COMPILED_WITH_CATKIN will be added to plotjuggler_base target later
 
+  # Set the ROS_DISTRO as PJ_INSTALLATION if not set already
+  if(NOT PJ_INSTALLATION)
+    if(DEFINED ENV{ROS_DISTRO})
+      set(PJ_INSTALLATION "$ENV{ROS_DISTRO}" CACHE STRING "Installation type" FORCE)
+    endif()
+  endif()
+
 elseif(ament_cmake_FOUND)
   set(COMPILING_WITH_AMENT 1)
 
@@ -74,11 +82,22 @@ elseif(ament_cmake_FOUND)
   # COMPILED_WITH_AMENT will be added to plotjuggler_base target later
   set(BASE_AS_SHARED ON)
 
+  # Set the ROS_DISTRO as PJ_INSTALLATION if not set already
+  if(NOT PJ_INSTALLATION)
+    if(DEFINED ENV{ROS_DISTRO})
+      set(PJ_INSTALLATION "$ENV{ROS_DISTRO}" CACHE STRING "Installation type" FORCE)
+    endif()
+  endif()
+
 else()
   message(STATUS "--------------------------------------------------")
   message(STATUS "PlotJuggler is being built WITHOUT any ROS support")
   message(STATUS "--------------------------------------------------")
 endif()
+
+  if(NOT PJ_INSTALLATION)
+      set(PJ_INSTALLATION "undefined" CACHE STRING "Installation type" FORCE)
+  endif()
 
 cmake_policy(SET CMP0020 NEW)
 

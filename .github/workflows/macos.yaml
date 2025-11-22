@@ -35,4 +35,4 @@ jobs:
           export CPPFLAGS="-I/usr/local/opt/zeromq/include"
           export LIBRARY_PATH=/usr/local/opt/zeromq/lib
           export CPATH=/usr/local/opt/zeromq/include
-          cmake -B build -DCMAKE_INSTALL_PREFIX=install PlotJuggler
+          cmake -B build -DPJ_INSTALLATION="macos" -DCMAKE_INSTALL_PREFIX=install PlotJuggler
