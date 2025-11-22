@@ -254,7 +254,11 @@ void DialogTransformEditor::on_listTransforms_itemSelectionChanged()
 
       if (_connected_transform_widgets.count(widget) == 0)
       {
-        connect(ts->transform().get(), &TransformFunction::parametersChanged, this, [=]() {
+        connect(ts->transform().get(), &TransformFunction::parametersChanged, this, [this, ts]() {
+          // update this transform
+          ts->updateCache(true);
+
+          // update the others if necessary
           if (ui->listCurves->selectedItems().size() > 1)
           {
             // Copy state from visible widget and apply to all selected curves.
@@ -267,17 +271,17 @@ void DialogTransformEditor::on_listTransforms_itemSelectionChanged()
               auto row_widget = dynamic_cast<RowWidget*>(ui->listCurves->itemWidget(item));
               QString curve_name = row_widget->text();
               auto curve_info = _plotwidget->curveFromTitle(curve_name);
-              auto item_ts = dynamic_cast<TransformedTimeseries*>(curve_info->curve->data());
+              auto* item_ts = dynamic_cast<TransformedTimeseries*>(curve_info->curve->data());
 
-              item_ts->transform()->xmlLoadState(transform_state);
-              item_ts->updateCache(true);
+              if (item_ts != ts)
+              {
+                QSignalBlocker block_transform(item_ts->transform().get());
+                item_ts->transform()->xmlLoadState(transform_state);
+                item_ts->updateCache(true);
+              }
             }
           }
-          else
-          {
-            ts->updateCache(true);
-          }
-
+          // replot
           if (ui->checkBoxAutoZoom->isChecked())
           {
             _plotwidget->zoomOut(false);
