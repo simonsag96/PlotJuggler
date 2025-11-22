@@ -304,17 +304,44 @@
             </layout>
            </item>
            <item>
-            <widget class="QCheckBox" name="checkBoxAddPrefixAndMerge">
-             <property name="focusPolicy">
-              <enum>Qt::NoFocus</enum>
+            <layout class="QHBoxLayout" name="horizontalLayout_14">
+             <property name="topMargin">
+              <number>0</number>
              </property>
-             <property name="toolTip">
-              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Useful when comparing 2 or more files containing the same timeseries.&lt;br/&gt;&lt;br/&gt;You will be asked to add a prefix to the name of the timeseries, and you will &lt;span style=&quot; font-weight:700;&quot;&gt;not&lt;/span&gt; remove previously loaded data.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-             </property>
-             <property name="text">
-              <string>Add prefix and merge</string>
-             </property>
-            </widget>
+             <item>
+              <widget class="QCheckBox" name="checkBoxAddPrefix">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Useful when comparing 2 or more files containing the same timeseries.&lt;br/&gt;&lt;br/&gt;You will be asked to add a prefix to the name of the timeseries, and you will &lt;span style=&quot; font-weight:700;&quot;&gt;not&lt;/span&gt; remove previously loaded data.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;If not checked, timeseries data with the same will be merged&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="text">
+                <string>Add prefix</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QCheckBox" name="checkBoxMergeData">
+               <property name="toolTip">
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Merge data the has the same name into one data series&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;If this is not checked data will be over written if two data series have the same name&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               </property>
+               <property name="text">
+                <string>Merge timeseries</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_4">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
            </item>
            <item>
             <widget class="Line" name="line">

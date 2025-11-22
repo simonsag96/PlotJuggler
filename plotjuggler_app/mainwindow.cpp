@@ -1207,7 +1207,9 @@ bool MainWindow::loadDataFromFiles(QStringList filenames)
   filenames.sort();
   std::map<QString, QString> filename_prefix;
 
-  if (filenames.size() > 1 || ui->checkBoxAddPrefixAndMerge->isChecked())
+  const bool add_prefix = ui->checkBoxAddPrefix->isChecked();
+  const bool merge_data = ui->checkBoxMergeData->isChecked();
+  if (add_prefix)
   {
     DialogMultifilePrefix dialog(filenames, this);
     int ret = dialog.exec();
@@ -1231,7 +1233,7 @@ bool MainWindow::loadDataFromFiles(QStringList filenames)
     {
       info.prefix = filename_prefix[info.filename];
     }
-    auto added_names = loadDataFromFile(info);
+    auto added_names = loadDataFromFile(info, merge_data);
     if (!added_names.empty())
     {
       loaded_filenames.push_back(filenames[i]);
@@ -1248,12 +1250,13 @@ bool MainWindow::loadDataFromFiles(QStringList filenames)
   {
     data_replaced_entirely = true;
   }
-  else if (!ui->checkBoxAddPrefixAndMerge->isChecked())
+  else if (!add_prefix)
   {
     QMessageBox::StandardButton reply;
-    reply = QMessageBox::question(this, tr("Warning"),
-                                  tr("Do you want to remove the previously loaded data?\n"),
-                                  QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton);
+    reply = QMessageBox::question(
+        this, tr("Warning"),
+        tr("Do you want to remove the previously loaded data?\nYes removes old data, No merges new and old data\n"),
+        QMessageBox::Yes | QMessageBox::No, QMessageBox::NoButton);
 
     if (reply == QMessageBox::Yes)
     {
@@ -1286,7 +1289,8 @@ bool MainWindow::loadDataFromFiles(QStringList filenames)
   return false;
 }
 
-std::unordered_set<std::string> MainWindow::loadDataFromFile(const FileLoadInfo& info)
+std::unordered_set<std::string> MainWindow::loadDataFromFile(const FileLoadInfo& info,
+                                                             bool merge_files)
 {
   ui->buttonPlay->setChecked(false);
 
@@ -1376,7 +1380,8 @@ std::unordered_set<std::string> MainWindow::loadDataFromFile(const FileLoadInfo&
         AddPrefixToPlotData(info.prefix.toStdString(), mapped_data.strings);
 
         added_names = mapped_data.getAllNames();
-        importPlotDataMap(mapped_data, true);
+        bool remove_old = !merge_files;
+        importPlotDataMap(mapped_data, remove_old);
 
         QDomElement plugin_elem = dataloader->xmlSaveState(new_info.plugin_config);
         new_info.plugin_config.appendChild(plugin_elem);
@@ -1926,7 +1931,7 @@ bool MainWindow::loadLayoutFromFile(QString filename)
     auto plugin_elem = datafile_elem.firstChildElement("plugin");
     info.plugin_config.appendChild(info.plugin_config.importNode(plugin_elem, true));
 
-    loadDataFromFile(info);
+    loadDataFromFile(info, false);
     datafile_elem = datafile_elem.nextSiblingElement("fileInfo");
   }
 
@@ -3357,7 +3362,7 @@ void MainWindow::on_buttonReloadData_clicked()
   _loaded_datafiles_previous.clear();
   for (const auto& info : prev_infos)
   {
-    loadDataFromFile(info);
+    loadDataFromFile(info, false);
   }
   ui->buttonReloadData->setEnabled(!_loaded_datafiles_previous.empty());
 }
