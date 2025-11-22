@@ -324,7 +324,7 @@
                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Merge data the has the same name into one data series&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;If this is not checked data will be over written if two data series have the same name&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="text">
-                <string>Merge identical fields</string>
+                <string>Merge timeseries</string>
                </property>
               </widget>
              </item>
