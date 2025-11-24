@@ -812,6 +812,9 @@ void MainWindow::onPlotAdded(PlotWidget* plot)
   plot->setKeepRatioXY(ui->buttonRatio->isChecked());
   plot->configureTracker(_tracker_param);
   plot->onShowPlot(ui->buttonShowpoint->isChecked());
+  plot->setDefaultStyle(ui->buttonDots->isChecked() ? PlotWidgetBase::LINES_AND_DOTS :
+                                                      PlotWidgetBase::LINES);
+
   if (ui->buttonReferencePoint->isChecked() && _reference_tracker_time.has_value())
   {
     plot->onReferenceLineChecked(ui->buttonReferencePoint->isChecked(),
@@ -3389,4 +3392,9 @@ void MainWindow::on_buttonReferencePoint_toggled(bool checked)
 void MainWindow::on_buttonShowpoint_toggled(bool checked)
 {
   this->forEachWidget([checked](PlotWidget* plot) { plot->onShowPlot(checked); });
+}
+
+void MainWindow::on_buttonDots_toggled(bool checked)
+{
+  forEachWidget([&](PlotWidget* plot) { plot->changeDots(checked); });
 }

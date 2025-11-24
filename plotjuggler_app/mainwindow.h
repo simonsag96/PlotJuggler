@@ -310,6 +310,8 @@ private slots:
 
   void on_buttonShowpoint_toggled(bool checked);
 
+  void on_buttonDots_toggled(bool checked);
+
 private:
   QStringList readAllCurvesFromXML(QDomElement root_node);
   void loadAllPlugins(QStringList command_line_plugin_folders);
