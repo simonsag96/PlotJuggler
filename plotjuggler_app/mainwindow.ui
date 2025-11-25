@@ -221,6 +221,10 @@
                <property name="text">
                 <string/>
                </property>
+               <property name="icon">
+                <iconset resource="resource.qrc">
+                 <normaloff>:/resources/svg/import.svg</normaloff>:/resources/svg/import.svg</iconset>
+               </property>
                <property name="iconSize">
                 <size>
                  <width>22</width>
@@ -291,6 +295,10 @@
                <property name="text">
                 <string/>
                </property>
+               <property name="icon">
+                <iconset resource="resource.qrc">
+                 <normaloff>:/resources/svg/play_arrow.svg</normaloff>:/resources/svg/play_arrow.svg</iconset>
+               </property>
                <property name="iconSize">
                 <size>
                  <width>12</width>
@@ -312,7 +320,7 @@
              <item>
               <widget class="QCheckBox" name="checkBoxAddPrefix">
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Useful when comparing 2 or more files containing the same timeseries.&lt;br/&gt;&lt;br/&gt;You will be asked to add a prefix to the name of the timeseries, and you will &lt;span style=&quot; font-weight:700;&quot;&gt;not&lt;/span&gt; remove previously loaded data.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;If not checked, timeseries data with the same will be merged&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Useful when comparing 2 or more files containing the same timeseries.&lt;br/&gt;&lt;br/&gt;You will be asked to add a prefix to the name of the timeseries, and you will &lt;span style=&quot; font-weight:704;&quot;&gt;not&lt;/span&gt; remove previously loaded data.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="text">
                 <string>Add prefix</string>
@@ -322,10 +330,10 @@
              <item>
               <widget class="QCheckBox" name="checkBoxMergeData">
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Merge data the has the same name into one data series&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;If this is not checked data will be over written if two data series have the same name&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;When loading a file, don't replace timeseries with the same name, but merge them instead.&lt;/p&gt;&lt;p&gt;If this is not checked, new data will replace the old one (default)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="text">
-                <string>Merge timeseries</string>
+                <string>Merge data</string>
                </property>
               </widget>
              </item>
@@ -389,6 +397,10 @@
                <property name="text">
                 <string/>
                </property>
+               <property name="icon">
+                <iconset resource="resource.qrc">
+                 <normaloff>:/resources/svg/import.svg</normaloff>:/resources/svg/import.svg</iconset>
+               </property>
                <property name="iconSize">
                 <size>
                  <width>22</width>
@@ -422,6 +434,10 @@
                </property>
                <property name="text">
                 <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="resource.qrc">
+                 <normaloff>:/resources/svg/export.svg</normaloff>:/resources/svg/export.svg</iconset>
                </property>
                <property name="iconSize">
                 <size>
@@ -472,6 +488,10 @@
                </property>
                <property name="text">
                 <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="resource.qrc">
+                 <normaloff>:/resources/svg/play_arrow.svg</normaloff>:/resources/svg/play_arrow.svg</iconset>
                </property>
                <property name="iconSize">
                 <size>
@@ -662,6 +682,10 @@
                 <property name="text">
                  <string/>
                 </property>
+                <property name="icon">
+                 <iconset resource="resource.qrc">
+                  <normaloff>:/resources/svg/settings_cog.svg</normaloff>:/resources/svg/settings_cog.svg</iconset>
+                </property>
                 <property name="iconSize">
                  <size>
                   <width>16</width>
@@ -761,6 +785,10 @@
                <property name="text">
                 <string/>
                </property>
+               <property name="icon">
+                <iconset resource="resource.qrc">
+                 <normaloff>:/resources/svg/pause.svg</normaloff>:/resources/svg/pause.svg</iconset>
+               </property>
                <property name="iconSize">
                 <size>
                  <width>27</width>
@@ -822,6 +850,10 @@
                </property>
                <property name="text">
                 <string/>
+               </property>
+               <property name="icon">
+                <iconset resource="resource.qrc">
+                 <normaloff>:/resources/svg/alarm-bell.svg</normaloff>:/resources/svg/alarm-bell.svg</iconset>
                </property>
                <property name="iconSize">
                 <size>
