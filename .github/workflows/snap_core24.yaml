@@ -30,7 +30,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v5
       with:
-        name: plotjuggler-snap22
+        name: plotjuggler-snap24
         path: ${{ steps.build-snap24.outputs.snap }}
 
   publish:
