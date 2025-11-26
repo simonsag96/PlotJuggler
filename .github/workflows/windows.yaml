@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Sync repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Install Conan
         uses: conan-io/setup-conan@v1
@@ -47,7 +47,7 @@ jobs:
       - name: Build Plotjuggler
         shell: pwsh
         run: |
-          cmake --preset conan-default -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --preset conan-default -S . -B build -DCMAKE_BUILD_TYPE=Release -DPJ_INSTALLATION="windows"
           cmake --build build --config Release
 
       - name: Prepare installer directory
@@ -87,7 +87,7 @@ jobs:
           Write-Host "Installer created successfully: $installer_name"
 
       - name: Upload installer
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ steps.create_installer.outputs.installer_name }}
           path: ${{ steps.create_installer.outputs.installer_name }}

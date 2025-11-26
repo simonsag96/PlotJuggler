@@ -109,6 +109,8 @@ if(APPIMAGE_BUILD)
   target_compile_definitions(plotjuggler PRIVATE APPIMAGE_BUILD)
 endif()
 
+target_compile_definitions(plotjuggler PRIVATE PJ_INSTALLATION="${PJ_INSTALLATION}")
+
 target_include_directories(
   plotjuggler
   PRIVATE

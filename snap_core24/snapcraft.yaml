@@ -45,6 +45,7 @@ parts:
     cmake-parameters:
       - -DBASE_AS_SHARED=ON
       - -DCMAKE_BUILD_TYPE=Release
+      - -DPJ_INSTALLATION="snap-jazzy"
     build-packages:
       - libpulse0
       - libdw-dev

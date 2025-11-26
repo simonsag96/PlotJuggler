@@ -15,12 +15,12 @@ jobs:
       fail-fast: false
       matrix:
         os:
-          - macos-13
+          - macos-14
           - macos-latest
 
     steps:
       - name: Sync repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Prepare Homebrew and Install Dependencies
         run: |
@@ -35,4 +35,4 @@ jobs:
           export CPPFLAGS="-I/usr/local/opt/zeromq/include"
           export LIBRARY_PATH=/usr/local/opt/zeromq/lib
           export CPATH=/usr/local/opt/zeromq/include
-          cmake -B build -DCMAKE_INSTALL_PREFIX=install PlotJuggler
+          cmake -B build -DPJ_INSTALLATION="macos" -DCMAKE_INSTALL_PREFIX=install PlotJuggler

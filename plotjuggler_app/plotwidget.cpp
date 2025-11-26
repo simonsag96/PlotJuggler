@@ -657,29 +657,29 @@ QDomElement PlotWidget::xmlSaveState(QDomDocument& doc) const
   }
   plot_el.appendChild(limitY_el);
 
-  if (curveStyle() == PlotWidgetBase::LINES)
+  if (overriddenCurvesStyle().has_value())
   {
-    plot_el.setAttribute("style", "Lines");
-  }
-  else if (curveStyle() == PlotWidgetBase::LINES_AND_DOTS)
-  {
-    plot_el.setAttribute("style", "LinesAndDots");
-  }
-  else if (curveStyle() == PlotWidgetBase::DOTS)
-  {
-    plot_el.setAttribute("style", "Dots");
-  }
-  else if (curveStyle() == PlotWidgetBase::STICKS)
-  {
-    plot_el.setAttribute("style", "Sticks");
-  }
-  else if (curveStyle() == PlotWidgetBase::STEPS)
-  {
-    plot_el.setAttribute("style", "Steps");
-  }
-  else if (curveStyle() == PlotWidgetBase::STEPSINV)
-  {
-    plot_el.setAttribute("style", "StepsInv");
+    switch (overriddenCurvesStyle().value())
+    {
+      case PlotWidgetBase::LINES:
+        plot_el.setAttribute("style", "Lines");
+        break;
+      case PlotWidgetBase::DOTS:
+        plot_el.setAttribute("style", "Dots");
+        break;
+      case PlotWidgetBase::LINES_AND_DOTS:
+        plot_el.setAttribute("style", "LinesAndDots");
+        break;
+      case PlotWidgetBase::STICKS:
+        plot_el.setAttribute("style", "Sticks");
+        break;
+      case PlotWidgetBase::STEPS:
+        plot_el.setAttribute("style", "Steps");
+        break;
+      case PlotWidgetBase::STEPSINV:
+        plot_el.setAttribute("style", "StepsInv");
+        break;
+    }
   }
 
   for (auto& it : curveList())
@@ -874,28 +874,29 @@ bool PlotWidget::xmlLoadState(QDomElement& plot_widget, bool autozoom)
     QString style = plot_widget.attribute("style");
     if (style == "Lines")
     {
-      changeCurvesStyle(PlotWidgetBase::LINES);
+      overrideCurvesStyle(std::nullopt);
     }
     else if (style == "LinesAndDots")
     {
-      changeCurvesStyle(PlotWidgetBase::LINES_AND_DOTS);
+      overrideCurvesStyle(PlotWidgetBase::LINES_AND_DOTS);
     }
     else if (style == "Dots")
     {
-      changeCurvesStyle(PlotWidgetBase::DOTS);
+      overrideCurvesStyle(PlotWidgetBase::DOTS);
     }
     else if (style == "Sticks")
     {
-      changeCurvesStyle(PlotWidgetBase::STICKS);
+      overrideCurvesStyle(PlotWidgetBase::STICKS);
     }
     else if (style == "Steps")
     {
-      changeCurvesStyle(PlotWidgetBase::STEPS);
+      overrideCurvesStyle(PlotWidgetBase::STEPS);
     }
     else if (style == "StepsInv")
     {
-      changeCurvesStyle(PlotWidgetBase::STEPSINV);
+      overrideCurvesStyle(PlotWidgetBase::STEPSINV);
     }
+    updateCurvesStyle();
   }
 
   QString bg_data = plot_widget.attribute("background_data");
@@ -1184,6 +1185,12 @@ void PlotWidget::updateStatistics(bool forceUpdate)
       _statistics_dialog->update({ rect.left(), rect.right() });
     }
   }
+}
+
+void PlotWidget::changeDots(bool force_dots)
+{
+  setDefaultStyle(force_dots ? CurveStyle::LINES_AND_DOTS : CurveStyle::LINES);
+  updateCurvesStyle();
 }
 
 void PlotWidget::on_changeCurveColor(const QString& curve_name, QColor new_color)
