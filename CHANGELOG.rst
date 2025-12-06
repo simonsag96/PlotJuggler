@@ -2,8 +2,8 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.14.2 (2025-12-06)
+-------------------
 * add new binary filter
 * add code of conduct and remove old issue template
 * Update issue templates
