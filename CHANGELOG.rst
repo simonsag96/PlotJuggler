@@ -2,6 +2,15 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* add new binary filter
+* add code of conduct and remove old issue template
+* Update issue templates
+* fix data merging
+* new memes
+* Contributors: Davide Faconti
+
 3.14.0 (2025-11-22)
 -------------------
 * bug fix in multiple curves filter

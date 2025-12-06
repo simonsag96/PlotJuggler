@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Installer>
   <Name>PlotJuggler</Name>
-  <Version>3.14.1</Version>
+  <Version>3.14.2</Version>
   <Title>PlotJuggler installer</Title>
   <Publisher>Davide Faconti</Publisher>
   <StartMenuDir>PlotJuggler</StartMenuDir>
