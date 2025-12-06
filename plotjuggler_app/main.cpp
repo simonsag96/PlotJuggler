@@ -26,6 +26,7 @@
 #include <QSslSocket>
 
 #include "PlotJuggler/transform_function.h"
+#include "transforms/binary_filter.h"
 #include "transforms/first_derivative.h"
 #include "transforms/samples_count.h"
 #include "transforms/scale_transform.h"
@@ -226,6 +227,7 @@ int main(int argc, char* argv[])
   TransformFactory::registerTransform<TimeSincePreviousPointTranform>();
   TransformFactory::registerTransform<MovingVarianceFilter>();
   TransformFactory::registerTransform<SamplesCountFilter>();
+  TransformFactory::registerTransform<BinaryFilter>();
   //---------------------------
 
   QCommandLineParser parser;
