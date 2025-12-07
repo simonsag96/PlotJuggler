@@ -78,7 +78,7 @@
              <enum>Qt::ClickFocus</enum>
             </property>
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Search box.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Display only series that contain these strings.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Example&lt;/span&gt;:&lt;/p&gt;&lt;p&gt;Filter: &amp;quot;&lt;span style=&quot; font-weight:600;&quot;&gt;not&lt;/span&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;pos&lt;/span&gt;&amp;quot;&lt;br/&gt;matching with: &amp;quot;/&lt;span style=&quot; font-weight:600;&quot;&gt;not&lt;/span&gt;or/&lt;span style=&quot; font-weight:600;&quot;&gt;pos&lt;/span&gt;ition&amp;quot;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Search box.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;Display only series that contain these strings.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Example&lt;/span&gt;:&lt;/p&gt;&lt;p&gt;Filter: &amp;quot;&lt;span style=&quot; font-weight:600;&quot;&gt;mot pos&lt;/span&gt;&amp;quot;&lt;br/&gt;matching with: &amp;quot;/&lt;span style=&quot; font-weight:600;&quot;&gt;mot&lt;/span&gt;or/&lt;span style=&quot; font-weight:600;&quot;&gt;pos&lt;/span&gt;ition&amp;quot;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="styleSheet">
              <string notr="true"/>
