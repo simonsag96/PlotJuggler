@@ -2,6 +2,15 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* refactored CSV plugin for robust date/time
+* fix ULOG link in README
+* add 3rdparty date parsing
+* add margin to collapsed QSplitter
+* add new name filter for custom series
+* Contributors: Davide Faconti
+
 3.14.2 (2025-12-06)
 -------------------
 * add new binary filter
