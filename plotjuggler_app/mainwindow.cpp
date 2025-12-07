@@ -741,7 +741,7 @@ void MainWindow::buildDummyData()
   importPlotDataMap(datamap, true);
 }
 
-void MainWindow::on_splitterMoved(int, int)
+void MainWindow::on_splitterMoved(int size, int index)
 {
   QList<int> sizes = ui->mainSplitter->sizes();
   int max_left_size = _curvelist_widget->maximumWidth();
@@ -767,6 +767,12 @@ void MainWindow::on_splitterMoved(int, int)
     sizes[0] = max_left_size;
     sizes[1] = totalWidth - max_left_size;
     ui->mainSplitter->setSizes(sizes);
+  }
+
+  if (index > 0)
+  {
+    const bool collapsed = (sizes[0] == 0);
+    ui->centralWidget->layout()->setContentsMargins(collapsed ? 8 : 0, 0, 0, 0);
   }
 }
 
