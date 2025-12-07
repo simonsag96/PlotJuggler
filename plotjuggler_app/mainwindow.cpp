@@ -215,7 +215,7 @@ MainWindow::MainWindow(const QCommandLineParser& commandline_parser, QWidget* pa
   ui->mainSplitter->setStretchFactor(0, 2);
   ui->mainSplitter->setStretchFactor(1, 6);
 
-  connect(ui->mainSplitter, SIGNAL(splitterMoved(int, int)), SLOT(on_splitterMoved(int, int)));
+  connect(ui->mainSplitter, &QSplitter::splitterMoved, this, &MainWindow::on_splitterMoved);
 
   initializeActions();
 
@@ -788,7 +788,7 @@ void MainWindow::onPlotAdded(PlotWidget* plot)
     updateTimeSlider();
   });
 
-  connect(&_time_offset, SIGNAL(valueChanged(double)), plot, SLOT(on_changeTimeOffset(double)));
+  connect(&_time_offset, &MonitoredValue::valueChanged, plot, &PlotWidget::on_changeTimeOffset);
 
   connect(ui->buttonUseDateTime, &QPushButton::toggled, plot, &PlotWidget::on_changeDateTimeScale);
 
