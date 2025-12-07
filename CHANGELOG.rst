@@ -2,8 +2,8 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.14.3 (2025-12-07)
+-------------------
 * refactored CSV plugin for robust date/time
 * fix ULOG link in README
 * add 3rdparty date parsing
