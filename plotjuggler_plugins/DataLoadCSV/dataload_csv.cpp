@@ -604,7 +604,6 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
 
   // Vector to store detected column types (detected from first data row)
   std::vector<PJ::CSV::ColumnTypeInfo> column_types(column_names.size());
-  bool column_types_detected = false;
 
   file.open(QFile::ReadOnly);
   QTextStream in(&file);
@@ -659,14 +658,13 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
       continue;
     }
 
-    // Detect column types from the first valid data row
-    if (!column_types_detected)
+    // identify column type, if necessary
+    for (size_t i = 0; i < column_types.size(); i++)
     {
-      for (size_t i = 0; i < string_items.size(); i++)
+      if (column_types[i].type == PJ::CSV::ColumnType::UNDEFINED && !string_items[i].isEmpty())
       {
         column_types[i] = PJ::CSV::DetectColumnType(string_items[i].toStdString());
       }
-      column_types_detected = true;
     }
 
     double timestamp = samplecount;
@@ -772,6 +770,11 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
     {
       const auto& str = string_items[i];
       const auto& col_type = column_types[i];
+
+      if (str.isEmpty() || col_type.type == PJ::CSV::ColumnType::UNDEFINED)
+      {
+        continue;
+      }
 
       // Use the detected column type to parse the value
       if (col_type.type != PJ::CSV::ColumnType::STRING)

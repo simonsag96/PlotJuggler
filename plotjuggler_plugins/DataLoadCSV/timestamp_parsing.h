@@ -82,7 +82,8 @@ enum class ColumnType
   EPOCH_MICROS,   // Numeric epoch timestamp in microseconds
   EPOCH_NANOS,    // Numeric epoch timestamp in nanoseconds
   DATETIME,       // Date/time string with detected format
-  STRING          // Non-numeric, non-datetime string
+  STRING,         // Non-numeric, non-datetime string
+  UNDEFINED
 };
 
 /**
@@ -90,7 +91,7 @@ enum class ColumnType
  */
 struct ColumnTypeInfo
 {
-  ColumnType type = ColumnType::STRING;
+  ColumnType type = ColumnType::UNDEFINED;
   std::string format;           // For DATETIME type, the detected strptime format
   bool has_fractional = false;  // Whether fractional seconds are present
 };
