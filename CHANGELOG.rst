@@ -2,6 +2,20 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* change ID
+* Install plugins into lib tree (`#1228 <https://github.com/facontidavide/PlotJuggler/issues/1228>`_)
+  Fixes `#1153 <https://github.com/facontidavide/PlotJuggler/issues/1153>`_
+* 🛠️ Bump actions/download-artifact from 6 to 7 (`#1229 <https://github.com/facontidavide/PlotJuggler/issues/1229>`_)
+  Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+* 🛠️ Bump actions/upload-artifact from 5 to 6 (`#1230 <https://github.com/facontidavide/PlotJuggler/issues/1230>`_)
+  Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+* fix issue `#1226 <https://github.com/facontidavide/PlotJuggler/issues/1226>`_
+* 🛠️ Bump actions/cache from 4 to 5 (`#1225 <https://github.com/facontidavide/PlotJuggler/issues/1225>`_)
+  Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+* Contributors: Davide Faconti, SammysHP, dependabot[bot]
+
 3.14.3 (2025-12-07)
 -------------------
 * refactored CSV plugin for robust date/time
