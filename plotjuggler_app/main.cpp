@@ -19,7 +19,6 @@
 #include <QJsonDocument>
 #include <QDir>
 #include <QDialog>
-#include <QUuid>
 #include <QDesktopServices>
 #include <QHostInfo>
 #include <QSslConfiguration>
@@ -441,22 +440,14 @@ int main(int argc, char* argv[])
         window->setStatusBarMessage(message);
       });
 
-  // Create unique ID as string
-  QString uniqueID = QUuid::createUuid().toString();
-  uniqueID = settings.value("uniqueID", uniqueID).toString();
-  settings.setValue("uniqueID", uniqueID);
-
-  const QString pj_installation = QString(PJ_INSTALLATION);
-
   // These are 100% anonymous requests; no personal data is sent.
   // We collect your statistics to improve PlotJuggler.
-
   // Create JSON payload
   QJsonObject payload;
-  payload["user_id"] = uniqueID;
+  payload["user_id"] = QString::fromLatin1(QSysInfo::machineUniqueId());
   payload["os"] = QSysInfo::productType();
   payload["version"] = VERSION_STRING;
-  payload["installation"] = pj_installation;
+  payload["installation"] = QString(PJ_INSTALLATION);
 
   QJsonDocument doc(payload);
   QByteArray jsonData = doc.toJson();
