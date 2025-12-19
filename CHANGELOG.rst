@@ -2,8 +2,8 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.14.4 (2025-12-19)
+-------------------
 * change ID
 * Install plugins into lib tree (`#1228 <https://github.com/facontidavide/PlotJuggler/issues/1228>`_)
   Fixes `#1153 <https://github.com/facontidavide/PlotJuggler/issues/1153>`_
