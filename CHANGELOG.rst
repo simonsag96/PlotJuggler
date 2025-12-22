@@ -2,8 +2,8 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.14.5 (2025-12-22)
+-------------------
 * add option to change width of lines in PlotWidget Editor
 * fix snap build
 * Contributors: Davide Faconti
