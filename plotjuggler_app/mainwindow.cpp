@@ -1920,7 +1920,6 @@ bool MainWindow::loadLayoutFromFile(QString filename)
     return false;
   }
 
-
   //-------------------------------------------------
   // refresh plugins
   QDomElement root = domDocument.namedItem("root").toElement();
