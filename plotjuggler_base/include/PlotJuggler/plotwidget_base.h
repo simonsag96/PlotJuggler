@@ -7,6 +7,7 @@
 #ifndef PLOTWIDGET_BASE_H
 #define PLOTWIDGET_BASE_H
 
+#include <array>
 #include <QWidget>
 #include "plotdata.h"
 #include "timeseries_qwt.h"

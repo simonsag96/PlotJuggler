@@ -46,7 +46,7 @@ parts:
       - -DBASE_AS_SHARED=ON
       - -DCMAKE_BUILD_TYPE=Release
       - -DPJ_INSTALLATION="snap-jazzy"
-      - -DPJ_PLUGIN_INSTALL_DIRECTORY=${CMAKE_INSTALL_PREFIX}/bin
+      - -DPJ_PLUGINS_DIRECTORY="bin"
     build-packages:
       - libpulse0
       - libdw-dev
