@@ -73,7 +73,7 @@ jobs:
             mkdir -p AppDir/usr/bin
             cp -v build/bin/* AppDir/usr/bin
             ./linuxdeploy-${{ matrix.arch }}.AppImage --appdir=AppDir \
-              -d ./PlotJuggler.desktop \
+              -d ./io.plotjuggler.PlotJuggler.desktop \
               -i ./plotjuggler.png \
               --plugin qt --output appimage
             mv PlotJuggler-${{ matrix.arch }}.AppImage PlotJuggler-${{ github.ref_name }}-${{ matrix.arch }}.AppImage
