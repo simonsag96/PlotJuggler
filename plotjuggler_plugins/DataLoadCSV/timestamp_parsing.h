@@ -90,6 +90,7 @@ std::optional<double> FormatParseTimestamp(const std::string& str, const std::st
 enum class ColumnType
 {
   NUMBER,         // Plain numeric value
+  HEX,            // Hexadecimal number with 0x prefix
   EPOCH_SECONDS,  // Numeric epoch timestamp in seconds
   EPOCH_MILLIS,   // Numeric epoch timestamp in milliseconds
   EPOCH_MICROS,   // Numeric epoch timestamp in microseconds

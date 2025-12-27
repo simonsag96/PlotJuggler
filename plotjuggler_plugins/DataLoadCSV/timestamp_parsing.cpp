@@ -351,6 +351,13 @@ ColumnTypeInfo DetectColumnType(const std::string& str)
     return info;
   }
 
+  // Check for hexadecimal with 0x prefix (case insensitive)
+  if (trimmed.size() > 2 && (trimmed[0] == '0' && (trimmed[1] == 'x' || trimmed[1] == 'X')))
+  {
+    info.type = ColumnType::HEX;
+    return info;
+  }
+
   auto num_info = CheckNumeric(trimmed);
   if (num_info.is_number)
   {
@@ -439,6 +446,11 @@ std::optional<double> ParseWithType(const std::string& str, const ColumnTypeInfo
     {
       case ColumnType::NUMBER:
         return toDouble(trimmed);
+
+      case ColumnType::HEX: {
+        // Parse hex value with 0x prefix
+        return static_cast<double>(std::stoll(trimmed, nullptr, 16));
+      }
 
       case ColumnType::EPOCH_SECONDS:
       case ColumnType::EPOCH_MILLIS:
