@@ -406,7 +406,8 @@ int main(int argc, char* argv[])
           QString message = QString("New release available: <b>%1</b><br>"
                                     "<a href=\"%2\">View on GitHub</a>")
                                 .arg(name, url);
-          window->showToast(message);
+          QPixmap icon(":/resources/success_kid.png");
+          window->showToast(message, icon);
         }
       });
 

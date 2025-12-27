@@ -9,6 +9,8 @@
 #include <QHBoxLayout>
 #include <QEasingCurve>
 #include <QGraphicsOpacityEffect>
+#include <QPainter>
+#include <QPainterPath>
 
 ToastNotification::ToastNotification(const QString& message, const QPixmap& icon, int timeout_ms,
                                      QWidget* parent)
@@ -49,21 +51,21 @@ void ToastNotification::setupUI()
   // Frame styling
   setFrameShape(QFrame::StyledPanel);
   setFrameShadow(QFrame::Raised);
-  setMinimumHeight(ICON_SIZE + 16);  // icon + padding
+  setMinimumHeight(40);  // Minimum for text-only toasts
   setMaximumWidth(400);
 
   // Main horizontal layout
-  QHBoxLayout* layout = new QHBoxLayout(this);
-  layout->setContentsMargins(8, 8, 8, 8);
-  layout->setSpacing(12);
+  _layout = new QHBoxLayout(this);
+  _layout->setContentsMargins(8, 8, 8, 8);
+  _layout->setSpacing(12);
 
   // Icon label (optional, hidden by default)
   _icon_label = new QLabel(this);
   _icon_label->setObjectName("toastIcon");
   _icon_label->setFixedSize(ICON_SIZE, ICON_SIZE);
-  _icon_label->setScaledContents(true);
+  _icon_label->setScaledContents(false);  // We handle scaling ourselves for rounded corners
   _icon_label->setVisible(false);
-  layout->addWidget(_icon_label);
+  _layout->addWidget(_icon_label);
 
   // Message label (supports HTML/rich text with clickable links)
   _message_label = new QLabel(this);
@@ -72,7 +74,7 @@ void ToastNotification::setupUI()
   _message_label->setTextFormat(Qt::RichText);
   _message_label->setOpenExternalLinks(true);
   _message_label->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
-  layout->addWidget(_message_label, 1);
+  _layout->addWidget(_message_label, 1);
 
   // Close button
   _close_button = new QPushButton(this);
@@ -82,7 +84,7 @@ void ToastNotification::setupUI()
   _close_button->setFlat(true);
   _close_button->setCursor(Qt::PointingHandCursor);
   _close_button->setFocusPolicy(Qt::NoFocus);
-  layout->addWidget(_close_button, 0, Qt::AlignTop);
+  _layout->addWidget(_close_button, 0, Qt::AlignTop);
 
   connect(_close_button, &QPushButton::clicked, this, &ToastNotification::onCloseClicked);
 
@@ -97,7 +99,7 @@ void ToastNotification::setupUI()
 
 void ToastNotification::setupAnimation()
 {
-  _slide_animation = new QPropertyAnimation(this, "geometry", this);
+  _slide_animation = new QPropertyAnimation(this, "pos", this);
   _slide_animation->setDuration(ANIMATION_DURATION_MS);
   _slide_animation->setEasingCurve(QEasingCurve::OutCubic);
 
@@ -107,17 +109,19 @@ void ToastNotification::setupAnimation()
 
 void ToastNotification::showAnimated()
 {
-  // Ensure widget is visible but positioned off-screen
+  // Get target position (set by ToastManager)
+  QPoint endPos = pos();
+
+  // Start from off-screen right
+  QPoint startPos = endPos;
+  startPos.setX(endPos.x() + width() + 50);
+
+  // Move to start position, then animate to end
+  move(startPos);
   show();
 
-  // Calculate animation positions
-  QRect endRect = geometry();
-  QRect startRect = endRect;
-  startRect.moveLeft(endRect.right());  // Start from off-screen right
-
-  _slide_animation->setStartValue(startRect);
-  _slide_animation->setEndValue(endRect);
-  _slide_animation->setDirection(QAbstractAnimation::Forward);
+  _slide_animation->setStartValue(startPos);
+  _slide_animation->setEndValue(endPos);
   _slide_animation->start();
 
   // Start timeout timer after animation completes
@@ -147,13 +151,12 @@ void ToastNotification::hideAnimated()
   }
 
   // Animate sliding out to the right
-  QRect startRect = geometry();
-  QRect endRect = startRect;
-  endRect.moveLeft(startRect.right());  // Move off-screen right
+  QPoint startPos = pos();
+  QPoint endPos = startPos;
+  endPos.setX(startPos.x() + width() + 50);
 
-  _slide_animation->setStartValue(startRect);
-  _slide_animation->setEndValue(endRect);
-  _slide_animation->setDirection(QAbstractAnimation::Forward);
+  _slide_animation->setStartValue(startPos);
+  _slide_animation->setEndValue(endPos);
   _slide_animation->start();
 }
 
@@ -172,13 +175,80 @@ void ToastNotification::setIcon(const QPixmap& icon)
   if (icon.isNull())
   {
     _icon_label->setVisible(false);
+    // Restore normal margins
+    _layout->setContentsMargins(8, 8, 8, 8);
   }
   else
   {
-    _icon_label->setPixmap(
-        icon.scaled(ICON_SIZE, ICON_SIZE, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+    // Scale and round the icon
+    QPixmap scaled =
+        icon.scaled(ICON_SIZE, ICON_SIZE, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    QPixmap rounded = createRoundedPixmap(scaled, BORDER_RADIUS);
+    _icon_label->setPixmap(rounded);
     _icon_label->setVisible(true);
+    // Remove left margin so icon touches the edge, round the icon's left corners
+    _layout->setContentsMargins(0, 0, 8, 0);
   }
+}
+
+QPixmap ToastNotification::createRoundedPixmap(const QPixmap& source, int radius)
+{
+  if (source.isNull())
+    return source;
+
+  QPixmap result(source.size());
+  result.fill(Qt::transparent);
+
+  QPainter painter(&result);
+  painter.setRenderHint(QPainter::Antialiasing);
+
+  // Create a path with rounded corners only on the left side
+  QPainterPath path;
+  QRectF rect(0, 0, source.width(), source.height());
+
+  // Top-left rounded corner
+  path.moveTo(rect.left() + radius, rect.top());
+  // Top edge to top-right (no rounding on right side)
+  path.lineTo(rect.right(), rect.top());
+  // Right edge
+  path.lineTo(rect.right(), rect.bottom());
+  // Bottom edge to bottom-left
+  path.lineTo(rect.left() + radius, rect.bottom());
+  // Bottom-left rounded corner
+  path.arcTo(rect.left(), rect.bottom() - 2 * radius, 2 * radius, 2 * radius, 270, -90);
+  // Left edge
+  path.lineTo(rect.left(), rect.top() + radius);
+  // Top-left rounded corner
+  path.arcTo(rect.left(), rect.top(), 2 * radius, 2 * radius, 180, -90);
+  path.closeSubpath();
+
+  painter.setClipPath(path);
+  painter.drawPixmap(0, 0, source);
+
+  return result;
+}
+
+void ToastNotification::updateTargetPosition(const QPoint& target)
+{
+  if (_slide_animation->state() == QAbstractAnimation::Running && !_is_closing)
+  {
+    // Animation is in progress - update the end value
+    _slide_animation->stop();
+    QPoint currentPos = pos();
+    _slide_animation->setStartValue(currentPos);
+    _slide_animation->setEndValue(target);
+    _slide_animation->start();
+  }
+  else if (!_is_closing)
+  {
+    // No animation running, just move
+    move(target);
+  }
+}
+
+bool ToastNotification::isAnimatingIn() const
+{
+  return _slide_animation->state() == QAbstractAnimation::Running && !_is_closing;
 }
 
 void ToastNotification::showEvent(QShowEvent* event)

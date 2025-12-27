@@ -15,6 +15,8 @@
 #include <QPixmap>
 #include <QString>
 
+class QHBoxLayout;
+
 class ToastNotification : public QFrame
 {
   Q_OBJECT
@@ -28,7 +30,7 @@ public:
    * @param parent Parent widget
    */
   explicit ToastNotification(const QString& message, const QPixmap& icon = QPixmap(),
-                             int timeout_ms = 5000, QWidget* parent = nullptr);
+                             int timeout_ms = 10000, QWidget* parent = nullptr);
 
   ~ToastNotification() override;
 
@@ -47,6 +49,12 @@ public:
   /// Set the icon (scaled to 56x56)
   void setIcon(const QPixmap& icon);
 
+  /// Update target position (handles in-progress animations)
+  void updateTargetPosition(const QPoint& target);
+
+  /// Check if the toast is currently animating in (not closing)
+  bool isAnimatingIn() const;
+
 signals:
   /// Emitted when the toast is fully closed (after animation)
   void closed();
@@ -62,7 +70,9 @@ private slots:
 private:
   void setupUI();
   void setupAnimation();
+  QPixmap createRoundedPixmap(const QPixmap& source, int radius);
 
+  QHBoxLayout* _layout;
   QLabel* _icon_label;
   QLabel* _message_label;
   QPushButton* _close_button;
@@ -72,7 +82,8 @@ private:
   int _timeout_ms;
   bool _is_closing;
 
-  static constexpr int ICON_SIZE = 56;
+  static constexpr int BORDER_RADIUS = 6;
+  static constexpr int ICON_SIZE = 128;
   static constexpr int ANIMATION_DURATION_MS = 300;
 };
 

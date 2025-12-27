@@ -32,7 +32,7 @@
 #include "transforms/custom_function.h"
 #include "transforms/function_editor.h"
 #include "plugin_manager.h"
-#include "toast_notification.h"
+#include "toast_manager.h"
 
 #include "ui_mainwindow.h"
 
@@ -182,10 +182,8 @@ private:
 
   QString _skin_path;
 
-  // Toast notification container
-  QWidget* _toast_container;
-  QVBoxLayout* _toast_layout;
-  void setupToastContainer();
+  // Toast notification manager
+  ToastManager* _toast_manager;
 
   void initializeActions();
   void initializePlugins();
