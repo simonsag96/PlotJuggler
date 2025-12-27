@@ -20,6 +20,7 @@
 #include <QInputDialog>
 #include <QMenu>
 #include <QGroupBox>
+#include <QHBoxLayout>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QMouseEvent>
@@ -81,6 +82,7 @@ MainWindow::MainWindow(const QCommandLineParser& commandline_parser, QWidget* pa
   , _labels_status(LabelStatus::RIGHT)
   , _recent_data_files(new QMenu())
   , _recent_layout_files(new QMenu())
+  , _toast_manager(nullptr)
 {
   QLocale::setDefault(QLocale::c());  // set as default
   setAcceptDrops(true);
@@ -136,8 +138,6 @@ MainWindow::MainWindow(const QCommandLineParser& commandline_parser, QWidget* pa
   }
 
   QSettings settings;
-
-  ui->widgetStatusBar->setHidden(true);
 
   if (commandline_parser.isSet("buffer_size"))
   {
@@ -216,6 +216,9 @@ MainWindow::MainWindow(const QCommandLineParser& commandline_parser, QWidget* pa
   ui->mainSplitter->setStretchFactor(1, 6);
 
   connect(ui->mainSplitter, &QSplitter::splitterMoved, this, &MainWindow::on_splitterMoved);
+
+  // Initialize toast notification manager
+  _toast_manager = new ToastManager(ui->centralWidget);
 
   initializeActions();
 
@@ -780,6 +783,12 @@ void MainWindow::on_splitterMoved(int size, int index)
 void MainWindow::resizeEvent(QResizeEvent*)
 {
   on_splitterMoved(0, 0);
+
+  // Update toast manager position
+  if (_toast_manager)
+  {
+    _toast_manager->updatePosition();
+  }
 }
 
 void MainWindow::onPlotAdded(PlotWidget* plot)
@@ -1636,9 +1645,18 @@ void MainWindow::enableStreamingNotificationsButton(bool enabled)
 
 void MainWindow::setStatusBarMessage(QString message)
 {
-  ui->statusLabel->setText(message);
-  ui->widgetStatusBar->setHidden(message.isEmpty());
-  QTimer::singleShot(7000, this, [this]() { ui->widgetStatusBar->setHidden(true); });
+  if (!message.isEmpty())
+  {
+    showToast(message);
+  }
+}
+
+void MainWindow::showToast(const QString& message, const QPixmap& icon)
+{
+  if (_toast_manager)
+  {
+    _toast_manager->showToast(message, icon);
+  }
 }
 
 void MainWindow::loadStyleSheet(QString file_path)
@@ -3398,7 +3416,7 @@ void MainWindow::on_buttonReloadData_clicked()
 
 void MainWindow::on_buttonCloseStatus_clicked()
 {
-  ui->widgetStatusBar->hide();
+  // Status bar removed - using toast notifications instead
 }
 
 void MainWindow::on_buttonReferencePoint_toggled(bool checked)
