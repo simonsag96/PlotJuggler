@@ -908,3 +908,37 @@ QWidget#qwtCanvas {
 QDialog#PlotWidgetEditor QListView::item:selected {
     background-color: ${main_background};
 }
+
+/* Toast Notification ----------------------------------------------------- */
+
+ToastNotification {
+    background-color: ${widget_background};
+    border: 1px solid ${border_default};
+    border-radius: 6px;
+    padding: 8px;
+    min-width: 250px;
+    max-width: 400px;
+}
+
+ToastNotification QLabel#toastMessage {
+    color: ${default_text};
+    font-size: 10pt;
+}
+
+ToastNotification QLabel#toastIcon {
+    background: transparent;
+}
+
+ToastNotification QPushButton#toastCloseButton {
+    background: transparent;
+    border: none;
+    color: ${disabled_text};
+    font-size: 14pt;
+    font-weight: bold;
+    padding: 0px;
+    margin: 0px;
+}
+
+ToastNotification QPushButton#toastCloseButton:hover {
+    color: ${default_text};
+}

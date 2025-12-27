@@ -51,6 +51,7 @@ set(PLOTJUGGLER_SRC
     main.cpp
     mainwindow.cpp
     messageparser_base.cpp
+    toast_notification.cpp
     menubar.cpp
     new_release_dialog.cpp
     plugin_manager.cpp

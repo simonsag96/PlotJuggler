@@ -20,6 +20,7 @@
 #include <QInputDialog>
 #include <QMenu>
 #include <QGroupBox>
+#include <QHBoxLayout>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QMouseEvent>
@@ -81,6 +82,8 @@ MainWindow::MainWindow(const QCommandLineParser& commandline_parser, QWidget* pa
   , _labels_status(LabelStatus::RIGHT)
   , _recent_data_files(new QMenu())
   , _recent_layout_files(new QMenu())
+  , _toast_container(nullptr)
+  , _toast_layout(nullptr)
 {
   QLocale::setDefault(QLocale::c());  // set as default
   setAcceptDrops(true);
@@ -216,6 +219,8 @@ MainWindow::MainWindow(const QCommandLineParser& commandline_parser, QWidget* pa
   ui->mainSplitter->setStretchFactor(1, 6);
 
   connect(ui->mainSplitter, &QSplitter::splitterMoved, this, &MainWindow::on_splitterMoved);
+
+  setupToastContainer();
 
   initializeActions();
 
@@ -1639,6 +1644,68 @@ void MainWindow::setStatusBarMessage(QString message)
   ui->statusLabel->setText(message);
   ui->widgetStatusBar->setHidden(message.isEmpty());
   QTimer::singleShot(7000, this, [this]() { ui->widgetStatusBar->setHidden(true); });
+}
+
+void MainWindow::setupToastContainer()
+{
+  // Create a container widget for toast notifications
+  // Position it in the bottom-right area of the main window
+  _toast_container = new QWidget(ui->centralWidget);
+  _toast_container->setObjectName("toastContainer");
+
+  // Use a horizontal layout to push toasts to the right
+  QHBoxLayout* h_layout = new QHBoxLayout(_toast_container);
+  h_layout->setContentsMargins(0, 0, 8, 0);
+  h_layout->setSpacing(0);
+
+  // Add a spacer to push content to the right
+  h_layout->addStretch(1);
+
+  // Create a widget to hold the vertical stack of toasts
+  QWidget* toast_stack = new QWidget(_toast_container);
+  _toast_layout = new QVBoxLayout(toast_stack);
+  _toast_layout->setContentsMargins(0, 0, 0, 0);
+  _toast_layout->setSpacing(8);
+  _toast_layout->addStretch(1);  // Push toasts to the bottom
+
+  h_layout->addWidget(toast_stack);
+
+  // Insert the toast container into the central widget layout
+  // It should appear above the status bar
+  QVBoxLayout* central_layout = qobject_cast<QVBoxLayout*>(ui->centralWidget->layout());
+  if (central_layout)
+  {
+    // Find the status bar widget and insert before it
+    int status_bar_index = central_layout->indexOf(ui->widgetStatusBar);
+    if (status_bar_index >= 0)
+    {
+      central_layout->insertWidget(status_bar_index, _toast_container);
+    }
+    else
+    {
+      central_layout->addWidget(_toast_container);
+    }
+  }
+}
+
+void MainWindow::showToast(const QString& message, const QPixmap& icon)
+{
+  ToastNotification* toast = new ToastNotification(message, icon, 5000, _toast_container);
+
+  // Insert at the end of the layout (before the stretch)
+  int insert_index = _toast_layout->count() - 1;  // Before the stretch
+  if (insert_index < 0)
+  {
+    insert_index = 0;
+  }
+  _toast_layout->insertWidget(insert_index, toast);
+
+  // Connect to remove from layout when closed
+  connect(toast, &ToastNotification::closed, this,
+          [this, toast]() { _toast_layout->removeWidget(toast); });
+
+  // Start the slide-in animation
+  toast->showAnimated();
 }
 
 void MainWindow::loadStyleSheet(QString file_path)
