@@ -122,6 +122,13 @@ jobs:
           # Clean up certificate file
           rm certificate.p12
 
+          # List available signing identities for debugging
+          echo "=== Available signing identities in build.keychain ==="
+          security find-identity -v -p codesigning build.keychain || echo "No identities found in build.keychain"
+          echo ""
+          echo "=== Available signing identities (all keychains) ==="
+          security find-identity -v -p codesigning || echo "No identities found"
+
       - name: Sign Application Bundle
         if: startsWith(github.ref, 'refs/tags/')
         env:
