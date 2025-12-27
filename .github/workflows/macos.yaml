@@ -92,6 +92,55 @@ jobs:
           export PATH="$(brew --prefix qt@5)/bin:$PATH"
           macdeployqt PlotJuggler.app -verbose=2
 
+      - name: Import Code Signing Certificate
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          # Decode and save the certificate
+          echo "$MACOS_CERTIFICATE" | base64 --decode > certificate.p12
+
+          # Create a temporary keychain
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+
+          # Set keychain timeout to 6 hours
+          security set-keychain-settings -t 21600 -u build.keychain
+
+          # Import the certificate
+          security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+
+          # Allow codesign to access the keychain without prompting
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
+
+          # Add keychain to search list
+          security list-keychains -d user -s build.keychain login.keychain
+
+          # Clean up certificate file
+          rm certificate.p12
+
+      - name: Sign Application Bundle
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+        run: |
+          # Sign all nested binaries, libraries, and frameworks first
+          find PlotJuggler.app -type f \( -name "*.dylib" -o -name "*.so" -o -perm +111 \) -exec \
+            /usr/bin/codesign --force --options runtime --sign "$MACOS_SIGNING_IDENTITY" --timestamp {} \;
+
+          # Sign all frameworks
+          find PlotJuggler.app/Contents/Frameworks -type d -name "*.framework" -exec \
+            /usr/bin/codesign --force --options runtime --sign "$MACOS_SIGNING_IDENTITY" --timestamp {} \; 2>/dev/null || true
+
+          # Sign the main app bundle
+          /usr/bin/codesign --force --options runtime --sign "$MACOS_SIGNING_IDENTITY" --timestamp --deep PlotJuggler.app
+
+          # Verify the signature
+          /usr/bin/codesign --verify --deep --strict --verbose=2 PlotJuggler.app
+
       - name: Create DMG
         if: startsWith(github.ref, 'refs/tags/')
         run: |
@@ -116,6 +165,15 @@ jobs:
             hdiutil create -volname "PlotJuggler" -srcfolder PlotJuggler.app -ov -format UDZO "$DMG_NAME"
           fi
 
+      - name: Sign DMG
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+        run: |
+          DMG_NAME="PlotJuggler-${{ github.ref_name }}-macOS-${{ matrix.config.arch }}.dmg"
+          /usr/bin/codesign --force --sign "$MACOS_SIGNING_IDENTITY" --timestamp "$DMG_NAME"
+          /usr/bin/codesign --verify --verbose=2 "$DMG_NAME"
+
       - name: Upload DMG artifact
         if: startsWith(github.ref, 'refs/tags/')
         uses: actions/upload-artifact@v6
@@ -130,3 +188,8 @@ jobs:
           files: PlotJuggler-${{ github.ref_name }}-macOS-${{ matrix.config.arch }}.dmg
           generate_release_notes: false
           fail_on_unmatched_files: false
+
+      - name: Cleanup Keychain
+        if: always()
+        run: |
+          security delete-keychain build.keychain 2>/dev/null || true
