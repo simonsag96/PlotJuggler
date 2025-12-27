@@ -72,7 +72,7 @@ void PlotPanner::widgetMousePressEvent(QMouseEvent* event)
   Qt::MouseButton button;
   Qt::KeyboardModifiers modifiers;
   getMouseButton(button, modifiers);
-  
+
   if (event->button() == button && event->modifiers() == modifiers)
   {
     // Set the move cursor when panning starts
@@ -82,7 +82,7 @@ void PlotPanner::widgetMousePressEvent(QMouseEvent* event)
     QApplication::setOverrideCursor(QCursor(pixmap.scaled(24, 24)));
     _cursor_overridden = true;
   }
-  
+
   QwtPlotPanner::widgetMousePressEvent(event);
 }
 
@@ -94,6 +94,6 @@ void PlotPanner::widgetMouseReleaseEvent(QMouseEvent* event)
     QApplication::restoreOverrideCursor();
     _cursor_overridden = false;
   }
-  
+
   QwtPlotPanner::widgetMouseReleaseEvent(event);
 }

@@ -3161,9 +3161,7 @@ void MainWindow::on_actionPreferences_triggered()
   bool swap_pan_zoom = settings.value("Preferences::swap_pan_zoom", false).toBool();
   if (swap_pan_zoom != prev_swap_pan_zoom)
   {
-    auto visitor = [swap_pan_zoom](PlotWidget* plot) {
-      plot->setSwapZoomPan(swap_pan_zoom);
-    };
+    auto visitor = [swap_pan_zoom](PlotWidget* plot) { plot->setSwapZoomPan(swap_pan_zoom); };
     forEachWidget(visitor);
   }
 }

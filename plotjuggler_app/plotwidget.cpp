@@ -1743,7 +1743,7 @@ bool PlotWidget::canvasEventFilter(QEvent* event)
       else if (mouse_event->buttons() == Qt::MiddleButton &&
                mouse_event->modifiers() == Qt::NoModifier)
       {
-        return false; // send to canvas()
+        return false;  // send to canvas()
       }
       else if (mouse_event->button() == Qt::RightButton)
       {
