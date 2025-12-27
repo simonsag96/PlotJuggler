@@ -24,12 +24,10 @@ namespace PJ::CSV
  * system locale. It also accepts ',' as a decimal separator for compatibility
  * with European CSV files.
  *
- * Uses std::from_chars internally which is guaranteed to be locale-independent.
- *
- * @param str The string to parse (leading/trailing whitespace is handled)
+ * @param str The string to parse
  * @return The parsed double value, or nullopt if parsing fails
  */
-std::optional<double> toDouble(std::string_view str);
+std::optional<double> toDouble(const std::string& str);
 
 /**
  * @brief Trim whitespace from both ends of a string.
