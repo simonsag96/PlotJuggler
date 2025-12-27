@@ -166,12 +166,14 @@ jobs:
         run: |
           DMG_NAME="PlotJuggler-${{ github.ref_name }}-macOS-${{ matrix.config.arch }}.dmg"
 
-          # Submit for notarization and wait for result
+          # Submit for notarization with S3 acceleration and timeout
           xcrun notarytool submit "$DMG_NAME" \
             --apple-id "$APPLE_ID" \
             --team-id "$APPLE_TEAM_ID" \
             --password "$APPLE_APP_PASSWORD" \
-            --wait
+            --wait \
+            --timeout 30m \
+            --s3-acceleration
 
           # Staple the notarization ticket to the DMG
           xcrun stapler staple "$DMG_NAME"
