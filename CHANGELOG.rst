@@ -2,8 +2,8 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+3.14.6 (2025-12-27)
+-------------------
 * cherry pick `#835 <https://github.com/facontidavide/PlotJuggler/issues/835>`_: use timspam in protobuf, if present
 * formatting
 * fix style in preferences
