@@ -25,8 +25,8 @@ public:
   /// Show a toast notification with optional icon
   /// @param message Text/HTML message to display
   /// @param icon Optional 56x56 icon
-  /// @param timeout_ms Auto-dismiss timeout (default 5000ms)
-  void showToast(const QString& message, const QPixmap& icon = QPixmap(), int timeout_ms = 5000);
+  /// @param timeout_ms Auto-dismiss timeout (default 8000ms)
+  void showToast(const QString& message, const QPixmap& icon = QPixmap(), int timeout_ms = 8000);
 
   /// Update container position (call on parent resize)
   void updatePosition();

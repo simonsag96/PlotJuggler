@@ -1720,6 +1720,8 @@ bool PlotWidget::canvasEventFilter(QEvent* event)
 {
   switch (event->type())
   {
+    default:
+      break;
     case QEvent::MouseButtonPress: {
       if (_dragging.mode != DragInfo::NONE)
       {

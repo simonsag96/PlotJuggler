@@ -593,11 +593,12 @@ void MainWindow::initializePlugins()
     ui->layoutPublishers->addWidget(start_checkbox, pub_row, 1);
     start_checkbox->setFocusPolicy(Qt::FocusPolicy::NoFocus);
 
+    StatePublisher* pub_ptr = publisher.get();
     connect(start_checkbox, &QCheckBox::toggled, this,
-            [=](bool enable) { publisher->setEnabled(enable); });
+            [pub_ptr](bool enable) { pub_ptr->setEnabled(enable); });
 
-    connect(publisher.get(), &StatePublisher::closed, start_checkbox,
-            [=]() { start_checkbox->setChecked(false); });
+    connect(pub_ptr, &StatePublisher::closed, start_checkbox,
+            [start_checkbox]() { start_checkbox->setChecked(false); });
 
     if (publisher->availableActions().empty())
     {
@@ -615,9 +616,9 @@ void MainWindow::initializePlugins()
       options_button->setIcon(LoadSvg(":/resources/svg/settings_cog.svg", "light"));
       options_button->setIconSize({ 16, 16 });
 
-      auto optionsMenu = [=]() {
+      auto optionsMenu = [pub_ptr, options_button, this]() {
         PopupMenu* menu = new PopupMenu(options_button, this);
-        for (auto action : publisher->availableActions())
+        for (auto action : pub_ptr->availableActions())
         {
           menu->addAction(action);
         }
