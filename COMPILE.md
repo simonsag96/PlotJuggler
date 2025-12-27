@@ -194,7 +194,7 @@ Change the **Qt** and **QtInstallerFramework** version as needed.
 xcopy src\PlotJuggler\installer installer\ /Y /S /f /z
 xcopy install\bin\*.* installer\io.plotjuggler.application\data /Y /S /f /z
 
-C:\QtPro\5.15.16\msvc2019_64\bin\windeployqt.exe --release installer\io.plotjuggler.application\data\plotjuggler.exe
+installer\windeploy_pj.bat C:\QtPro\5.15.16\msvc2019_64\bin\windeployqt.exe
 
 C:\QtPro\Tools\QtInstallerFramework\4.6\bin\binarycreator.exe --offline-only -c installer\config.xml -p installer  PlotJuggler-Windows-installer.exe
 ```

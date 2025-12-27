@@ -55,7 +55,7 @@ jobs:
         run: |
           New-Item -ItemType Directory -Force -Path installer\io.plotjuggler.application\data
           Copy-Item -Path build\bin\Release\*.* -Destination installer\io.plotjuggler.application\data -Recurse -Force
-          windeployqt.exe --release installer\io.plotjuggler.application\data\plotjuggler.exe
+          cmd /c installer\windeploy_pj.bat
 
       - name: Create installer using QT Installation Framework
         shell: pwsh
