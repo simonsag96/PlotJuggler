@@ -340,8 +340,7 @@ ColumnTypeInfo DetectColumnType(const std::string& str)
   }
 
   // Check for hexadecimal with 0x prefix (case insensitive)
-  if (trimmed.size() > 2 &&
-      (trimmed[0] == '0' && (trimmed[1] == 'x' || trimmed[1] == 'X')))
+  if (trimmed.size() > 2 && (trimmed[0] == '0' && (trimmed[1] == 'x' || trimmed[1] == 'X')))
   {
     info.type = ColumnType::HEX;
     return info;
