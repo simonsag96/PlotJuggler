@@ -1683,14 +1683,6 @@ bool PlotWidget::eventFilter(QObject* obj, QEvent* event)
   return false;
 }
 
-void PlotWidget::overrideCursonMove()
-{
-  QSettings settings;
-  QString theme = settings.value("Preferences::theme", "light").toString();
-  auto pixmap = LoadSvg(":/resources/svg/move_view.svg", theme);
-  QApplication::setOverrideCursor(QCursor(pixmap.scaled(24, 24)));
-}
-
 void PlotWidget::setAxisScale(QwtAxisId axisId, double min, double max)
 {
   if (min > max)
@@ -1746,17 +1738,12 @@ bool PlotWidget::canvasEventFilter(QEvent* event)
           emit trackerMoved(pointF);
           return true;  // don't pass to canvas().
         }
-        else if (mouse_event->modifiers() == Qt::ControlModifier)  // panner
-        {
-          overrideCursonMove();
-        }
         return false;  // send to canvas()
       }
       else if (mouse_event->buttons() == Qt::MiddleButton &&
                mouse_event->modifiers() == Qt::NoModifier)
       {
-        overrideCursonMove();
-        return false;
+        return false; // send to canvas()
       }
       else if (mouse_event->button() == Qt::RightButton)
       {
@@ -1797,7 +1784,6 @@ bool PlotWidget::canvasEventFilter(QEvent* event)
     case QEvent::MouseButtonRelease: {
       if (_dragging.mode == DragInfo::NONE)
       {
-        QApplication::restoreOverrideCursor();
         return false;
       }
     }
