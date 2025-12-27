@@ -2860,22 +2860,20 @@ void MainWindow::on_buttonLoadDatafile_clicked()
 
   QSettings settings;
 
-  QString file_extension_filter;
-
-  std::set<QString> extensions;
-  for (auto& it : dataLoaders())
+  QString single_line_extensions;
+  QStringList extensions;
+  for (auto& [loader_name, loader] : dataLoaders())
   {
-    DataLoaderPtr loader = it.second;
+    QString filter_by_loader = QString("%1 (").arg(loader_name);
     for (QString extension : loader->compatibleFileExtensions())
     {
-      extensions.insert(extension.toLower());
+      filter_by_loader.append(QString("*.%1 ").arg(extension.toLower()));
+      single_line_extensions.append(QString("*.%1 ").arg(extension.toLower()));
     }
+    extensions.push_back(filter_by_loader.trimmed() + ")");
   }
-
-  for (const auto& it : extensions)
-  {
-    file_extension_filter.append(QString(" *.") + it);
-  }
+  extensions.push_front(QString("All Supported Files (%1)").arg(single_line_extensions.trimmed()));
+  extensions.push_back(QString("All Files (*)"));
 
   QString directory_path =
       settings.value("MainWindow.lastDatafileDirectory", QDir::currentPath()).toString();
@@ -2883,8 +2881,9 @@ void MainWindow::on_buttonLoadDatafile_clicked()
   QFileDialog loadDialog(this);
   loadDialog.setFileMode(QFileDialog::ExistingFiles);
   loadDialog.setViewMode(QFileDialog::Detail);
-  loadDialog.setNameFilter(file_extension_filter);
+  loadDialog.setNameFilter(extensions.join(";;"));
   loadDialog.setDirectory(directory_path);
+  loadDialog.setOption(QFileDialog::DontUseNativeDialog, true);
 
   QStringList fileNames;
   if (loadDialog.exec())
