@@ -470,13 +470,15 @@ QCheckBox::indicator:checked:pressed {
 /* QGroupBox -------------------------------------------------------------- */
 
 QGroupBox{
-    margin-top:10px;
+    margin-top: 8px;
+    padding-top: 16px;
 }
 
 QGroupBox::title {
     subcontrol-origin: margin;
     subcontrol-position: top left;
     padding-bottom: 10px;
+    font: bold;
 }
 
 QGroupBox::indicator {

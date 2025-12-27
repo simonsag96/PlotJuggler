@@ -36,7 +36,7 @@ PreferencesDialog::PreferencesDialog(QWidget* parent)
   ui->checkBoxOpenGL->setChecked(use_opengl);
 
   int precision = settings.value("Preferences::precision", 3).toInt();
-  ui->comboBoxPrecision->setCurrentIndex(precision);
+  ui->comboBoxPrecision->setCurrentIndex(precision - 1);
 
   bool no_splash = settings.value("Preferences::no_splash", false).toBool();
   ui->checkBoxSkipSplash->setChecked(no_splash);
@@ -108,7 +108,7 @@ void PreferencesDialog::on_buttonBox_accepted()
                     ui->comboBoxTheme->currentIndex() == 1 ? "dark" : "light");
   settings.setValue("Preferences::remember_color", ui->checkBoxRememberColor->isChecked());
   settings.setValue("Preferences::use_plot_color_index", ui->radioLocalColorIndex->isChecked());
-  settings.setValue("Preferences::precision", ui->comboBoxPrecision->currentIndex());
+  settings.setValue("Preferences::precision", ui->comboBoxPrecision->currentIndex() + 1);
   settings.setValue("Preferences::use_separator", ui->checkBoxSeparator->isChecked());
   settings.setValue("Preferences::use_opengl", ui->checkBoxOpenGL->isChecked());
   settings.setValue("Preferences::no_splash", ui->checkBoxSkipSplash->isChecked());
