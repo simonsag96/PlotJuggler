@@ -106,7 +106,7 @@ bool DataStreamZMQ::start(QStringList*)
   dialog->ui->lineEditTopics->setText(topics);
 
   connect(dialog->ui->comboBoxProtocol, qOverload<const QString&>(&QComboBox::currentIndexChanged),
-          this, [&](const QString& selected_protocol) {
+          this, [this, dialog](const QString& selected_protocol) {
             if (_parser_creator)
             {
               if (auto prev_widget = _parser_creator->optionsWidget())
@@ -120,6 +120,8 @@ bool DataStreamZMQ::start(QStringList*)
             {
               widget->setVisible(true);
             }
+            dialog->setMinimumHeight(0); // Setting the minimum height to 0, then adjusting the size based on the dialog menu
+            dialog->adjustSize();
           });
 
   dialog->ui->comboBoxProtocol->setCurrentText(protocol);
