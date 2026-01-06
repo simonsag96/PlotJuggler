@@ -120,7 +120,8 @@ bool DataStreamZMQ::start(QStringList*)
             {
               widget->setVisible(true);
             }
-            dialog->setMinimumHeight(0); // Setting the minimum height to 0, then adjusting the size based on the dialog menu
+            dialog->setMinimumHeight(0);  // Setting the minimum height to 0, then adjusting the
+                                          // size based on the dialog menu
             dialog->adjustSize();
           });
 
