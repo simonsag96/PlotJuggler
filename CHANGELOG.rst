@@ -2,6 +2,70 @@
 Changelog for package plotjuggler
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+3.15.0 (2025-12-27)
+-------------------
+
+3.14.6 (2025-12-27)
+-------------------
+* cherry pick `#835 <https://github.com/facontidavide/PlotJuggler/issues/835>`_: use timspam in protobuf, if present
+* formatting
+* fix style in preferences
+* Feature: add option to swap pan/zoom mouse actions (`#1235 <https://github.com/facontidavide/PlotJuggler/issues/1235>`_)
+* cleanup ULG plugin
+* Merge branch 'he_parse'
+* fix formatting
+* fix comments
+* CSV parsing: fix issue `#1237 <https://github.com/facontidavide/PlotJuggler/issues/1237>`_
+* Add hexadecimal timestamp parsing (0x prefix only)
+  Support hexadecimal values in CSV files when explicitly prefixed with 0x.
+  This avoids ambiguity with string labels like 'A' or 'B' which could
+  otherwise be misinterpreted as hex values.
+  Addresses feedback from @facontidavide on `#1227 <https://github.com/facontidavide/PlotJuggler/issues/1227>`_
+* Fix plugin installation path from /usr/OFF to /usr/lib/plotjuggler/plugins (`#1239 <https://github.com/facontidavide/PlotJuggler/issues/1239>`_)
+* Add GitHub Copilot instructions for repository context (`#1242 <https://github.com/facontidavide/PlotJuggler/issues/1242>`_)
+* add devcontainer
+* should fix `#1223 <https://github.com/facontidavide/PlotJuggler/issues/1223>`_
+* formatting
+* Contributors: Copilot, Davide Faconti, panav, viktor-av
+
+3.14.5 (2025-12-22)
+-------------------
+* add option to change width of lines in PlotWidget Editor
+* fix snap build
+* Contributors: Davide Faconti
+
+3.14.4 (2025-12-19)
+-------------------
+* change ID
+* Install plugins into lib tree (`#1228 <https://github.com/facontidavide/PlotJuggler/issues/1228>`_)
+  Fixes `#1153 <https://github.com/facontidavide/PlotJuggler/issues/1153>`_
+* 🛠️ Bump actions/download-artifact from 6 to 7 (`#1229 <https://github.com/facontidavide/PlotJuggler/issues/1229>`_)
+  Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+* 🛠️ Bump actions/upload-artifact from 5 to 6 (`#1230 <https://github.com/facontidavide/PlotJuggler/issues/1230>`_)
+  Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+* fix issue `#1226 <https://github.com/facontidavide/PlotJuggler/issues/1226>`_
+* 🛠️ Bump actions/cache from 4 to 5 (`#1225 <https://github.com/facontidavide/PlotJuggler/issues/1225>`_)
+  Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+* Contributors: Davide Faconti, SammysHP, dependabot[bot]
+
+3.14.3 (2025-12-07)
+-------------------
+* refactored CSV plugin for robust date/time
+* fix ULOG link in README
+* add 3rdparty date parsing
+* add margin to collapsed QSplitter
+* add new name filter for custom series
+* Contributors: Davide Faconti
+
+3.14.2 (2025-12-06)
+-------------------
+* add new binary filter
+* add code of conduct and remove old issue template
+* Update issue templates
+* fix data merging
+* new memes
+* Contributors: Davide Faconti
+
 3.14.0 (2025-11-22)
 -------------------
 * bug fix in multiple curves filter

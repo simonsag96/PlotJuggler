@@ -30,6 +30,7 @@
 #include "qwt_symbol.h"
 #include "qwt_text.h"
 
+#include <array>
 #include <QBoxLayout>
 #include <QMessageBox>
 #include <QSettings>
@@ -697,7 +698,9 @@ std::map<QString, QColor> PlotWidgetBase::getCurveColors() const
 
 void PlotWidgetBase::setStyle(QwtPlotCurve* curve, CurveStyle style)
 {
-  curve->setPen(curve->pen().color(), (style == DOTS) ? 4.0 : 1.3);
+  const auto line_width =
+      (style == DOTS) ? dotWidthValue(lineWidth()) : lineWidthValue(lineWidth());
+  curve->setPen(curve->pen().color(), line_width);
 
   switch (style)
   {
@@ -777,6 +780,22 @@ bool PlotWidgetBase::isZoomEnabled() const
   return p->zoom_enabled;
 }
 
+void PlotWidgetBase::setSwapZoomPan(bool swapped)
+{
+  if (swapped)
+  {
+    // Swap: Left button for pan, Ctrl+Left for zoom
+    p->zoomer->setMousePattern(QwtEventPattern::MouseSelect1, Qt::LeftButton, Qt::ControlModifier);
+    p->panner1->setMouseButton(Qt::LeftButton, Qt::NoModifier);
+  }
+  else
+  {
+    // Default: Left button for zoom, Ctrl+Left for pan
+    p->zoomer->setMousePattern(QwtEventPattern::MouseSelect1, Qt::LeftButton, Qt::NoModifier);
+    p->panner1->setMouseButton(Qt::LeftButton, Qt::ControlModifier);
+  }
+}
+
 void PlotWidgetBase::overrideCurvesStyle(std::optional<CurveStyle> style)
 {
   p->overridden_curve_style = style;
@@ -815,6 +834,7 @@ PlotLegend* PlotWidgetBase::legend()
 {
   return p->legend;
 }
+
 PlotZoomer* PlotWidgetBase::zoomer()
 {
   return p->zoomer;
@@ -823,6 +843,16 @@ PlotZoomer* PlotWidgetBase::zoomer()
 PlotMagnifier* PlotWidgetBase::magnifier()
 {
   return p->magnifier;
+}
+
+PlotPanner* PlotWidgetBase::panner1()
+{
+  return p->panner1;
+}
+
+PlotPanner* PlotWidgetBase::panner2()
+{
+  return p->panner2;
 }
 
 void PlotWidgetBase::updateMaximumZoomArea()
@@ -870,6 +900,18 @@ void PlotWidgetBase::updateMaximumZoomArea()
     zoomer()->keepAspectRatio(false);
   }
   _max_zoom_rect = max_rect;
+}
+
+void PlotWidgetBase::setLineWidth(LineWidth width)
+{
+  _line_width = width;
+  const double width_value = lineWidthValue(width);
+
+  for (auto& it : p->curve_list)
+  {
+    it.curve->setPen(it.curve->pen().color(), width_value);
+  }
+  replot();
 }
 
 }  // namespace PJ

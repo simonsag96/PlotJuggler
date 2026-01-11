@@ -61,7 +61,7 @@ jobs:
           mkdir -p ${{ runner.temp }}/ccache/tmp
 
       - name: Save ccache folder
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ runner.temp }}/ccache
           key: ${{ runner.os }}-${{ steps.dist_short.outputs.short_name }}
@@ -110,7 +110,7 @@ jobs:
           cp -p build/bin/* plotjuggler_'${{ steps.define_version.outputs.version }}'_amd64/usr/lib/plotjuggler/
           mkdir -p plotjuggler_'${{ steps.define_version.outputs.version }}'_amd64/usr/bin
           mkdir -p plotjuggler_'${{ steps.define_version.outputs.version }}'_amd64/usr/share/applications
-          cp PlotJuggler.desktop plotjuggler_'${{ steps.define_version.outputs.version }}'_amd64/usr/share/applications/
+          cp io.plotjuggler.PlotJuggler.desktop plotjuggler_'${{ steps.define_version.outputs.version }}'_amd64/usr/share/applications/
           mkdir -p plotjuggler_'${{ steps.define_version.outputs.version }}'_amd64/usr/share/icons/hicolor/512x512/apps/
           cp plotjuggler.png plotjuggler_'${{ steps.define_version.outputs.version }}'_amd64/usr/share/icons/hicolor/512x512/apps/
           mkdir -p plotjuggler_'${{ steps.define_version.outputs.version }}'_amd64/usr/share/icons/hicolor/scalable/apps/
@@ -121,7 +121,7 @@ jobs:
         run: mv plotjuggler_${{ steps.define_version.outputs.version }}_amd64.deb plotjuggler_${{ steps.define_version.outputs.version }}_amd64_${{ steps.dist_short.outputs.short_name }}.deb
 
       - name: Upload deb
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: plotjuggler_${{ steps.define_version.outputs.version }}_amd64_${{ steps.dist_short.outputs.short_name }}.deb
           path: plotjuggler_${{ steps.define_version.outputs.version }}_amd64_${{ steps.dist_short.outputs.short_name }}.deb
@@ -131,5 +131,5 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: plotjuggler_${{ steps.define_version.outputs.version }}_amd64_${{ steps.dist_short.outputs.short_name }}.deb
-          generate_release_notes: true
+          generate_release_notes: false
           fail_on_unmatched_files: false
