@@ -2,6 +2,7 @@
 #include "ui_datastream_zmq.h"
 
 #include "PlotJuggler/messageparser_base.h"
+#include "PlotJuggler/dialog_utils.h"
 #include <QDebug>
 #include <QDialog>
 #include <QIntValidator>
@@ -120,9 +121,8 @@ bool DataStreamZMQ::start(QStringList*)
             {
               widget->setVisible(true);
             }
-            dialog->setMinimumHeight(0);  // Setting the minimum height to 0, then adjusting the
-                                          // size based on the dialog menu
-            dialog->adjustSize();
+
+            PJ::adjustDialogToContent(dialog, selected_protocol);
           });
 
   dialog->ui->comboBoxProtocol->setCurrentText(protocol);

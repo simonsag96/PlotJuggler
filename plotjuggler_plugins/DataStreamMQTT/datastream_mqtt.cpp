@@ -1,5 +1,6 @@
 #include "datastream_mqtt.h"
 #include "ui_datastream_mqtt.h"
+#include "PlotJuggler/dialog_utils.h"
 #include <QMessageBox>
 #include <QSettings>
 #include <QDebug>
@@ -137,6 +138,10 @@ void DataStreamMQTT::onComboProtocolChanged(const QString& selected_protocol)
   {
     widget->setVisible(true);
   }
+  _dialog->setMinimumHeight(0);
+  _dialog->layout()->invalidate();
+  _dialog->layout()->activate();
+  _dialog->resize(_dialog->sizeHint());
 }
 
 void DataStreamMQTT::onMessageReceived(const mosquitto_message* message)
