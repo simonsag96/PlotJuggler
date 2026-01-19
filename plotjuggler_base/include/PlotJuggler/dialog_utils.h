@@ -31,7 +31,7 @@ inline void adjustDialogToContent(QDialog* dialog, const QString& selected_proto
   if (std::set<QString>{ "ros1msg", "ros2msg", "data_tamer", "Influx (Line protocol)" }.count(
           selected_protocol))
   {
-    hint = QSize(316, 341);
+    hint = QSize(316, 386);
   }
   else
   {
