@@ -122,7 +122,7 @@ bool DataStreamZMQ::start(QStringList*)
               widget->setVisible(true);
             }
 
-            PJ::adjustDialogToContent(dialog, selected_protocol);
+            adjustDialogToContent(dialog, selected_protocol);
           });
 
   dialog->ui->comboBoxProtocol->setCurrentText(protocol);

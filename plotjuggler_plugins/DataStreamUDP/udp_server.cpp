@@ -126,7 +126,7 @@ bool UDP_Server::start(QStringList*)
     {
       widget->setVisible(true);
     }
-    PJ::adjustDialogToContent(&dialog, selected_protocol);
+    adjustDialogToContent(&dialog, selected_protocol);
   };
 
   connect(dialog.ui->comboBoxProtocol, qOverload<const QString&>(&QComboBox::currentIndexChanged),
