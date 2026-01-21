@@ -29,7 +29,6 @@ THE SOFTWARE.
 #include <chrono>
 #include <QNetworkDatagram>
 #include <QNetworkInterface>
-#include <set>
 
 #include "ui_udp_server.h"
 #include "PlotJuggler/dialog_utils.h"
@@ -122,11 +121,7 @@ bool UDP_Server::start(QStringList*)
     }
     parser_creator = parserFactories()->at(selected_protocol);
 
-    if (auto widget = parser_creator->optionsWidget())
-    {
-      widget->setVisible(true);
-    }
-    adjustDialogToContent(&dialog, selected_protocol);
+    showOptionsWidget(&dialog, dialog.ui->boxOptions, parser_creator->optionsWidget());
   };
 
   connect(dialog.ui->comboBoxProtocol, qOverload<const QString&>(&QComboBox::currentIndexChanged),

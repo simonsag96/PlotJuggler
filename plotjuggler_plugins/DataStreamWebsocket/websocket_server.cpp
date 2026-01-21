@@ -116,12 +116,7 @@ bool WebsocketServer::start(QStringList*)
             }
             parser_creator = parserFactories()->at(selected_protocol);
 
-            if (auto widget = parser_creator->optionsWidget())
-            {
-              widget->setVisible(true);
-            }
-
-            adjustDialogToContent(dialog, selected_protocol);
+            showOptionsWidget(dialog, dialog->ui->boxOptions, parser_creator->optionsWidget());
           });
 
   dialog->ui->comboBoxProtocol->setCurrentText(protocol);

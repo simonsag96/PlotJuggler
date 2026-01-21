@@ -2,7 +2,8 @@
 #define PJ_DIALOG_UTILS_H
 
 #include <QDialog>
-#include <set>
+#include <QLayout>
+#include <QWidget>
 
 namespace PJ
 {
@@ -16,30 +17,39 @@ namespace PJ
  *
  * @param dialog The dialog to resize
  */
-inline void adjustDialogToContent(QDialog* dialog, const QString& selected_protocol)
+inline void adjustDialogToContent(QDialog* dialog)
 {
   if (!dialog)
   {
     return;
   }
-  // Reset minimum height and resize dialog
   dialog->setMinimumHeight(0);
   dialog->layout()->invalidate();
   dialog->layout()->activate();
+  dialog->adjustSize();
+}
 
-  QSize hint;
-  if (std::set<QString>{ "ros1msg", "ros2msg", "data_tamer", "Influx (Line protocol)" }.count(
-          selected_protocol))
+/**
+ * @brief Shows/hides parser options widget and its container, then resizes dialog
+ *
+ * Hides the options container if the widget is null.
+ *
+ * @param dialog The dialog to resize
+ * @param options_box The container widget for parser options
+ * @param options_widget The parser's options widget (may be null)
+ */
+inline void showOptionsWidget(QDialog* dialog, QWidget* options_box, QWidget* options_widget)
+{
+  if (options_widget)
   {
-    hint = QSize(316, 386);
+    options_widget->setVisible(true);
+    options_box->setVisible(true);
   }
   else
   {
-    hint = dialog->sizeHint();
+    options_box->setVisible(false);
   }
-  // Force recalculation of size hint
-  dialog->setMaximumHeight(hint.height());
-  dialog->resize(hint);
+  adjustDialogToContent(dialog);
 }
 
 }  // namespace PJ

@@ -134,14 +134,7 @@ void DataStreamMQTT::onComboProtocolChanged(const QString& selected_protocol)
   }
   _current_parser_creator = parserFactories()->at(selected_protocol);
 
-  if (auto widget = _current_parser_creator->optionsWidget())
-  {
-    widget->setVisible(true);
-  }
-  _dialog->setMinimumHeight(0);
-  _dialog->layout()->invalidate();
-  _dialog->layout()->activate();
-  _dialog->resize(_dialog->sizeHint());
+  showOptionsWidget(_dialog, _dialog->ui->widgetOptions, _current_parser_creator->optionsWidget());
 }
 
 void DataStreamMQTT::onMessageReceived(const mosquitto_message* message)
