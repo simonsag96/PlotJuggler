@@ -9,6 +9,10 @@ on:
   pull_request:
     types: [opened, synchronize]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
 
   debian-build:
@@ -42,7 +46,7 @@ jobs:
         shell: bash
         run: |
           apt update
-          apt install -y git qtbase5-dev libqt5svg5-dev libqt5websockets5-dev libqt5opengl5-dev libqt5x11extras5-dev libprotoc-dev libzmq3-dev ccache libmosquitto-dev ca-certificates lsb-release wget zsync
+          apt install -y cmake git qtbase5-dev libqt5svg5-dev libqt5websockets5-dev libqt5opengl5-dev libqt5x11extras5-dev libprotoc-dev libzmq3-dev ccache libmosquitto-dev ca-certificates lsb-release wget zsync libcurl4-openssl-dev
 
       - name: Install Apache Arrow for Parquet support
         shell: bash
@@ -61,7 +65,7 @@ jobs:
           mkdir -p ${{ runner.temp }}/ccache/tmp
 
       - name: Save ccache folder
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ${{ runner.temp }}/ccache
           key: ${{ runner.os }}-${{ steps.dist_short.outputs.short_name }}
@@ -110,7 +114,7 @@ jobs:
           cp -p build/bin/* plotjuggler_'${{ steps.define_version.outputs.version }}'_amd64/usr/lib/plotjuggler/
           mkdir -p plotjuggler_'${{ steps.define_version.outputs.version }}'_amd64/usr/bin
           mkdir -p plotjuggler_'${{ steps.define_version.outputs.version }}'_amd64/usr/share/applications
-          cp PlotJuggler.desktop plotjuggler_'${{ steps.define_version.outputs.version }}'_amd64/usr/share/applications/
+          cp io.plotjuggler.PlotJuggler.desktop plotjuggler_'${{ steps.define_version.outputs.version }}'_amd64/usr/share/applications/
           mkdir -p plotjuggler_'${{ steps.define_version.outputs.version }}'_amd64/usr/share/icons/hicolor/512x512/apps/
           cp plotjuggler.png plotjuggler_'${{ steps.define_version.outputs.version }}'_amd64/usr/share/icons/hicolor/512x512/apps/
           mkdir -p plotjuggler_'${{ steps.define_version.outputs.version }}'_amd64/usr/share/icons/hicolor/scalable/apps/
@@ -121,7 +125,7 @@ jobs:
         run: mv plotjuggler_${{ steps.define_version.outputs.version }}_amd64.deb plotjuggler_${{ steps.define_version.outputs.version }}_amd64_${{ steps.dist_short.outputs.short_name }}.deb
 
       - name: Upload deb
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: plotjuggler_${{ steps.define_version.outputs.version }}_amd64_${{ steps.dist_short.outputs.short_name }}.deb
           path: plotjuggler_${{ steps.define_version.outputs.version }}_amd64_${{ steps.dist_short.outputs.short_name }}.deb

@@ -5,6 +5,10 @@ on:
       - '*'
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -29,7 +33,7 @@ jobs:
       run: |
         sudo snap install --dangerous ${{ steps.build-snap22.outputs.snap }}
 
-    - uses: actions/upload-artifact@v5
+    - uses: actions/upload-artifact@v6
       with:
         name: plotjuggler-snap22
         path: ${{ steps.build-snap22.outputs.snap }}
@@ -40,7 +44,7 @@ jobs:
     needs: build
     steps:
     - name: Download artifact
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v7
       with:
         name: plotjuggler-snap22
         path: .
