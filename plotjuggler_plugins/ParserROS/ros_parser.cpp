@@ -372,17 +372,18 @@ void ParserROS::parseDiagnosticMsg(const std::string& prefix, double& timestamp)
 
   for (const auto& status : msg.status)
   {
-    auto create_series_name_from_status =
-        [](Msg::DiagnosticStatus status, const std::string& prefix, const std::string value_name) {
-          if (status.hardware_id.empty())
-          {
-            return fmt::format("{}/{}/{}", prefix, status.name, value_name);
-          }
-          else
-          {
-            return fmt::format("{}/{}/{}/{}", prefix, status.hardware_id, status.name, value_name);
-          }
-        };
+    auto create_series_name_from_status = [](const Msg::DiagnosticStatus& status,
+                                             const std::string& prefix,
+                                             const std::string& value_name) {
+      if (status.hardware_id.empty())
+      {
+        return fmt::format("{}/{}/{}", prefix, status.name, value_name);
+      }
+      else
+      {
+        return fmt::format("{}/{}/{}/{}", prefix, status.hardware_id, status.name, value_name);
+      }
+    };
     series_name = create_series_name_from_status(status, prefix, "level");
     getSeries(series_name).pushBack({ timestamp, static_cast<double>(status.level) });
     series_name = create_series_name_from_status(status, prefix, "message");
