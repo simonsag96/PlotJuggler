@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 project(
   plotjuggler
   LANGUAGES C CXX
-  VERSION 3.15.0)
+  VERSION 3.16.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -196,8 +196,8 @@ include(${PROJECT_SOURCE_DIR}/cmake/find_or_download_zstd.cmake)
 find_or_download_zstd()
 
 if(NOT COMPILING_WITH_AMENT)
-  include(cmake/download_wasmtime.cmake)
-  download_wasmtime()
+  include(cmake/download_wasmer.cmake)
+  download_wasmer()
 endif()
 
 

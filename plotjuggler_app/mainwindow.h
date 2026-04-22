@@ -47,8 +47,8 @@ public:
 
   ~MainWindow();
 
-  bool loadLayoutFromFile(QString filename);
-  bool loadDataFromFiles(QStringList filenames);
+  bool loadLayoutFromFile(QString filename, bool load_datafiles = true);
+  bool loadDataFromFiles(QStringList filenames, bool auto_prefix = false);
   std::unordered_set<std::string> loadDataFromFile(const FileLoadInfo& info, bool merge_files);
 
   void stopStreamingPlugin();
@@ -158,6 +158,7 @@ private:
   MonitoredValue _time_offset;
 
   QTimer* _replot_timer;
+  int _curvelist_resync_counter = 0;
   QTimer* _publish_timer;
   PJ::DelayedCallback _tracker_delay;
 

@@ -29,20 +29,25 @@ jobs:
       - name: Sync repository
         uses: actions/checkout@v6
 
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+
       - name: Install Conan
         uses: conan-io/setup-conan@v1
         with:
           cache_packages: true
+
+      - name: Conan install
+        run: |
+          conan install . -of build --build=missing -pr:b=default -s build_type=Release -s compiler.cppstd=17
 
       - name: Install and cache Homebrew tools
         uses: tecolicom/actions-use-homebrew-tools@v1
         with:
           tools: qt@5 create-dmg
           cache: yes
-
-      - name: Conan install
-        run: |
-          conan install . -of build --build=missing -pr:b=default -s build_type=Release -s compiler.cppstd=17
 
       - name: Build PlotJuggler
         run: |
@@ -98,7 +103,7 @@ jobs:
 
       - name: Import Code Signing Certificate
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
-        uses: apple-actions/import-codesign-certs@v6
+        uses: apple-actions/import-codesign-certs@v7
         with:
           p12-file-base64: ${{ secrets.MACOS_CERTIFICATE }}
           p12-password: ${{ secrets.MACOS_CERTIFICATE_PWD }}
@@ -184,14 +189,14 @@ jobs:
 
       - name: Upload DMG artifact
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: PlotJuggler-${{ github.ref_name }}-macOS-${{ matrix.config.arch }}.dmg
           path: PlotJuggler-${{ github.ref_name }}-macOS-${{ matrix.config.arch }}.dmg
 
       - name: Upload to Release
         if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: PlotJuggler-${{ github.ref_name }}-macOS-${{ matrix.config.arch }}.dmg
           generate_release_notes: false

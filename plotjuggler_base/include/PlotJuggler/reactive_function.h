@@ -28,6 +28,7 @@ struct TimeseriesRef
   double atTime(double t) const;
 
   double t_atTime(double t) const;
+  int getIndexAtTime(double t) const;
 
   unsigned size() const;
 
@@ -115,6 +116,7 @@ protected:
   void prepareLua();
 
   double _tracker_value = 0;
+  bool _disabled_after_error = false;
   std::string _global_code;
   std::string _function_code;
   std::string _library_code;

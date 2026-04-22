@@ -14,6 +14,7 @@
 #include <QCommandLineParser>
 #include <QDebug>
 #include <QDesktopServices>
+#include <QDirIterator>
 #include <QDomDocument>
 #include <QDoubleSpinBox>
 #include <QElapsedTimer>
@@ -45,6 +46,9 @@
 #include "PlotJuggler/plotdata.h"
 #include "transforms/function_editor.h"
 #include "transforms/lua_custom_function.h"
+#ifdef PJ_HAS_PYTHON
+#include "transforms/python_custom_function.h"
+#endif
 #include "utils.h"
 #include "stylesheet.h"
 #include "dummy_data.h"
@@ -66,6 +70,75 @@
 #include <ament_index_cpp/get_package_prefix.hpp>
 #include <ament_index_cpp/get_package_share_directory.hpp>
 #endif
+
+// Serialize a QDomDocument to XML with attributes in sorted order.
+// Qt's QDomDocument::toString() uses a hash map for attributes, producing
+// non-deterministic ordering that causes noisy diffs in version control.
+static void WriteSortedXml(QTextStream& out, const QDomNode& node, int indent = 0)
+{
+  const QString pad(indent, ' ');
+
+  if (node.isProcessingInstruction())
+  {
+    auto pi = node.toProcessingInstruction();
+    out << pad << "<?" << pi.target() << " " << pi.data() << "?>\n";
+    return;
+  }
+  if (node.isComment())
+  {
+    out << pad << "<!--" << node.toComment().data() << "-->\n";
+    return;
+  }
+  if (node.isText())
+  {
+    out << node.toText().data().toHtmlEscaped();
+    return;
+  }
+  if (!node.isElement())
+  {
+    return;
+  }
+
+  auto elem = node.toElement();
+  out << pad << "<" << elem.tagName();
+
+  // Collect and sort attributes alphabetically
+  QDomNamedNodeMap attrs = elem.attributes();
+  QStringList attr_names;
+  attr_names.reserve(attrs.length());
+  for (int i = 0; i < attrs.length(); ++i)
+  {
+    attr_names << attrs.item(i).nodeName();
+  }
+  attr_names.sort();
+  for (const auto& name : attr_names)
+  {
+    out << " " << name << "=\"" << elem.attribute(name).toHtmlEscaped() << "\"";
+  }
+
+  QDomNodeList children = elem.childNodes();
+  if (children.isEmpty())
+  {
+    out << "/>\n";
+    return;
+  }
+
+  // If the only child is a text node, write inline
+  if (children.length() == 1 && children.at(0).isText())
+  {
+    out << ">";
+    WriteSortedXml(out, children.at(0), 0);
+    out << "</" << elem.tagName() << ">\n";
+    return;
+  }
+
+  out << ">\n";
+  for (int i = 0; i < children.length(); ++i)
+  {
+    WriteSortedXml(out, children.at(i), indent + 1);
+  }
+  out << pad << "</" << elem.tagName() << ">\n";
+}
 
 MainWindow::MainWindow(const QCommandLineParser& commandline_parser, QWidget* parent)
   : QMainWindow(parent)
@@ -144,6 +217,7 @@ MainWindow::MainWindow(const QCommandLineParser& commandline_parser, QWidget* pa
   {
     int buffer_size = std::max(10, commandline_parser.value("buffer_size").toInt());
     ui->streamingSpinBox->setMaximum(buffer_size);
+    ui->streamingSpinBox->setValue(buffer_size);
   }
 
   _animated_streaming_movie = new QMovie(":/resources/animated_radio.gif");
@@ -261,11 +335,36 @@ MainWindow::MainWindow(const QCommandLineParser& commandline_parser, QWidget* pa
   if (commandline_parser.isSet("datafile"))
   {
     QStringList datafiles = commandline_parser.values("datafile");
-    file_loaded = loadDataFromFiles(datafiles);
+
+    // Expand directories into their file contents (recursive).
+    QStringList expanded;
+    for (const auto& path : datafiles)
+    {
+      QFileInfo finfo(path);
+      if (finfo.isDir())
+      {
+        QDirIterator it(path, QDirIterator::Subdirectories);
+        while (it.hasNext())
+        {
+          it.next();
+          if (it.fileInfo().isFile())
+          {
+            expanded.push_back(it.filePath());
+          }
+        }
+      }
+      else
+      {
+        expanded.push_back(path);
+      }
+    }
+
+    const bool auto_prefix = commandline_parser.isSet("auto-prefix");
+    file_loaded = loadDataFromFiles(expanded, auto_prefix);
   }
   if (commandline_parser.isSet("layout"))
   {
-    loadLayoutFromFile(commandline_parser.value("layout"));
+    loadLayoutFromFile(commandline_parser.value("layout"), !file_loaded);
   }
 
   restoreGeometry(settings.value("MainWindow.geometry").toByteArray());
@@ -932,6 +1031,10 @@ QDomDocument MainWindow::xmlSaveState() const
   relative_time.setAttribute("enabled", ui->buttonRemoveTimeOffset->isChecked());
   root.appendChild(relative_time);
 
+  QDomElement streaming_buffer = doc.createElement("streaming_buffer_size");
+  streaming_buffer.setAttribute("value", ui->streamingSpinBox->value());
+  root.appendChild(streaming_buffer);
+
   return doc;
 }
 
@@ -1063,6 +1166,13 @@ bool MainWindow::xmlLoadState(QDomDocument state_document)
   {
     bool remove_offset = (relative_time.attribute("enabled") == QString("1"));
     ui->buttonRemoveTimeOffset->setChecked(remove_offset);
+  }
+
+  QDomElement streaming_buffer = root.firstChildElement("streaming_buffer_size");
+  if (!streaming_buffer.isNull())
+  {
+    int buffer_val = streaming_buffer.attribute("value", "5").toInt();
+    ui->streamingSpinBox->setValue(buffer_val);
   }
   return true;
 }
@@ -1260,14 +1370,23 @@ bool MainWindow::isStreamingActive() const
   return !ui->buttonStreamingPause->isChecked() && _active_streamer_plugin;
 }
 
-bool MainWindow::loadDataFromFiles(QStringList filenames)
+bool MainWindow::loadDataFromFiles(QStringList filenames, bool auto_prefix)
 {
   filenames.sort();
   std::map<QString, QString> filename_prefix;
 
-  const bool add_prefix = ui->checkBoxAddPrefix->isChecked();
-  const bool merge_data = ui->checkBoxMergeData->isChecked();
-  if (add_prefix)
+  bool has_prefix = false;
+
+  if (auto_prefix)
+  {
+    // CLI --auto-prefix: use each file's basename, skip the dialog.
+    for (const auto& file : filenames)
+    {
+      filename_prefix[file] = QFileInfo(file).baseName();
+    }
+    has_prefix = true;
+  }
+  else if (ui->checkBoxAddPrefix->isChecked())
   {
     DialogMultifilePrefix dialog(filenames, this);
     int ret = dialog.exec();
@@ -1276,7 +1395,10 @@ bool MainWindow::loadDataFromFiles(QStringList filenames)
       return false;
     }
     filename_prefix = dialog.getPrefixes();
+    has_prefix = true;
   }
+
+  const bool merge_data = ui->checkBoxMergeData->isChecked();
 
   std::unordered_set<std::string> previous_names = _mapped_plot_data.getAllNames();
 
@@ -1308,7 +1430,7 @@ bool MainWindow::loadDataFromFiles(QStringList filenames)
   {
     data_replaced_entirely = true;
   }
-  else if (!add_prefix)
+  else if (!has_prefix)
   {
     QMessageBox::StandardButton reply;
     reply = QMessageBox::question(
@@ -1766,6 +1888,7 @@ void MainWindow::dragEnterEvent(QDragEnterEvent* event)
 void MainWindow::dropEvent(QDropEvent* event)
 {
   QStringList file_names;
+  bool has_directory = false;
   const auto urls = event->mimeData()->urls();
 
   for (const auto& url : urls)
@@ -1777,6 +1900,19 @@ void MainWindow::dropEvent(QDropEvent* event)
     {
       file_names << QDir::toNativeSeparators(local_file);
     }
+    else if (fileinfo.exists() && fileinfo.isDir())
+    {
+      has_directory = true;
+      QDirIterator it(local_file, QDirIterator::Subdirectories);
+      while (it.hasNext())
+      {
+        it.next();
+        if (it.fileInfo().isFile())
+        {
+          file_names << QDir::toNativeSeparators(it.filePath());
+        }
+      }
+    }
     else
     {
       QMessageBox::warning(
@@ -1785,7 +1921,7 @@ void MainWindow::dropEvent(QDropEvent* event)
     }
   }
 
-  loadDataFromFiles(file_names);
+  loadDataFromFiles(file_names, has_directory);
 }
 
 void MainWindow::on_stylesheetChanged(QString theme)
@@ -1947,7 +2083,7 @@ std::tuple<double, double, int> MainWindow::calculateVisibleRangeX()
   return std::tuple<double, double, int>(min_time, max_time, max_steps);
 }
 
-bool MainWindow::loadLayoutFromFile(QString filename)
+bool MainWindow::loadLayoutFromFile(QString filename, bool load_datafiles)
 {
   QSettings settings;
 
@@ -1983,29 +2119,32 @@ bool MainWindow::loadLayoutFromFile(QString filename)
 
   loadPluginState(root);
   //-------------------------------------------------
-  QDomElement previously_loaded_datafile = root.firstChildElement("previouslyLoaded_"
-                                                                  "Datafiles");
-
-  QDomElement datafile_elem = previously_loaded_datafile.firstChildElement("fileInfo");
-  while (!datafile_elem.isNull())
+  if (load_datafiles)
   {
-    QString datafile_path = datafile_elem.attribute("filename");
-    if (QDir(datafile_path).isRelative())
+    QDomElement previously_loaded_datafile = root.firstChildElement("previouslyLoaded_"
+                                                                    "Datafiles");
+
+    QDomElement datafile_elem = previously_loaded_datafile.firstChildElement("fileInfo");
+    while (!datafile_elem.isNull())
     {
-      QDir layout_directory = QFileInfo(filename).absoluteDir();
-      QString new_path = layout_directory.filePath(datafile_path);
-      datafile_path = QFileInfo(new_path).absoluteFilePath();
+      QString datafile_path = datafile_elem.attribute("filename");
+      if (QDir(datafile_path).isRelative())
+      {
+        QDir layout_directory = QFileInfo(filename).absoluteDir();
+        QString new_path = layout_directory.filePath(datafile_path);
+        datafile_path = QFileInfo(new_path).absoluteFilePath();
+      }
+
+      FileLoadInfo info;
+      info.filename = datafile_path;
+      info.prefix = datafile_elem.attribute("prefix");
+
+      auto plugin_elem = datafile_elem.firstChildElement("plugin");
+      info.plugin_config.appendChild(info.plugin_config.importNode(plugin_elem, true));
+
+      loadDataFromFile(info, false);
+      datafile_elem = datafile_elem.nextSiblingElement("fileInfo");
     }
-
-    FileLoadInfo info;
-    info.filename = datafile_path;
-    info.prefix = datafile_elem.attribute("prefix");
-
-    auto plugin_elem = datafile_elem.firstChildElement("plugin");
-    info.plugin_config.appendChild(info.plugin_config.importNode(plugin_elem, true));
-
-    loadDataFromFile(info, false);
-    datafile_elem = datafile_elem.nextSiblingElement("fileInfo");
   }
 
   QDomElement previous_streamer = root.firstChildElement("previouslyLoaded_Streamer");
@@ -2159,7 +2298,21 @@ bool MainWindow::loadLayoutFromFile(QString filename)
     {
       try
       {
-        CustomPlotPtr new_custom_plot = std::make_shared<LuaCustomFunction>(snippet);
+        CustomPlotPtr new_custom_plot;
+
+        if (snippet.language.toLower() == "python")
+        {
+#ifdef PJ_HAS_PYTHON
+          new_custom_plot = std::make_shared<PythonCustomFunction>(snippet);
+#else
+          throw std::runtime_error("Python support not available (compiled without Python3 dev).");
+#endif
+        }
+        else
+        {
+          new_custom_plot = std::make_shared<LuaCustomFunction>(snippet);
+        }
+
         new_custom_plot->xmlLoadState(custom_eq);
 
         new_custom_plot->calculateAndAdd(_mapped_plot_data);
@@ -2388,6 +2541,31 @@ void MainWindow::updateDataAndReplot(bool replot_hidden_tabs)
       _curvelist_widget->addCurve(str);
     }
 
+    // Periodic resync: if a curve was missed by addCurve on first detection
+    // (e.g. due to a transient issue), MoveData won't report it again.
+    // Re-attempt all known curves every ~2 seconds to recover.
+    if (++_curvelist_resync_counter >= 50)
+    {
+      _curvelist_resync_counter = 0;
+      bool any_added = false;
+      auto syncCurves = [this, &any_added](auto& series_map) {
+        for (const auto& [name, _] : series_map)
+        {
+          if (_curvelist_widget->addCurve(name))
+          {
+            any_added = true;
+          }
+        }
+      };
+      syncCurves(_mapped_plot_data.numeric);
+      syncCurves(_mapped_plot_data.scatter_xy);
+      syncCurves(_mapped_plot_data.strings);
+      if (any_added)
+      {
+        move_ret.curves_updated = true;
+      }
+    }
+
     if (move_ret.curves_updated)
     {
       _curvelist_widget->refreshColumns();
@@ -2484,6 +2662,7 @@ void MainWindow::on_actionExit_triggered()
 void MainWindow::on_buttonRemoveTimeOffset_toggled(bool)
 {
   updateTimeOffset();
+  updateTimeSlider();
   updatedDisplayTime();
 
   forEachWidget([](PlotWidget* plot) { plot->replot(); });
@@ -2702,8 +2881,14 @@ void MainWindow::onEditCustomPlot(const std::string& plot_name)
     qWarning("failed to find custom equation");
     return;
   }
-  _function_editor->editExistingPlot(
-      std::dynamic_pointer_cast<LuaCustomFunction>(custom_it->second));
+
+  auto custom_plot = std::dynamic_pointer_cast<CustomFunction>(custom_it->second);
+  if (!custom_plot)
+  {
+    qWarning("failed to cast transform function to CustomFunction");
+    return;
+  }
+  _function_editor->editExistingPlot(custom_plot);
 }
 
 void MainWindow::onRefreshCustomPlot(const std::string& plot_name)
@@ -2716,7 +2901,13 @@ void MainWindow::onRefreshCustomPlot(const std::string& plot_name)
       qWarning("failed to find custom equation");
       return;
     }
-    CustomPlotPtr ce = std::dynamic_pointer_cast<LuaCustomFunction>(custom_it->second);
+
+    auto ce = std::dynamic_pointer_cast<CustomFunction>(custom_it->second);
+    if (!ce)
+    {
+      qWarning("failed to cast transform function to CustomFunction");
+      return;
+    }
     ce->calculateAndAdd(_mapped_plot_data);
 
     onUpdateLeftTableValues();
@@ -3155,19 +3346,20 @@ void MainWindow::on_buttonSaveLayout_clicked()
     auto snipped_saved = GetSnippetsFromXML(snippets_xml_text);
     auto snippets_root = ExportSnippets(snipped_saved, doc);
     root.appendChild(snippets_root);
-
-    QDomElement color_maps = doc.createElement("colorMaps");
-    for (const auto& it : ColorMapLibrary())
-    {
-      QString colormap_name = it.first;
-      QDomElement colormap = doc.createElement("colorMap");
-      QDomText colormap_script = doc.createTextNode(it.second->script());
-      colormap.setAttribute("name", colormap_name);
-      colormap.appendChild(colormap_script);
-      color_maps.appendChild(colormap);
-    }
-    root.appendChild(color_maps);
   }
+
+  QDomElement color_maps = doc.createElement("colorMaps");
+  for (const auto& it : ColorMapLibrary())
+  {
+    QString colormap_name = it.first;
+    QDomElement colormap = doc.createElement("colorMap");
+    QDomText colormap_script = doc.createTextNode(it.second->script());
+    colormap.setAttribute("name", colormap_name);
+    colormap.appendChild(colormap_script);
+    color_maps.appendChild(colormap);
+  }
+  root.appendChild(color_maps);
+
   root.appendChild(doc.createComment(" - - - - - - - - - - - - - - "));
   //------------------------------------
   QFile file(fileName);
@@ -3175,7 +3367,7 @@ void MainWindow::on_buttonSaveLayout_clicked()
   {
     QTextStream stream(&file);
     stream.setCodec("UTF-8");
-    stream << doc.toString() << "\n";
+    WriteSortedXml(stream, doc);
   }
 }
 
@@ -3463,28 +3655,29 @@ QStringList MainWindow::readAllCurvesFromXML(QDomElement root_node)
 {
   QStringList curves;
 
-  QStringList level_names = { "tabbed_widget", "Tab",  "Container", "DockSplitter",
-                              "DockArea",      "plot", "curve" };
-
-  std::function<void(int, QDomElement)> recursiveXmlStream;
-  recursiveXmlStream = [&](int level, QDomElement parent_elem) {
-    QString level_name = level_names[level];
-    for (auto elem = parent_elem.firstChildElement(level_name); elem.isNull() == false;
-         elem = elem.nextSiblingElement(level_name))
+  // Recursively find all <curve> elements regardless of nesting
+  std::function<void(QDomElement)> findCurves;
+  findCurves = [&](QDomElement elem) {
+    // Check if this element is a curve
+    if (elem.tagName() == "curve")
     {
-      if (level_name == "curve")
+      QString name = elem.attribute("name");
+      if (!name.isEmpty())
       {
-        curves.push_back(elem.attribute("name"));
+        curves.push_back(name);
       }
-      else
-      {
-        recursiveXmlStream(level + 1, elem);
-      }
+      return;  // curves don't have child curves
+    }
+
+    // Recursively process all child elements
+    for (QDomElement child = elem.firstChildElement(); !child.isNull();
+         child = child.nextSiblingElement())
+    {
+      findCurves(child);
     }
   };
 
-  // start recursion
-  recursiveXmlStream(0, root_node);
+  findCurves(root_node);
 
   return curves;
 }

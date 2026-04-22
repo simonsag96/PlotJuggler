@@ -70,6 +70,10 @@ void ReactiveLuaFunction::setTimeTracker(double time_tracker_value)
 
 void ReactiveLuaFunction::calculate()
 {
+  if (_disabled_after_error)
+  {
+    return;
+  }
   try
   {
     auto result = _lua_function(_tracker_value);
@@ -81,7 +85,15 @@ void ReactiveLuaFunction::calculate()
   }
   catch (std::exception& err)
   {
-    QMessageBox::warning(nullptr, "Error in Reactive Script", QString(err.what()),
+    // Set the flag BEFORE the modal dialog: QMessageBox::warning enters a
+    // nested Qt event loop, so streaming/replot timers can re-enter
+    // calculate() while the dialog is visible. Setting the flag first makes
+    // those re-entrant calls short-circuit instead of queueing more dialogs.
+    _disabled_after_error = true;
+    QMessageBox::warning(nullptr, "Error in Reactive Script",
+                         QString("%1\n\nThe script has been disabled to prevent dialog spam. "
+                                 "Re-save it from the Script Editor to resume execution.")
+                             .arg(err.what()),
                          QMessageBox::Cancel);
   }
 }
@@ -114,6 +126,7 @@ void ReactiveLuaFunction::prepareLua()
   _timeseries_ref["at"] = &TimeseriesRef::at;
   _timeseries_ref["set"] = &TimeseriesRef::set;
   _timeseries_ref["atTime"] = &TimeseriesRef::atTime;
+  _timeseries_ref["getIndexAtTime"] = &TimeseriesRef::getIndexAtTime;
   _timeseries_ref["clear"] = &TimeseriesRef::clear;
   _timeseries_ref["t_atTime"] = &TimeseriesRef::t_atTime;
 
@@ -195,6 +208,10 @@ double TimeseriesRef::t_atTime(double t) const
 {
   int i = _plot_data->getIndexFromX(t);
   return _plot_data->at(i).x;
+}
+int TimeseriesRef::getIndexAtTime(double t) const
+{
+  return _plot_data->getIndexFromX(t);
 }
 
 unsigned TimeseriesRef::size() const

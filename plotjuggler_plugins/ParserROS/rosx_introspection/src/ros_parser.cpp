@@ -124,6 +124,17 @@ bool Parser::deserialize(Span<const uint8_t> buffer, FlatMessage* flat_container
         new_tree_leaf.index_array.push_back(0);
       }
 
+      // Large uint8/byte arrays are always skipped (blobs: images, pointclouds, etc.)
+      if (field.isArray() && array_size > static_cast<int32_t>(_max_array_size) &&
+          (field_type.typeID() == BuiltinType::UINT8 ||
+           field_type.typeID() == BuiltinType::BYTE))
+      {
+        entire_message_parse = false;
+        deserializer->jump(array_size);
+        index_s++;
+        continue;
+      }
+
       bool IS_BLOB = false;
 
       // Stop storing it if is NOT a blob and a very large array.

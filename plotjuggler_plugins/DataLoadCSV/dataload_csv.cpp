@@ -11,11 +11,14 @@
 #include <QDateTime>
 #include <QInputDialog>
 #include <QPushButton>
+#include <QSet>
 #include <QSyntaxStyle>
 #include <QRadioButton>
+#include <QListWidgetItem>
 
 #include <array>
 #include <set>
+#include <algorithm>
 
 #include <QStandardItemModel>
 
@@ -23,6 +26,60 @@ static constexpr int TIME_INDEX_COMBINED = -3;
 static constexpr int TIME_INDEX_NOT_DEFINED = -2;
 static constexpr int TIME_INDEX_GENERATED = -1;
 static constexpr const char* INDEX_AS_TIME = "__TIME_INDEX_GENERATED__";
+
+namespace
+{
+QStringList prioritizedColumns(const std::vector<std::string>& column_names,
+                               const QStringList& history)
+{
+  QStringList ordered;
+  QSet<QString> added;
+
+  for (const auto& name : history)
+  {
+    const bool exists =
+        std::any_of(column_names.begin(), column_names.end(), [&name](const std::string& column) {
+          return QString::fromStdString(column) == name;
+        });
+    if (exists && !added.contains(name))
+    {
+      ordered.push_back(name);
+      added.insert(name);
+    }
+  }
+
+  for (const auto& name : column_names)
+  {
+    auto qname = QString::fromStdString(name);
+    if (!added.contains(qname))
+    {
+      ordered.push_back(qname);
+      added.insert(qname);
+    }
+  }
+
+  return ordered;
+}
+
+QStringList updateColumnHistory(QStringList history, const QString& selected)
+{
+  if (selected.isEmpty())
+  {
+    return history;
+  }
+
+  history.removeAll(selected);
+  history.push_front(selected);
+
+  constexpr int kMaxHistorySize = 50;
+  while (history.size() > kMaxHistorySize)
+  {
+    history.removeLast();
+  }
+
+  return history;
+}
+}  // namespace
 
 // Delegate to the pure C++ version in csv_parser
 char DetectDelimiter(const QString& first_line)
@@ -120,8 +177,15 @@ void DataLoadCSV::parseHeader(QFile& file, std::vector<std::string>& column_name
   _ui->listWidgetSeries->clear();
 
   QTextStream inA(&file);
-  // The first line should contain the header. If it contains a number, we will
-  // apply a name ourselves
+
+  // Skip metadata/comment lines before the header.
+  const int skip = _ui->rowBox->value();
+  for (int i = 0; i < skip && !inA.atEnd(); i++)
+  {
+    inA.readLine();
+  }
+
+  // The first non-skipped line should contain the header.
   QString first_line = inA.readLine();
 
   QString preview_lines = first_line + "\n";
@@ -149,8 +213,21 @@ void DataLoadCSV::parseHeader(QFile& file, std::vector<std::string>& column_name
   for (const auto& name : column_names)
   {
     auto qname = QString::fromStdString(name);
-    _ui->listWidgetSeries->addItem(qname);
     column_labels.push_back(qname);
+  }
+
+  QSettings settings;
+  const auto ordered_columns =
+      prioritizedColumns(column_names, settings.value("DataLoadCSV.timeHistory").toStringList());
+  for (const auto& name : ordered_columns)
+  {
+    auto* item = new QListWidgetItem(name);
+    auto it = std::find(column_names.begin(), column_names.end(), name.toStdString());
+    if (it != column_names.end())
+    {
+      item->setData(Qt::UserRole, static_cast<int>(std::distance(column_names.begin(), it)));
+    }
+    _ui->listWidgetSeries->addItem(item);
   }
   _model->setColumnCount(column_labels.size());
   _model->setHorizontalHeaderLabels(column_labels);
@@ -227,6 +304,7 @@ int DataLoadCSV::launchDialog(QFile& file, std::vector<std::string>* column_name
   QSettings settings;
   _dialog->restoreGeometry(settings.value("DataLoadCSV.geometry").toByteArray());
 
+  _ui->rowBox->setValue(settings.value("DataLoadCSV.skipRows", 0).toInt());
   _ui->radioButtonIndex->setChecked(settings.value("DataLoadCSV.useIndex", false).toBool());
   bool use_custom_time = settings.value("DataLoadCSV.useDateFormat", false).toBool();
   if (use_custom_time)
@@ -240,10 +318,14 @@ int DataLoadCSV::launchDialog(QFile& file, std::vector<std::string>* column_name
   _ui->lineEditDateFormat->setText(
       settings.value("DataLoadCSV.dateFormat", "yyyy-MM-dd hh:mm:ss").toString());
 
-  // Auto-detect delimiter from the first line
+  // Auto-detect delimiter from the header line (after skipping metadata rows).
   {
     file.open(QFile::ReadOnly);
     QTextStream in(&file);
+    for (int i = 0; i < _ui->rowBox->value() && !in.atEnd(); i++)
+    {
+      in.readLine();
+    }
     QString first_line = in.readLine();
     file.close();
 
@@ -286,6 +368,35 @@ int DataLoadCSV::launchDialog(QFile& file, std::vector<std::string>* column_name
                      parseHeader(file, *column_names);
                    });
 
+  QObject::connect(_ui->rowBox, qOverload<int>(&QSpinBox::valueChanged), context, [&](int) {
+    if (_ui->radioAutoTime->isChecked())
+    {
+      file.open(QFile::ReadOnly);
+      QTextStream in(&file);
+      for (int i = 0; i < _ui->rowBox->value() && !in.atEnd(); i++)
+      {
+        in.readLine();
+      }
+      QString header_line = in.readLine();
+      file.close();
+
+      _delimiter = DetectDelimiter(header_line);
+      _csvHighlighter.delimiter = _delimiter;
+
+      const std::array<char, 4> delimiters = { ',', ';', ' ', '\t' };
+      QSignalBlocker blocker(*_ui->comboBox);
+      for (int i = 0; i < 4; i++)
+      {
+        if (delimiters[i] == _delimiter)
+        {
+          _ui->comboBox->setCurrentIndex(i);
+          break;
+        }
+      }
+    }
+    parseHeader(file, *column_names);
+  });
+
   // parse the header once and launch the dialog
   parseHeader(file, *column_names);
 
@@ -302,6 +413,7 @@ int DataLoadCSV::launchDialog(QFile& file, std::vector<std::string>* column_name
   int res = _dialog->exec();
 
   settings.setValue("DataLoadCSV.geometry", _dialog->saveGeometry());
+  settings.setValue("DataLoadCSV.skipRows", _ui->rowBox->value());
   settings.setValue("DataLoadCSV.useIndex", _ui->radioButtonIndex->isChecked());
   settings.setValue("DataLoadCSV.useDateFormat", _ui->radioCustomTime->isChecked());
   settings.setValue("DataLoadCSV.dateFormat", _ui->lineEditDateFormat->text());
@@ -329,7 +441,7 @@ int DataLoadCSV::launchDialog(QFile& file, std::vector<std::string>* column_name
     int row = indexes.front().row();
     auto item = _ui->listWidgetSeries->item(row);
     settings.setValue("DataLoadCSV.timeIndex", item->text());
-    return row;
+    return item->data(Qt::UserRole).toInt();
   }
 
   return TIME_INDEX_NOT_DEFINED;
@@ -405,6 +517,7 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
   {
     config.custom_time_format = _ui->lineEditDateFormat->text().toStdString();
   }
+  config.skip_rows = _ui->rowBox->value();
 
   //--- Count lines for progress ---
   {
@@ -534,6 +647,14 @@ bool DataLoadCSV::readDataFromFile(FileLoadInfo* info, PlotDataMapRef& plot_data
     _default_time_axis = INDEX_AS_TIME;
   }
 
+  if (time_index >= 0 && time_index < static_cast<int>(result.column_names.size()))
+  {
+    QSettings settings;
+    settings.setValue("DataLoadCSV.timeHistory",
+                      updateColumnHistory(settings.value("DataLoadCSV.timeHistory").toStringList(),
+                                          QString::fromStdString(result.column_names[time_index])));
+  }
+
   //--- Show skipped-lines warnings ---
   bool has_skipped = false;
   QString detailed_text;
@@ -567,8 +688,8 @@ bool DataLoadCSV::xmlSaveState(QDomDocument& doc, QDomElement& parent_element) c
   QDomElement elem = doc.createElement("parameters");
   elem.setAttribute("time_axis", _default_time_axis.c_str());
   elem.setAttribute("delimiter", _ui->comboBox->currentIndex());
+  elem.setAttribute("skip_rows", _ui->rowBox->value());
 
-  QString date_format;
   if (_ui->radioCustomTime->isChecked())
   {
     elem.setAttribute("date_format", _ui->lineEditDateFormat->text());
@@ -608,6 +729,10 @@ bool DataLoadCSV::xmlLoadState(const QDomElement& parent_element)
         _delimiter = '\t';
         break;
     }
+  }
+  if (elem.hasAttribute("skip_rows"))
+  {
+    _ui->rowBox->setValue(elem.attribute("skip_rows").toInt());
   }
   if (elem.hasAttribute("date_format"))
   {
