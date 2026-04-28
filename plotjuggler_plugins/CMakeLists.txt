@@ -11,6 +11,7 @@ add_subdirectory(DataStreamZMQ)
 add_subdirectory(DataStreamFoxgloveBridge)
 add_subdirectory(DataStreamPlotJugglerBridge)
 add_subdirectory(DataStreamSerialPort)
+add_subdirectory(plotjuggler_can_plugins)
 
 add_subdirectory(VideoViewer)
 
