@@ -1,5 +1,4 @@
-#ifndef DESERIALIZER_HPP
-#define DESERIALIZER_HPP
+#pragma once
 
 // API adapted to FastCDR
 
@@ -10,14 +9,11 @@
 #include "rosx_introspection/contrib/nanocdr.hpp"
 #include "rosx_introspection/variant.hpp"
 
-namespace RosMsgParser
-{
+namespace RosMsgParser {
 
-class Deserializer
-{
-public:
-  virtual void init(Span<const uint8_t> buffer)
-  {
+class Deserializer {
+ public:
+  virtual void init(Span<const uint8_t> buffer) {
     _buffer = buffer;
     reset();
   }
@@ -41,28 +37,31 @@ public:
 
   [[nodiscard]] virtual const uint8_t* getCurrentPtr() const = 0;
 
-  [[nodiscard]] virtual size_t bytesLeft() const
-  {
+  [[nodiscard]] virtual size_t bytesLeft() const {
     return _buffer.size() - (getCurrentPtr() - _buffer.data());
+  }
+
+  /// Check if an optional member is present in the CDR stream.
+  /// Default: always present (for ROS messages which don't have optional fields).
+  [[nodiscard]] virtual bool hasOptionalMember() {
+    return true;
   }
 
   // reset the pointer to beginning of buffer
   virtual void reset() = 0;
 
-protected:
+ protected:
   Span<const uint8_t> _buffer;
 };
 
 //-----------------------------------------------------------------
 
 // Specialization od deserializer that works with ROS1
-class ROS_Deserializer : public Deserializer
-{
-public:
+class ROS_Deserializer : public Deserializer {
+ public:
   Variant deserialize(BuiltinType type) override;
 
-  bool isROS2() const override
-  {
+  bool isROS2() const override {
     return false;
   }
 
@@ -78,16 +77,14 @@ public:
 
   void reset() override;
 
-protected:
+ protected:
   const uint8_t* _ptr;
   size_t _bytes_left;
 
   template <typename T>
-  T deserialize()
-  {
+  T deserialize() {
     T out;
-    if (sizeof(T) > _bytes_left)
-    {
+    if (sizeof(T) > _bytes_left) {
       throw std::runtime_error("Buffer overrun in Deserializer");
     }
     out = (*(reinterpret_cast<const T*>(_ptr)));
@@ -101,9 +98,8 @@ protected:
 
 // Specialization od deserializer that works with ROS2
 // wrapping FastCDR
-class NanoCDR_Deserializer : public Deserializer
-{
-public:
+class NanoCDR_Deserializer : public Deserializer {
+ public:
   Variant deserialize(BuiltinType type) override;
 
   void deserializeString(std::string& dst) override;
@@ -118,17 +114,18 @@ public:
 
   virtual void reset() override;
 
-  bool isROS2() const override
-  {
+  bool isROS2() const override {
     return true;
   }
 
-protected:
+  bool hasOptionalMember() override {
+    return _cdr_decoder->hasMember();
+  }
+
+ protected:
   std::optional<nanocdr::Decoder> _cdr_decoder;
 };
 
 using ROS2_Deserializer = NanoCDR_Deserializer;
 
 }  // namespace RosMsgParser
-
-#endif  // DESERIALIZER_HPP

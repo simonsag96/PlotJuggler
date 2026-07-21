@@ -29,6 +29,7 @@
 #include <QPluginLoader>
 #include <QPushButton>
 #include <QKeySequence>
+#include <QLabel>
 #include <QScrollBar>
 #include <QSettings>
 #include <QStringListModel>
@@ -77,6 +78,17 @@
 static void WriteSortedXml(QTextStream& out, const QDomNode& node, int indent = 0)
 {
   const QString pad(indent, ' ');
+
+  // A QDomDocument is not an element; walk its children (xml PI + root).
+  if (node.isDocument())
+  {
+    QDomNodeList children = node.childNodes();
+    for (int i = 0; i < children.length(); ++i)
+    {
+      WriteSortedXml(out, children.at(i), indent);
+    }
+    return;
+  }
 
   if (node.isProcessingInstruction())
   {
@@ -138,6 +150,11 @@ static void WriteSortedXml(QTextStream& out, const QDomNode& node, int indent = 
     WriteSortedXml(out, children.at(i), indent + 1);
   }
   out << pad << "</" << elem.tagName() << ">\n";
+}
+
+bool isMosaicoToolbox(const QString& plugin_name)
+{
+  return plugin_name.contains(QStringLiteral("mosaico"), Qt::CaseInsensitive);
 }
 
 MainWindow::MainWindow(const QCommandLineParser& commandline_parser, QWidget* parent)
@@ -788,7 +805,16 @@ void MainWindow::initializePlugins()
     toolbox->init(_mapped_plot_data, _transform_functions);
     toolbox->setParserFactories(&_parser_factories);
 
-    auto action = ui->menuTools->addAction(toolbox->name());
+    QAction* action = nullptr;
+    const QString toolbox_name = QString::fromUtf8(toolbox->name());
+    if (isMosaicoToolbox(toolbox_name))
+    {
+      action = ui->menuCloudData->addAction(toolbox_name);
+    }
+    else
+    {
+      action = ui->menuTools->addAction(toolbox_name);
+    }
 
     int new_index = ui->widgetStack->count();
     auto provided = toolbox->providedWidget();
@@ -3015,7 +3041,7 @@ void MainWindow::onCustomPlotCreated(std::vector<CustomPlotPtr> custom_plots)
 
 void MainWindow::on_actionReportBug_triggered()
 {
-  QDesktopServices::openUrl(QUrl("https://github.com/facontidavide/PlotJuggler/issues"));
+  QDesktopServices::openUrl(QUrl("https://github.com/PlotJuggler/PlotJuggler/issues"));
 }
 
 void MainWindow::on_actionShare_the_love_triggered()

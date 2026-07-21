@@ -19,9 +19,9 @@ static std::unordered_map<uint64_t, DataTamerParser::Schema> _global_data_tamer_
 
 ParserROS::ParserROS(const std::string& topic_name, const std::string& type_name,
                      const std::string& schema, RosMsgParser::Deserializer* deserializer,
-                     PlotDataMapRef& data)
+                     PlotDataMapRef& data, RosMsgParser::SchemaFormat schema_format)
   : MessageParser(topic_name, data)
-  , _parser(topic_name, type_name, schema)
+  , _parser(topic_name, type_name, schema, schema_format)
   , _deserializer(deserializer)
   , _topic(topic_name)
 {
@@ -106,14 +106,16 @@ ParserROS::ParserROS(const std::string& topic_name, const std::string& type_name
 
 bool ParserROS::parseMessage(const PJ::MessageRef serialized_msg, double& timestamp)
 {
+  const auto serialized_span = Span<const uint8_t>(serialized_msg.data(), serialized_msg.size());
+
   if (_customized_parser)
   {
-    _deserializer->init(Span<const uint8_t>(serialized_msg.data(), serialized_msg.size()));
+    _deserializer->init(serialized_span);
     _customized_parser(_topic_name, timestamp);
     return true;
   }
 
-  _parser.deserialize(serialized_msg, &_flat_msg, _deserializer.get());
+  _parser.deserialize(serialized_span, &_flat_msg, _deserializer.get());
 
   if (_has_header && this->useEmbeddedTimestamp())
   {
@@ -133,16 +135,17 @@ bool ParserROS::parseMessage(const PJ::MessageRef serialized_msg, double& timest
 
   std::string series_name;
 
-  for (const auto& [key, str] : _flat_msg.name)
-  {
-    key.toStr(series_name);
-    StringSeries& data = getStringSeries(series_name);
-    data.pushBack({ timestamp, str });
-  }
-
   for (const auto& [key, value] : _flat_msg.value)
   {
     key.toStr(series_name);
+
+    if (value.getTypeID() == RosMsgParser::BuiltinType::STRING)
+    {
+      StringSeries& sdata = getStringSeries(series_name);
+      sdata.pushBack({ timestamp, value.extract<std::string>() });
+      continue;
+    }
+
     PlotData& data = getSeries(series_name);
 
     if (!_strict_truncation_check)
@@ -214,11 +217,12 @@ void ParserROS::parseHeader(const std::string& prefix, double& timestamp)
 {
   const auto header = readHeader(timestamp);
 
-  getSeries(prefix + "/header/stamp").pushBack({ timestamp, header.stamp.toSec() });
-  getStringSeries(prefix + "/header/frame_id").pushBack({ timestamp, header.frame_id });
+  getSeries(prefix + "/stamp/sec").pushBack({ timestamp, double(header.stamp.sec) });
+  getSeries(prefix + "/stamp/nanosec").pushBack({ timestamp, double(header.stamp.nanosec) });
+  getStringSeries(prefix + "/frame_id").pushBack({ timestamp, header.frame_id });
   if (dynamic_cast<ROS_Deserializer*>(_deserializer.get()) != nullptr)
   {
-    getSeries(prefix + "/header/seq").pushBack({ timestamp, double(header.seq) });
+    getSeries(prefix + "/seq").pushBack({ timestamp, double(header.seq) });
   }
 }
 
@@ -415,7 +419,7 @@ void ParserROS::parseJointStateMsg(const std::string& prefix, double& timestamp)
   msg.velocity.clear();
   msg.effort.clear();
 
-  parseHeader(prefix, timestamp);
+  parseHeader(prefix + "/header", timestamp);
 
   size_t name_size = _deserializer->deserializeUInt32();
   if (name_size > 0)

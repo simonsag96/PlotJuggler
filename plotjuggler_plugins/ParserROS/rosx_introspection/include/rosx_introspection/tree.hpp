@@ -32,86 +32,108 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  * *******************************************************************/
 
-#ifndef STRINGTREE_H
-#define STRINGTREE_H
+#pragma once
 
-#include <vector>
 #include <deque>
 #include <iostream>
 #include <memory>
+#include <vector>
 
 #include "rosx_introspection/builtin_types.hpp"
 
-namespace RosMsgParser
-{
+namespace RosMsgParser {
 
-namespace details
-{
+namespace details {
 
 /**
  * @brief Element of the tree. it has a single parent and N >= 0 children.
  */
 template <typename T>
-class TreeNode
-{
-public:
+class TreeNode {
+ public:
   typedef std::vector<TreeNode> ChildrenVector;  // dangerous because of pointer
                                                  // invalidation (but faster)
 
   TreeNode(const TreeNode* parent);
 
-  const TreeNode* parent() const
-  {
+  const TreeNode* parent() const {
     return _parent;
   }
 
-  const T& value() const
-  {
+  const T& value() const {
     return _value;
   }
-  void setValue(const T& value)
-  {
+  void setValue(const T& value) {
     _value = value;
   }
 
-  const ChildrenVector& children() const
-  {
+  const ChildrenVector& children() const {
     return _children;
   }
-  ChildrenVector& children()
-  {
+  ChildrenVector& children() {
     return _children;
   }
 
-  const TreeNode* child(size_t index) const
-  {
+  const TreeNode* child(size_t index) const {
     return &(_children[index]);
   }
-  TreeNode* child(size_t index)
-  {
+  TreeNode* child(size_t index) {
     return &(_children[index]);
   }
 
   TreeNode* addChild(const T& child);
 
-  bool isLeaf() const
-  {
+  bool isLeaf() const {
     return _children.empty();
   }
 
-private:
+  uint32_t nodeId() const {
+    return _node_id;
+  }
+  void setNodeId(uint32_t id) {
+    _node_id = id;
+  }
+
+  const std::string& cachedPath() const {
+    return _cached_path;
+  }
+
+  const uint16_t* bracketOffsets() const {
+    return _bracket_offsets;
+  }
+  uint8_t bracketCount() const {
+    return _bracket_count;
+  }
+
+  void setCachedPath(std::string path) {
+    _cached_path = std::move(path);
+    _bracket_count = 0;
+    for (size_t i = 0; i + 1 < _cached_path.size(); i++) {
+      if (_cached_path[i] == '[' && _cached_path[i + 1] == ']') {
+        if (_bracket_count >= max_brackets) {
+          throw std::runtime_error("Cached path exceeds maximum bracket count");
+        }
+        _bracket_offsets[_bracket_count++] = static_cast<uint16_t>(i);
+      }
+    }
+  }
+
+ private:
+  static constexpr uint8_t max_brackets = 8;
+
   const TreeNode* _parent = nullptr;
   T _value;
   ChildrenVector _children;
+  uint32_t _node_id = 0;
+  std::string _cached_path;
+  uint16_t _bracket_offsets[max_brackets] = {};
+  uint8_t _bracket_count = 0;
 };
 
 template <typename T>
-class Tree
-{
-public:
-  Tree() : _root(new TreeNode<T>(nullptr))
-  {
-  }
+class Tree {
+ public:
+  Tree() : _root(new TreeNode<T>(nullptr)) {}
 
   /**
    * Find a set of elements in the tree and return the pointer to the leaf.
@@ -122,34 +144,29 @@ public:
   const TreeNode<T>* find(const Vect& concatenated_values, bool partial_allowed = false);
 
   /// Constant pointer to the root of the tree.
-  const TreeNode<T>* croot() const
-  {
+  const TreeNode<T>* croot() const {
     return _root.get();
   }
 
   /// Mutable pointer to the root of the tree.
-  TreeNode<T>* root()
-  {
+  TreeNode<T>* root() {
     return _root.get();
   }
 
-  friend std::ostream& operator<<(std::ostream& os, const Tree& _this)
-  {
+  friend std::ostream& operator<<(std::ostream& os, const Tree& _this) {
     _this.print_impl(os, _this.croot(), 0);
     return os;
   }
 
   template <class Functor>
-  void visit(Functor& func, const TreeNode<T>* node) const
-  {
+  void visit(Functor& func, const TreeNode<T>* node) const {
     func(node);
-    for (auto child : node->children())
-    {
+    for (auto child : node->children()) {
       visit(func, &child);
     }
   }
 
-private:
+ private:
   void print_impl(std::ostream& os, const TreeNode<T>* node, int indent) const;
 
   std::unique_ptr<TreeNode<T>> _root;
@@ -158,62 +175,54 @@ private:
 //-----------------------------------------
 
 template <typename T>
-inline std::ostream& operator<<(
-    std::ostream& os, const std::pair<const TreeNode<T>*, const TreeNode<T>*>& tail_head)
-{
+inline std::ostream& operator<<(std::ostream& os, const std::pair<const TreeNode<T>*, const TreeNode<T>*>& tail_head) {
   const TreeNode<T>* tail = tail_head.first;
   const TreeNode<T>* head = tail_head.second;
 
-  if (!head)
+  if (!head) {
     return os;
+  }
 
   const TreeNode<T>* array[64];
   int index = 0;
   array[index++] = head;
 
-  while (!head || head != tail)
-  {
+  while (!head || head != tail) {
     head = head->parent();
     array[index++] = head;
   };
   array[index] = nullptr;
   index--;
 
-  while (index >= 0)
-  {
-    if (array[index])
-    {
+  while (index >= 0) {
+    if (array[index]) {
       os << array[index]->value();
     }
-    if (index > 0)
+    if (index > 0) {
       os << ".";
+    }
     index--;
   }
   return os;
 }
 
 template <typename T>
-inline void Tree<T>::print_impl(std::ostream& os, const TreeNode<T>* node,
-                                int indent) const
-{
-  for (int i = 0; i < indent; i++)
+inline void Tree<T>::print_impl(std::ostream& os, const TreeNode<T>* node, int indent) const {
+  for (int i = 0; i < indent; i++) {
     os << " ";
+  }
   os << node->value() << std::endl;
 
-  for (const auto& child : node->children())
-  {
+  for (const auto& child : node->children()) {
     print_impl(os, &child, indent + 3);
   }
 }
 
 template <typename T>
-inline TreeNode<T>::TreeNode(const TreeNode* parent) : _parent(parent)
-{
-}
+inline TreeNode<T>::TreeNode(const TreeNode* parent) : _parent(parent) {}
 
 template <typename T>
-inline TreeNode<T>* TreeNode<T>::addChild(const T& value)
-{
+inline TreeNode<T>* TreeNode<T>::addChild(const T& value) {
   assert(_children.capacity() > _children.size());
   _children.emplace_back(this);
   _children.back().setValue(value);
@@ -222,29 +231,24 @@ inline TreeNode<T>* TreeNode<T>::addChild(const T& value)
 
 template <typename T>
 template <typename Vect>
-inline const TreeNode<T>* Tree<T>::find(const Vect& concatenated_values,
-                                        bool partial_allowed)
-{
+inline const TreeNode<T>* Tree<T>::find(const Vect& concatenated_values, bool partial_allowed) {
   TreeNode<T>* node = _root.get();
 
-  for (const auto& value : concatenated_values)
-  {
+  for (const auto& value : concatenated_values) {
     bool found = false;
-    for (auto& child : (node->children()))
-    {
-      if (child.value() == value)
-      {
+    for (auto& child : (node->children())) {
+      if (child.value() == value) {
         node = &(child);
         found = true;
         break;
       }
     }
-    if (!found)
+    if (!found) {
       return nullptr;
+    }
   }
 
-  if (partial_allowed || node->children().empty())
-  {
+  if (partial_allowed || node->children().empty()) {
     return node;
   }
   return nullptr;
@@ -253,5 +257,3 @@ inline const TreeNode<T>* Tree<T>::find(const Vect& concatenated_values,
 }  // namespace details
 
 }  // namespace RosMsgParser
-
-#endif  // STRINGTREE_H

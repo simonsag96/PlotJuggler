@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 project(
   plotjuggler
   LANGUAGES C CXX
-  VERSION 3.16.0)
+  VERSION 3.17.2)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -72,7 +72,6 @@ elseif(ament_cmake_FOUND)
 
   find_package(ament_cmake REQUIRED)
   find_package(ament_index_cpp REQUIRED)
-  find_package(rclcpp REQUIRED)
 
   include_directories(${ament_index_cpp_INCLUDE_DIRS})
 
@@ -223,7 +222,8 @@ set(PLOTJUGGLER_BASE_SRC
     plotjuggler_base/src/plotpanner.cpp
     plotjuggler_base/src/timeseries_qwt.cpp
     plotjuggler_base/src/reactive_function.cpp
-    plotjuggler_base/src/save_plot.cpp)
+    plotjuggler_base/src/save_plot.cpp
+    plotjuggler_base/src/range_slider.cpp)
 
 qt5_wrap_cpp(
   PLOTJUGGLER_BASE_MOCS
@@ -232,7 +232,8 @@ qt5_wrap_cpp(
   plotjuggler_base/include/PlotJuggler/toolbox_base.h
   plotjuggler_base/include/PlotJuggler/datastreamer_base.h
   plotjuggler_base/include/PlotJuggler/transform_function.h
-  plotjuggler_base/include/PlotJuggler/plotwidget_base.h)
+  plotjuggler_base/include/PlotJuggler/plotwidget_base.h
+  plotjuggler_base/include/PlotJuggler/range_slider.h)
 
 if(BASE_AS_SHARED)
   add_library(plotjuggler_base SHARED ${PLOTJUGGLER_BASE_SRC}
