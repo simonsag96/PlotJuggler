@@ -977,8 +977,7 @@ void MainWindow::onPlotAdded(PlotWidget* plot)
   plot->setKeepRatioXY(ui->buttonRatio->isChecked());
   plot->configureTracker(_tracker_param);
   plot->onShowPlot(ui->buttonShowpoint->isChecked());
-  plot->setDefaultStyle(ui->buttonDots->isChecked() ? PlotWidgetBase::LINES_AND_DOTS :
-                                                      PlotWidgetBase::LINES);
+  plot->setDefaultStyle(PlotWidgetBase::STEPSINV);
 
   // Inherit legend settings from current state
   plot->activateLegend(_labels_status != LabelStatus::HIDDEN);
